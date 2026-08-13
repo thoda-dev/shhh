@@ -1,0 +1,4 @@
+node_modules
+
+# Utilities for Thoda, manage by a local app to follow specs, roadmap, and todo lists.
+.thoda

@@ -1,0 +1,20 @@
+{
+  "name": "shhh",
+  "private": true,
+  "packageManager": "pnpm@11.10.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "pnpm --filter app dev",
+    "dev:docs": "pnpm --filter docs dev",
+    "build": "pnpm --filter app build",
+    "build:docs": "pnpm --filter docs build",
+    "db:generate": "pnpm --filter app db:generate",
+    "db:migrate": "pnpm --filter app db:migrate",
+    "db:studio": "pnpm --filter app db:studio"
+  },
+  "dependencies": {
+    "consola": "^3.4.2"
+  }
+}

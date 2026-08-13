@@ -1,0 +1,250 @@
+{
+  "setup": {
+    "title": "Welcome to shhh",
+    "subtitle": "Let's set up your instance before anything else.",
+    "steps": {
+      "account": {
+        "title": "Admin account",
+        "description": "Create the first super admin account"
+      },
+      "settings": {
+        "title": "Instance settings",
+        "description": "Configure limits and rate-limits"
+      }
+    },
+    "account": {
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "passwordConfirm": "Confirm password",
+      "passwordMismatch": "Passwords do not match"
+    },
+    "settings": {
+      "retentionSection": "Retention",
+      "maxRetentionDaysAnonymous": "Max retention — anonymous (days)",
+      "maxRetentionDaysAuthenticated": "Max retention — authenticated (days)",
+      "sizesSection": "Sizes",
+      "maxTextSizeBytes": "Max text size (bytes)",
+      "maxUploadSizeBytes": "Max upload size (bytes)",
+      "maxTotalStorageBytes": "Max total storage (bytes)",
+      "rateLimitsSection": "Rate limits",
+      "rateLimitAnonymousCreatesPerPeriod": "Anonymous creates per period",
+      "rateLimitAuthenticatedCreatesPerPeriod": "Authenticated creates per period",
+      "rateLimitUploadsPerPeriod": "Uploads per period",
+      "rateLimitPeriodMinutes": "Period (minutes)",
+      "unlimited": "Unlimited"
+    },
+    "actions": {
+      "next": "Next",
+      "back": "Back",
+      "finish": "Finish setup",
+      "useDefaults": "Use recommended defaults"
+    },
+    "errors": {
+      "alreadyCompleted": "This instance is already set up.",
+      "generic": "Something went wrong while setting up your instance."
+    },
+    "success": "Instance set up successfully. Redirecting…"
+  },
+  "create": {
+    "subtitle": "Encrypted in your browser. We never see the content or the key.",
+    "kindText": "Text",
+    "kindFile": "File",
+    "fileRequiresLogin": "Log in to upload files",
+    "textPlaceholder": "Paste your text here…",
+    "passwordProtect": "Protect with a password",
+    "passwordPlaceholder": "Password",
+    "expiresInDays": "Expires in (days)",
+    "maxReads": "Max reads",
+    "instanceDefault": "Instance default",
+    "unlimitedReads": "Unlimited reads",
+    "submit": "Create paste",
+    "errors": {
+      "emptyText": "Text content can't be empty.",
+      "noFile": "Please select a file.",
+      "passwordTooShort": "Password must be at least 4 characters.",
+      "missingTurnstile": "Please complete the verification challenge.",
+      "generic": "Something went wrong while creating the paste."
+    },
+    "result": {
+      "title": "Paste created",
+      "warning": "This link contains the decryption key. It is never sent to the server and can't be recovered if lost.",
+      "copy": "Copy link",
+      "copied": "Copied",
+      "createAnother": "Create another paste"
+    }
+  },
+  "read": {
+    "expiresAt": "Expires: {date}",
+    "readsRemaining": "Reads remaining: {count}",
+    "passwordLabel": "This paste is password protected",
+    "burnWarningTitle": "Revealing consumes one read",
+    "burnWarningDescription": "Once revealed, this counts against the paste's read limit — even if the password turns out to be wrong.",
+    "reveal": "Reveal",
+    "copyText": "Copy",
+    "downloadFile": "Download {name}",
+    "errors": {
+      "notFound": "This paste doesn't exist, has expired, or has already been read the maximum number of times.",
+      "missingKeyTitle": "Missing decryption key",
+      "missingKeyDescription": "The link is incomplete — the part after # is required to decrypt this paste.",
+      "decryptFailed": "Couldn't decrypt this paste. The password may be wrong, or the link is invalid."
+    }
+  },
+  "login": {
+    "title": "Log in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Log in",
+    "logout": "Log out",
+    "errors": {
+      "generic": "Invalid email or password."
+    },
+    "twoFactor": {
+      "title": "Two-factor authentication",
+      "totpHint": "Enter the 6-digit code from your authenticator app.",
+      "backupCodeHint": "Enter one of your backup codes.",
+      "code": "Code",
+      "backupCode": "Backup code",
+      "submit": "Verify",
+      "useBackupCode": "Use a backup code instead",
+      "useTotp": "Use your authenticator app instead",
+      "errors": {
+        "invalidCode": "Invalid code."
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Your pastes",
+    "backToCreate": "New paste",
+    "empty": "You haven't created any pastes yet.",
+    "passwordProtected": "Password",
+    "statusActive": "Active",
+    "statusExpired": "Expired",
+    "statusExhausted": "Exhausted",
+    "created": "Created {date}",
+    "expires": "Expires {date}",
+    "reads": "{count}/{max} reads",
+    "readsUnlimited": "{count} reads",
+    "confirmDelete": "Delete this paste permanently?"
+  },
+  "admin": {
+    "settings": {
+      "title": "Instance settings",
+      "retentionSection": "Retention & reads",
+      "maxRetentionDaysAnonymous": "Max retention — anonymous (days)",
+      "maxRetentionDaysAuthenticated": "Max retention — authenticated (days)",
+      "maxReadsAnonymous": "Max reads — anonymous",
+      "maxReadsAuthenticated": "Max reads — authenticated",
+      "sizesSection": "Sizes & quotas",
+      "maxTextSizeBytes": "Max text size (bytes)",
+      "maxUploadSizeBytes": "Max upload size (bytes)",
+      "maxTotalPastes": "Max total pastes (instance)",
+      "maxTotalStorageBytes": "Max total storage (bytes)",
+      "rateLimitsSection": "Rate limits",
+      "rateLimitAnonymousCreatesPerPeriod": "Anonymous creates per period",
+      "rateLimitAuthenticatedCreatesPerPeriod": "Authenticated creates per period",
+      "rateLimitUploadsPerPeriod": "Uploads per period",
+      "rateLimitPeriodMinutes": "Period (minutes)",
+      "emailSection": "Email",
+      "maxEmailRecipientsPerPaste": "Max email recipients per paste",
+      "maxEmailsSentPerPeriod": "Max emails sent per period",
+      "emailRateLimitPeriodHours": "Period (hours)",
+      "invitationsSection": "Invitations",
+      "invitationExpiryDays": "Invitation expiry (days)",
+      "accessSection": "Access",
+      "registrationEnabled": "Public registration enabled",
+      "publicPasteEnabled": "Public (unauthenticated) paste creation enabled",
+      "require2fa": "Require 2FA for all accounts",
+      "save": "Save settings",
+      "saved": "Settings saved",
+      "errors": {
+        "generic": "Something went wrong while saving settings."
+      }
+    },
+    "allowedIps": {
+      "title": "IP allowlist",
+      "description": "IPs in this list bypass the anti-bot/anti-probe middleware entirely — useful for offices or admins behind a shared IP that would otherwise trip bot detection.",
+      "ipLabel": "IP address",
+      "ipPlaceholder": "203.0.113.1",
+      "labelLabel": "Label",
+      "labelPlaceholder": "Optional",
+      "add": "Add",
+      "empty": "No IPs allowlisted.",
+      "addedAt": "Added {date}",
+      "confirmDelete": "Remove this IP from the allowlist?",
+      "errors": {
+        "generic": "Something went wrong while adding this IP."
+      }
+    },
+    "bannedIps": {
+      "title": "IP blacklist",
+      "description": "IPs banned automatically by the anti-bot/anti-probe middleware (scanner-bait paths, untrusted bots), or manually below.",
+      "ipLabel": "IP address",
+      "ipPlaceholder": "203.0.113.1",
+      "reasonLabel": "Reason",
+      "reasonPlaceholder": "Repeated probing",
+      "expiresInDays": "Expires in (days)",
+      "permanent": "Permanent",
+      "add": "Ban",
+      "empty": "No IPs banned.",
+      "bannedAt": "Banned {date}",
+      "expiresAt": "Expires {date}",
+      "statusExpired": "Expired",
+      "confirmUnban": "Remove this ban?",
+      "errors": {
+        "generic": "Something went wrong while banning this IP."
+      }
+    },
+    "users": {
+      "title": "Accounts",
+      "adminScopeNotice": "As an admin, you can remove plain user accounts. Only a super admin can change roles or act on other admins/super admins.",
+      "joined": "Joined {date}",
+      "confirmDelete": "Permanently delete the account for {email}?",
+      "errors": {
+        "generic": "Something went wrong."
+      }
+    }
+  },
+  "account": {
+    "title": "Your account",
+    "saved": "Saved",
+    "profile": {
+      "title": "Profile",
+      "name": "Name",
+      "email": "Email",
+      "save": "Save"
+    },
+    "password": {
+      "title": "Password",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "mismatch": "Passwords do not match",
+      "save": "Change password"
+    },
+    "twoFactor": {
+      "title": "Two-factor authentication",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "passwordToEnable": "Enter your password to enable",
+      "enable": "Enable",
+      "passwordToDisable": "Enter your password to disable",
+      "disable": "Disable",
+      "scanInstructions": "Scan this QR code with your authenticator app (Google Authenticator, 1Password, etc.).",
+      "manualEntry": "Or enter this code manually",
+      "backupCodesTitle": "Save your backup codes",
+      "backupCodesWarning": "Each code can be used once to log in if you lose access to your authenticator app. They are only shown once.",
+      "copyBackupCodes": "Copy codes",
+      "confirmCode": "Enter the code from your app to confirm",
+      "codePlaceholder": "123456",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "errors": {
+        "invalidCode": "Invalid code — please try again."
+      }
+    },
+    "errors": {
+      "generic": "Something went wrong."
+    }
+  }
+}

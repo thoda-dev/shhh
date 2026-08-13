@@ -1,0 +1,250 @@
+{
+  "setup": {
+    "title": "Bienvenue sur shhh",
+    "subtitle": "Configurons votre instance avant toute chose.",
+    "steps": {
+      "account": {
+        "title": "Compte administrateur",
+        "description": "Créez le premier compte super administrateur"
+      },
+      "settings": {
+        "title": "Réglages de l'instance",
+        "description": "Configurez les limites et les rate-limits"
+      }
+    },
+    "account": {
+      "name": "Nom",
+      "email": "Email",
+      "password": "Mot de passe",
+      "passwordConfirm": "Confirmer le mot de passe",
+      "passwordMismatch": "Les mots de passe ne correspondent pas"
+    },
+    "settings": {
+      "retentionSection": "Rétention",
+      "maxRetentionDaysAnonymous": "Rétention max — anonyme (jours)",
+      "maxRetentionDaysAuthenticated": "Rétention max — authentifié (jours)",
+      "sizesSection": "Tailles",
+      "maxTextSizeBytes": "Taille max d'un texte (octets)",
+      "maxUploadSizeBytes": "Taille max d'un fichier (octets)",
+      "maxTotalStorageBytes": "Stockage total max (octets)",
+      "rateLimitsSection": "Rate limits",
+      "rateLimitAnonymousCreatesPerPeriod": "Créations anonymes par période",
+      "rateLimitAuthenticatedCreatesPerPeriod": "Créations authentifiées par période",
+      "rateLimitUploadsPerPeriod": "Uploads par période",
+      "rateLimitPeriodMinutes": "Période (minutes)",
+      "unlimited": "Illimité"
+    },
+    "actions": {
+      "next": "Suivant",
+      "back": "Retour",
+      "finish": "Terminer la configuration",
+      "useDefaults": "Utiliser les valeurs recommandées"
+    },
+    "errors": {
+      "alreadyCompleted": "Cette instance est déjà configurée.",
+      "generic": "Une erreur est survenue lors de la configuration de l'instance."
+    },
+    "success": "Instance configurée avec succès. Redirection…"
+  },
+  "create": {
+    "subtitle": "Chiffré dans votre navigateur. Nous ne voyons jamais le contenu ni la clé.",
+    "kindText": "Texte",
+    "kindFile": "Fichier",
+    "fileRequiresLogin": "Connectez-vous pour envoyer des fichiers",
+    "textPlaceholder": "Collez votre texte ici…",
+    "passwordProtect": "Protéger par un mot de passe",
+    "passwordPlaceholder": "Mot de passe",
+    "expiresInDays": "Expire dans (jours)",
+    "maxReads": "Lectures max",
+    "instanceDefault": "Défaut de l'instance",
+    "unlimitedReads": "Lectures illimitées",
+    "submit": "Créer le paste",
+    "errors": {
+      "emptyText": "Le contenu texte ne peut pas être vide.",
+      "noFile": "Veuillez sélectionner un fichier.",
+      "passwordTooShort": "Le mot de passe doit faire au moins 4 caractères.",
+      "missingTurnstile": "Veuillez compléter la vérification anti-bot.",
+      "generic": "Une erreur est survenue lors de la création du paste."
+    },
+    "result": {
+      "title": "Paste créé",
+      "warning": "Ce lien contient la clé de déchiffrement. Elle n'est jamais envoyée au serveur et ne peut pas être récupérée si elle est perdue.",
+      "copy": "Copier le lien",
+      "copied": "Copié",
+      "createAnother": "Créer un autre paste"
+    }
+  },
+  "read": {
+    "expiresAt": "Expire : {date}",
+    "readsRemaining": "Lectures restantes : {count}",
+    "passwordLabel": "Ce paste est protégé par un mot de passe",
+    "burnWarningTitle": "Révéler consomme une lecture",
+    "burnWarningDescription": "Une fois révélé, ceci compte dans la limite de lectures du paste — même si le mot de passe s'avère incorrect.",
+    "reveal": "Révéler",
+    "copyText": "Copier",
+    "downloadFile": "Télécharger {name}",
+    "errors": {
+      "notFound": "Ce paste n'existe pas, a expiré, ou a déjà été lu le nombre maximum de fois.",
+      "missingKeyTitle": "Clé de déchiffrement manquante",
+      "missingKeyDescription": "Le lien est incomplet — la partie après # est nécessaire pour déchiffrer ce paste.",
+      "decryptFailed": "Impossible de déchiffrer ce paste. Le mot de passe est peut-être incorrect, ou le lien est invalide."
+    }
+  },
+  "login": {
+    "title": "Connexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "logout": "Se déconnecter",
+    "errors": {
+      "generic": "Email ou mot de passe incorrect."
+    },
+    "twoFactor": {
+      "title": "Authentification à deux facteurs",
+      "totpHint": "Entrez le code à 6 chiffres de votre application d'authentification.",
+      "backupCodeHint": "Entrez l'un de vos codes de secours.",
+      "code": "Code",
+      "backupCode": "Code de secours",
+      "submit": "Vérifier",
+      "useBackupCode": "Utiliser un code de secours à la place",
+      "useTotp": "Utiliser votre application d'authentification à la place",
+      "errors": {
+        "invalidCode": "Code invalide."
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Vos pastes",
+    "backToCreate": "Nouveau paste",
+    "empty": "Vous n'avez créé aucun paste pour l'instant.",
+    "passwordProtected": "Mot de passe",
+    "statusActive": "Actif",
+    "statusExpired": "Expiré",
+    "statusExhausted": "Épuisé",
+    "created": "Créé le {date}",
+    "expires": "Expire le {date}",
+    "reads": "{count}/{max} lectures",
+    "readsUnlimited": "{count} lectures",
+    "confirmDelete": "Supprimer définitivement ce paste ?"
+  },
+  "admin": {
+    "settings": {
+      "title": "Réglages de l'instance",
+      "retentionSection": "Rétention & lectures",
+      "maxRetentionDaysAnonymous": "Rétention max — anonyme (jours)",
+      "maxRetentionDaysAuthenticated": "Rétention max — authentifié (jours)",
+      "maxReadsAnonymous": "Lectures max — anonyme",
+      "maxReadsAuthenticated": "Lectures max — authentifié",
+      "sizesSection": "Tailles & quotas",
+      "maxTextSizeBytes": "Taille max d'un texte (octets)",
+      "maxUploadSizeBytes": "Taille max d'un fichier (octets)",
+      "maxTotalPastes": "Nombre total de pastes max (instance)",
+      "maxTotalStorageBytes": "Stockage total max (octets)",
+      "rateLimitsSection": "Rate limits",
+      "rateLimitAnonymousCreatesPerPeriod": "Créations anonymes par période",
+      "rateLimitAuthenticatedCreatesPerPeriod": "Créations authentifiées par période",
+      "rateLimitUploadsPerPeriod": "Uploads par période",
+      "rateLimitPeriodMinutes": "Période (minutes)",
+      "emailSection": "Email",
+      "maxEmailRecipientsPerPaste": "Destinataires email max par paste",
+      "maxEmailsSentPerPeriod": "Emails envoyés max par période",
+      "emailRateLimitPeriodHours": "Période (heures)",
+      "invitationsSection": "Invitations",
+      "invitationExpiryDays": "Expiration des invitations (jours)",
+      "accessSection": "Accès",
+      "registrationEnabled": "Inscription publique activée",
+      "publicPasteEnabled": "Création de paste anonyme activée",
+      "require2fa": "Forcer la 2FA pour tous les comptes",
+      "save": "Enregistrer les réglages",
+      "saved": "Réglages enregistrés",
+      "errors": {
+        "generic": "Une erreur est survenue lors de l'enregistrement des réglages."
+      }
+    },
+    "allowedIps": {
+      "title": "Liste blanche IP",
+      "description": "Les IP de cette liste contournent entièrement le middleware anti-bot/anti-probe — utile pour des bureaux ou des admins derrière une IP partagée qui déclencherait sinon la détection de bots.",
+      "ipLabel": "Adresse IP",
+      "ipPlaceholder": "203.0.113.1",
+      "labelLabel": "Libellé",
+      "labelPlaceholder": "Optionnel",
+      "add": "Ajouter",
+      "empty": "Aucune IP dans la liste blanche.",
+      "addedAt": "Ajoutée le {date}",
+      "confirmDelete": "Retirer cette IP de la liste blanche ?",
+      "errors": {
+        "generic": "Une erreur est survenue lors de l'ajout de cette IP."
+      }
+    },
+    "bannedIps": {
+      "title": "Liste noire IP",
+      "description": "IP bannies automatiquement par le middleware anti-bot/anti-probe (routes de sonde, bots non fiables), ou manuellement ci-dessous.",
+      "ipLabel": "Adresse IP",
+      "ipPlaceholder": "203.0.113.1",
+      "reasonLabel": "Raison",
+      "reasonPlaceholder": "Sondage répété",
+      "expiresInDays": "Expire dans (jours)",
+      "permanent": "Permanent",
+      "add": "Bannir",
+      "empty": "Aucune IP bannie.",
+      "bannedAt": "Bannie le {date}",
+      "expiresAt": "Expire le {date}",
+      "statusExpired": "Expiré",
+      "confirmUnban": "Retirer ce bannissement ?",
+      "errors": {
+        "generic": "Une erreur est survenue lors du bannissement de cette IP."
+      }
+    },
+    "users": {
+      "title": "Comptes",
+      "adminScopeNotice": "En tant qu'admin, vous pouvez supprimer des comptes utilisateur simples. Seul un super admin peut modifier les rôles ou agir sur d'autres admins/super admins.",
+      "joined": "Inscrit le {date}",
+      "confirmDelete": "Supprimer définitivement le compte de {email} ?",
+      "errors": {
+        "generic": "Une erreur est survenue."
+      }
+    }
+  },
+  "account": {
+    "title": "Votre compte",
+    "saved": "Enregistré",
+    "profile": {
+      "title": "Profil",
+      "name": "Nom",
+      "email": "Email",
+      "save": "Enregistrer"
+    },
+    "password": {
+      "title": "Mot de passe",
+      "current": "Mot de passe actuel",
+      "new": "Nouveau mot de passe",
+      "confirm": "Confirmer le nouveau mot de passe",
+      "mismatch": "Les mots de passe ne correspondent pas",
+      "save": "Changer le mot de passe"
+    },
+    "twoFactor": {
+      "title": "Authentification à deux facteurs",
+      "enabled": "Activée",
+      "disabled": "Désactivée",
+      "passwordToEnable": "Entrez votre mot de passe pour activer",
+      "enable": "Activer",
+      "passwordToDisable": "Entrez votre mot de passe pour désactiver",
+      "disable": "Désactiver",
+      "scanInstructions": "Scannez ce QR code avec votre application d'authentification (Google Authenticator, 1Password, etc.).",
+      "manualEntry": "Ou entrez ce code manuellement",
+      "backupCodesTitle": "Sauvegardez vos codes de secours",
+      "backupCodesWarning": "Chaque code peut être utilisé une fois pour vous connecter si vous perdez l'accès à votre application d'authentification. Ils ne sont affichés qu'une seule fois.",
+      "copyBackupCodes": "Copier les codes",
+      "confirmCode": "Entrez le code de votre application pour confirmer",
+      "codePlaceholder": "123456",
+      "confirm": "Confirmer",
+      "cancel": "Annuler",
+      "errors": {
+        "invalidCode": "Code invalide — veuillez réessayer."
+      }
+    },
+    "errors": {
+      "generic": "Une erreur est survenue."
+    }
+  }
+}
