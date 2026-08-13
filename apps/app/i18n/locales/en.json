@@ -64,15 +64,32 @@
       "noFile": "Please select a file.",
       "passwordTooShort": "Password must be at least 4 characters.",
       "missingTurnstile": "Please complete the verification challenge.",
-      "generic": "Something went wrong while creating the paste."
+      "generic": "Something went wrong while creating the paste.",
+      "noRecipients": "Add at least one recipient, or turn off email sending.",
+      "invalidRecipient": "One of the recipients is not a valid email address.",
+      "tooManyRecipients": "This instance allows at most {max} recipients per paste."
     },
     "result": {
       "title": "Paste created",
       "warning": "This link contains the decryption key. It is never sent to the server and can't be recovered if lost.",
       "copy": "Copy link",
       "copied": "Copied",
-      "createAnother": "Create another paste"
-    }
+      "createAnother": "Create another paste",
+      "emailSent": "The link was emailed to your recipients.",
+      "emailFailed": "The paste was created, but the email could not be sent.",
+      "emailFailedHint": "Share the link below manually instead.",
+      "mailtoShare": "Share by email",
+      "mailtoSubject": "A secret was shared with you",
+      "mailtoBody": "Open this link to read the secret. It contains the decryption key, so treat it as the secret itself."
+    },
+    "anonymousDisabled": {
+      "title": "Anonymous pastes are disabled",
+      "description": "This instance only accepts pastes from signed-in accounts. Log in to create one."
+    },
+    "shareByEmail": "Also send the link by email",
+    "recipients": "Recipients",
+    "recipientsMax": "up to {max}",
+    "recipientsHint": "One email is sent with everyone in blind copy, so recipients never see each other. The read counter is shared between them all. Sharing is only possible now — a paste cannot be emailed after it has been created."
   },
   "read": {
     "expiresAt": "Expires: {date}",
@@ -111,7 +128,8 @@
       "errors": {
         "invalidCode": "Invalid code."
       }
-    }
+    },
+    "noAccount": "Don't have an account? Sign up"
   },
   "dashboard": {
     "title": "Your pastes",
@@ -147,8 +165,6 @@
       "rateLimitPeriodMinutes": "Period (minutes)",
       "emailSection": "Email",
       "maxEmailRecipientsPerPaste": "Max email recipients per paste",
-      "maxEmailsSentPerPeriod": "Max emails sent per period",
-      "emailRateLimitPeriodHours": "Period (hours)",
       "invitationsSection": "Invitations",
       "invitationExpiryDays": "Invitation expiry (days)",
       "accessSection": "Access",
@@ -203,6 +219,31 @@
       "errors": {
         "generic": "Something went wrong."
       }
+    },
+    "invitations": {
+      "title": "Invitations",
+      "description": "Invite someone to create an account. An invitation works even when public registration is closed.",
+      "emailLabel": "Email address",
+      "send": "Send invitation",
+      "empty": "No invitation yet.",
+      "confirmRevoke": "Revoke this invitation? The link will stop working immediately.",
+      "invitedBy": "invited by {email}",
+      "expiresAt": "expires {date}",
+      "acceptedAt": "accepted {date}",
+      "createdAt": "created {date}",
+      "mailDisabled": "No mail provider configured",
+      "mailDisabledHint": "Invitations are delivered by email, so this instance cannot send them. Set MAIL_PROVIDER and restart to enable them.",
+      "deliveryFailed": "The invitation was created but the email could not be sent",
+      "deliveryFailedHint": "Revoke it and try again once the mail provider works.",
+      "errors": {
+        "generic": "Could not create the invitation."
+      },
+      "states": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "revoked": "Revoked",
+        "expired": "Expired"
+      }
     }
   },
   "account": {
@@ -241,10 +282,45 @@
       "cancel": "Cancel",
       "errors": {
         "invalidCode": "Invalid code — please try again."
-      }
+      },
+      "requiredTitle": "Two-factor authentication is required",
+      "requiredDescription": "This instance requires every account to use two-factor authentication. Set it up below to regain access to the rest of the app.",
+      "lockedByInstance": "This instance requires two-factor authentication, so it cannot be turned off.",
+      "passwordToRegenerate": "Password to regenerate backup codes",
+      "regenerate": "New backup codes",
+      "regeneratedWarning": "These replace your previous backup codes, which no longer work. Save them now — they are shown only once."
     },
     "errors": {
       "generic": "Something went wrong."
+    },
+    "delete": {
+      "title": "Delete account",
+      "warningTitle": "This cannot be undone",
+      "warningHint": "Your account, all your pastes and their files are permanently deleted. Links you have already shared stop working immediately.",
+      "passwordLabel": "Your password",
+      "confirmationLabel": "Type your email address to confirm",
+      "submit": "Delete my account",
+      "confirm": "Permanently delete your account and all your pastes? This cannot be undone.",
+      "superAdminTitle": "The super admin account cannot be deleted",
+      "superAdminHint": "It is a system account. Transfer the super admin role to somebody else first, then delete this account."
+    }
+  },
+  "register": {
+    "title": "Create your account",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "at least 8 characters",
+    "submit": "Create account",
+    "haveAccount": "Already have an account? Log in",
+    "closed": "Registration is closed",
+    "closedHint": "This instance does not accept public sign-ups. You need an invitation from an administrator.",
+    "invalidInvitation": "This invitation link is not valid",
+    "invalidInvitationHint": "It may have expired, been revoked, or already been used. Ask an administrator for a new one.",
+    "invitedTitle": "You have been invited",
+    "invitedHint": "This account will be created for {email}.",
+    "errors": {
+      "generic": "Could not create the account."
     }
   }
 }

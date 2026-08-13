@@ -13,8 +13,6 @@ interface SettingsShape {
   rate_limit_uploads_per_period: number | null
   rate_limit_period_minutes: number
   max_email_recipients_per_paste: number | null
-  max_emails_sent_per_period: number | null
-  email_rate_limit_period_hours: number
   invitation_expiry_days: number | null
   registration_enabled: boolean
   public_paste_enabled: boolean
@@ -48,8 +46,6 @@ const state = reactive<SettingsShape>({
   rate_limit_uploads_per_period: settingsData.value?.rate_limit_uploads_per_period ?? null,
   rate_limit_period_minutes: settingsData.value?.rate_limit_period_minutes ?? 10,
   max_email_recipients_per_paste: settingsData.value?.max_email_recipients_per_paste ?? 3,
-  max_emails_sent_per_period: settingsData.value?.max_emails_sent_per_period ?? null,
-  email_rate_limit_period_hours: settingsData.value?.email_rate_limit_period_hours ?? 1,
   invitation_expiry_days: settingsData.value?.invitation_expiry_days ?? 7,
   registration_enabled: settingsData.value?.registration_enabled ?? true,
   public_paste_enabled: settingsData.value?.public_paste_enabled ?? true,
@@ -67,6 +63,10 @@ async function save() {
   try {
     const updated = await $fetch<SettingsShape>('/api/admin/settings', { method: 'PUT', body: state })
     Object.assign(state, updated)
+    // Three of these keys drive app-wide behaviour (anonymous creation, sign-up, forced 2FA) and are
+    // cached in a `useState` loaded once per app lifecycle — without this, toggling one here would
+    // only take effect on the client after a full reload.
+    await refreshPublicSettings()
     saved.value = true
     setTimeout(() => (saved.value = false), 2000)
   } catch (error: any) {
@@ -83,11 +83,12 @@ async function save() {
       <h1 class="text-xl font-semibold">{{ t('admin.settings.title') }}</h1>
       <UButton variant="ghost" icon="i-lucide-arrow-left" :label="t('dashboard.backToCreate')" :to="localePath('/')" />
     </div>
-    <div class="mb-6 flex gap-2">
+    <div class="mb-6 flex flex-wrap gap-2">
       <UButton variant="ghost" size="sm" icon="i-lucide-settings" :label="t('admin.settings.title')" :to="localePath('/admin/settings')" disabled />
       <UButton variant="ghost" size="sm" icon="i-lucide-shield" :label="t('admin.allowedIps.title')" :to="localePath('/admin/allowed-ips')" />
       <UButton variant="ghost" size="sm" icon="i-lucide-ban" :label="t('admin.bannedIps.title')" :to="localePath('/admin/banned-ips')" />
       <UButton variant="ghost" size="sm" icon="i-lucide-users" :label="t('admin.users.title')" :to="localePath('/admin/users')" />
+      <UButton variant="ghost" size="sm" icon="i-lucide-mail-plus" :label="t('admin.invitations.title')" :to="localePath('/admin/invitations')" />
     </div>
 
     <div class="space-y-8">
@@ -120,10 +121,6 @@ async function save() {
       <fieldset class="space-y-4">
         <legend class="mb-2 text-sm font-medium">{{ t('admin.settings.emailSection') }}</legend>
         <UnlimitedNumberField v-model="state.max_email_recipients_per_paste" :label="t('admin.settings.maxEmailRecipientsPerPaste')" />
-        <UnlimitedNumberField v-model="state.max_emails_sent_per_period" :label="t('admin.settings.maxEmailsSentPerPeriod')" />
-        <UFormField :label="t('admin.settings.emailRateLimitPeriodHours')">
-          <UInput v-model.number="state.email_rate_limit_period_hours" type="number" min="1" class="w-full" />
-        </UFormField>
       </fieldset>
 
       <fieldset class="space-y-4">

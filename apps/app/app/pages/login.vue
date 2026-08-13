@@ -15,6 +15,8 @@ if (user.value) {
   await navigateTo(localePath('/'))
 }
 
+const publicSettings = await ensurePublicSettingsLoaded()
+
 const schema = z.object({
   email: z.string().email(),
   password: z.string().min(1)
@@ -83,6 +85,17 @@ async function submitCode() {
         <UAlert v-if="errorMessage" color="error" variant="subtle" :title="errorMessage" />
 
         <UButton block type="submit" :loading="submitting" :label="t('login.submit')" />
+
+        <!-- Only when the instance is open: an invited user reaches /register through their link,
+             so advertising it here would just be a dead end on a closed instance. -->
+        <UButton
+          v-if="publicSettings?.registrationEnabled"
+          block
+          variant="ghost"
+          size="sm"
+          :label="t('login.noAccount')"
+          :to="localePath('/register')"
+        />
       </UForm>
 
       <div v-else class="space-y-4">

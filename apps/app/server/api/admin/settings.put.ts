@@ -14,8 +14,6 @@ const settingsSchema = z.object({
   rate_limit_uploads_per_period: z.number().int().positive().nullable(),
   rate_limit_period_minutes: z.number().int().positive(),
   max_email_recipients_per_paste: z.number().int().positive().nullable(),
-  max_emails_sent_per_period: z.number().int().positive().nullable(),
-  email_rate_limit_period_hours: z.number().int().positive(),
   invitation_expiry_days: z.number().int().positive().nullable(),
   registration_enabled: z.boolean(),
   public_paste_enabled: z.boolean(),

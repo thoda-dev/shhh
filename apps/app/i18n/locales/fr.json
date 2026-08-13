@@ -64,15 +64,32 @@
       "noFile": "Veuillez sélectionner un fichier.",
       "passwordTooShort": "Le mot de passe doit faire au moins 4 caractères.",
       "missingTurnstile": "Veuillez compléter la vérification anti-bot.",
-      "generic": "Une erreur est survenue lors de la création du paste."
+      "generic": "Une erreur est survenue lors de la création du paste.",
+      "noRecipients": "Ajoutez au moins un destinataire, ou désactivez l'envoi par email.",
+      "invalidRecipient": "L'un des destinataires n'est pas une adresse email valide.",
+      "tooManyRecipients": "Cette instance autorise au maximum {max} destinataires par paste."
     },
     "result": {
       "title": "Paste créé",
       "warning": "Ce lien contient la clé de déchiffrement. Elle n'est jamais envoyée au serveur et ne peut pas être récupérée si elle est perdue.",
       "copy": "Copier le lien",
       "copied": "Copié",
-      "createAnother": "Créer un autre paste"
-    }
+      "createAnother": "Créer un autre paste",
+      "emailSent": "Le lien a été envoyé par email à vos destinataires.",
+      "emailFailed": "Le paste a bien été créé, mais l'email n'a pas pu être envoyé.",
+      "emailFailedHint": "Partagez le lien ci-dessous manuellement à la place.",
+      "mailtoShare": "Partager par email",
+      "mailtoSubject": "Un secret a été partagé avec vous",
+      "mailtoBody": "Ouvrez ce lien pour lire le secret. Il contient la clé de déchiffrement, traitez-le donc comme le secret lui-même."
+    },
+    "anonymousDisabled": {
+      "title": "Les pastes anonymes sont désactivés",
+      "description": "Cette instance n'accepte que les pastes créés depuis un compte. Connectez-vous pour en créer un."
+    },
+    "shareByEmail": "Envoyer aussi le lien par email",
+    "recipients": "Destinataires",
+    "recipientsMax": "{max} maximum",
+    "recipientsHint": "Un seul email est envoyé avec tout le monde en copie cachée, les destinataires ne se voient donc jamais entre eux. Le compteur de lectures est partagé entre eux tous. Le partage n'est possible que maintenant — un paste ne peut plus être envoyé par email une fois créé."
   },
   "read": {
     "expiresAt": "Expire : {date}",
@@ -111,7 +128,8 @@
       "errors": {
         "invalidCode": "Code invalide."
       }
-    }
+    },
+    "noAccount": "Pas encore de compte ? Créer un compte"
   },
   "dashboard": {
     "title": "Vos pastes",
@@ -147,8 +165,6 @@
       "rateLimitPeriodMinutes": "Période (minutes)",
       "emailSection": "Email",
       "maxEmailRecipientsPerPaste": "Destinataires email max par paste",
-      "maxEmailsSentPerPeriod": "Emails envoyés max par période",
-      "emailRateLimitPeriodHours": "Période (heures)",
       "invitationsSection": "Invitations",
       "invitationExpiryDays": "Expiration des invitations (jours)",
       "accessSection": "Accès",
@@ -203,6 +219,31 @@
       "errors": {
         "generic": "Une erreur est survenue."
       }
+    },
+    "invitations": {
+      "title": "Invitations",
+      "description": "Invitez quelqu'un à créer un compte. Une invitation fonctionne même quand les inscriptions publiques sont fermées.",
+      "emailLabel": "Adresse email",
+      "send": "Envoyer l'invitation",
+      "empty": "Aucune invitation pour le moment.",
+      "confirmRevoke": "Révoquer cette invitation ? Le lien cessera immédiatement de fonctionner.",
+      "invitedBy": "invité par {email}",
+      "expiresAt": "expire le {date}",
+      "acceptedAt": "accepté le {date}",
+      "createdAt": "créé le {date}",
+      "mailDisabled": "Aucun fournisseur mail configuré",
+      "mailDisabledHint": "Les invitations sont envoyées par email, cette instance ne peut donc pas les délivrer. Renseignez MAIL_PROVIDER et redémarrez pour les activer.",
+      "deliveryFailed": "L'invitation a été créée mais l'email n'a pas pu être envoyé",
+      "deliveryFailedHint": "Révoquez-la et réessayez une fois le fournisseur mail fonctionnel.",
+      "errors": {
+        "generic": "Impossible de créer l'invitation."
+      },
+      "states": {
+        "pending": "En attente",
+        "accepted": "Acceptée",
+        "revoked": "Révoquée",
+        "expired": "Expirée"
+      }
     }
   },
   "account": {
@@ -241,10 +282,45 @@
       "cancel": "Annuler",
       "errors": {
         "invalidCode": "Code invalide — veuillez réessayer."
-      }
+      },
+      "requiredTitle": "L'authentification à deux facteurs est obligatoire",
+      "requiredDescription": "Cette instance impose l'authentification à deux facteurs à tous les comptes. Configurez-la ci-dessous pour retrouver l'accès au reste de l'application.",
+      "lockedByInstance": "Cette instance impose l'authentification à deux facteurs, elle ne peut donc pas être désactivée.",
+      "passwordToRegenerate": "Mot de passe pour régénérer les codes de secours",
+      "regenerate": "Nouveaux codes de secours",
+      "regeneratedWarning": "Ils remplacent vos anciens codes de secours, qui ne fonctionnent plus. Enregistrez-les maintenant — ils ne sont affichés qu’une fois."
     },
     "errors": {
       "generic": "Une erreur est survenue."
+    },
+    "delete": {
+      "title": "Supprimer le compte",
+      "warningTitle": "Cette action est irréversible",
+      "warningHint": "Votre compte, tous vos pastes et leurs fichiers sont définitivement supprimés. Les liens déjà partagés cessent immédiatement de fonctionner.",
+      "passwordLabel": "Votre mot de passe",
+      "confirmationLabel": "Saisissez votre adresse email pour confirmer",
+      "submit": "Supprimer mon compte",
+      "confirm": "Supprimer définitivement votre compte et tous vos pastes ? Cette action est irréversible.",
+      "superAdminTitle": "Le compte super admin ne peut pas être supprimé",
+      "superAdminHint": "C'est un compte système. Transférez d'abord le rôle super admin à quelqu'un d'autre, puis supprimez ce compte."
+    }
+  },
+  "register": {
+    "title": "Créer votre compte",
+    "name": "Nom",
+    "email": "Email",
+    "password": "Mot de passe",
+    "passwordHint": "8 caractères minimum",
+    "submit": "Créer le compte",
+    "haveAccount": "Vous avez déjà un compte ? Se connecter",
+    "closed": "Les inscriptions sont fermées",
+    "closedHint": "Cette instance n'accepte pas les inscriptions publiques. Il vous faut une invitation d'un administrateur.",
+    "invalidInvitation": "Ce lien d'invitation n'est pas valide",
+    "invalidInvitationHint": "Il a peut-être expiré, été révoqué, ou déjà été utilisé. Demandez-en un nouveau à un administrateur.",
+    "invitedTitle": "Vous avez été invité",
+    "invitedHint": "Ce compte sera créé pour {email}.",
+    "errors": {
+      "generic": "Impossible de créer le compte."
     }
   }
 }

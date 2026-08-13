@@ -1,0 +1,23 @@
+# The build context is the repo root. Everything the image needs is either a manifest or source;
+# anything installed or generated is rebuilt inside the image.
+node_modules
+**/node_modules
+.nuxt
+**/.nuxt
+.output
+**/.output
+dist
+**/dist
+
+# Never bake secrets into an image layer.
+.env
+.env.*
+!.env.example
+.infisical.json
+
+.git
+.github
+.claude
+.thoda
+docker/**/*.md
+*.log

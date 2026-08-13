@@ -12,6 +12,13 @@ if (!user.value) {
   await navigateTo(localePath('/login'))
 }
 
+const publicSettings = await ensurePublicSettingsLoaded()
+// When the instance requires 2FA, this page is the only one a non-enrolled account can reach
+// (see `require-2fa.global.ts`), so it has to explain why — and hide the disable flow, which the
+// server refuses anyway through the `/two-factor/disable` hook in `server/utils/auth.ts`.
+const twoFactorRequired = computed(() => publicSettings.value?.require2fa === true)
+const mustEnrollNow = computed(() => twoFactorRequired.value && !user.value?.twoFactorEnabled)
+
 // --- Profile ---
 const nameSchema = z.object({ name: z.string().min(1).max(100) })
 const nameState = reactive({ name: user.value?.name ?? '' })
@@ -144,6 +151,53 @@ async function copyBackupCodes() {
   copiedBackupCodes.value = true
   setTimeout(() => (copiedBackupCodes.value = false), 2000)
 }
+
+// --- Backup code regeneration (2FA already enabled) ---
+const regeneratePassword = ref('')
+const regenerating = ref(false)
+async function regenerateBackupCodes() {
+  twoFactorError.value = ''
+  regenerating.value = true
+  try {
+    const result = await $fetch<{ backupCodes: string[] }>('/api/auth/two-factor/generate-backup-codes', {
+      method: 'POST',
+      body: { password: regeneratePassword.value }
+    })
+    // Reuses the enrollment screen's code list, minus the QR step: the previous codes are now dead,
+    // so these must be shown once with the same warning.
+    backupCodes.value = result.backupCodes
+    regeneratePassword.value = ''
+  } catch (error: any) {
+    twoFactorError.value = error?.data?.message || error?.data?.statusMessage || t('account.errors.generic')
+  } finally {
+    regenerating.value = false
+  }
+}
+
+// --- Account deletion (GDPR right to erasure, project.md section 8) ---
+const isSuperAdmin = computed(() => user.value?.role === 'super_admin')
+const deletePassword = ref('')
+const deleteConfirmation = ref('')
+const deleting = ref(false)
+const deleteError = ref('')
+
+async function deleteAccount() {
+  if (!confirm(t('account.delete.confirm'))) return
+  deleting.value = true
+  deleteError.value = ''
+  try {
+    await $fetch('/api/account/me', {
+      method: 'DELETE',
+      body: { password: deletePassword.value, confirmation: deleteConfirmation.value }
+    })
+    await refreshAuthSession()
+    await navigateTo(localePath('/'))
+  } catch (error: any) {
+    deleteError.value = error?.data?.statusMessage || error?.data?.message || t('account.errors.generic')
+  } finally {
+    deleting.value = false
+  }
+}
 </script>
 
 <template>
@@ -152,6 +206,16 @@ async function copyBackupCodes() {
       <h1 class="text-xl font-semibold">{{ t('account.title') }}</h1>
       <UButton variant="ghost" icon="i-lucide-arrow-left" :label="t('dashboard.backToCreate')" :to="localePath('/')" />
     </div>
+
+    <UAlert
+      v-if="mustEnrollNow"
+      color="warning"
+      variant="subtle"
+      icon="i-lucide-shield-alert"
+      :title="t('account.twoFactor.requiredTitle')"
+      :description="t('account.twoFactor.requiredDescription')"
+      class="mb-6"
+    />
 
     <div class="space-y-6">
       <UCard>
@@ -231,12 +295,71 @@ async function copyBackupCodes() {
           </div>
         </div>
 
-        <!-- Already enabled: disable flow -->
-        <div v-else class="flex items-end gap-2">
-          <UFormField :label="t('account.twoFactor.passwordToDisable')" class="flex-1">
-            <UInput v-model="disablePassword" type="password" class="w-full" autocomplete="current-password" />
+        <!-- Already enabled: regenerate backup codes, and disable unless the instance forbids it -->
+        <div v-else class="space-y-4">
+          <div v-if="backupCodes.length" class="space-y-2">
+            <UAlert color="warning" variant="subtle" :title="t('account.twoFactor.backupCodesTitle')" :description="t('account.twoFactor.regeneratedWarning')" />
+            <div class="grid grid-cols-2 gap-1 rounded-lg bg-elevated p-3 font-mono text-xs">
+              <span v-for="code in backupCodes" :key="code">{{ code }}</span>
+            </div>
+            <UButton size="sm" variant="ghost" :icon="copiedBackupCodes ? 'i-lucide-check' : 'i-lucide-copy'" :label="copiedBackupCodes ? t('create.result.copied') : t('account.twoFactor.copyBackupCodes')" @click="copyBackupCodes" />
+          </div>
+
+          <div class="flex items-end gap-2">
+            <UFormField :label="t('account.twoFactor.passwordToRegenerate')" class="flex-1">
+              <UInput v-model="regeneratePassword" type="password" class="w-full" autocomplete="current-password" />
+            </UFormField>
+            <UButton variant="subtle" :loading="regenerating" :disabled="!regeneratePassword" :label="t('account.twoFactor.regenerate')" @click="regenerateBackupCodes" />
+          </div>
+
+          <p v-if="twoFactorRequired" class="text-sm text-muted">
+            {{ t('account.twoFactor.lockedByInstance') }}
+          </p>
+          <div v-else class="flex items-end gap-2 border-t border-default pt-4">
+            <UFormField :label="t('account.twoFactor.passwordToDisable')" class="flex-1">
+              <UInput v-model="disablePassword" type="password" class="w-full" autocomplete="current-password" />
+            </UFormField>
+            <UButton color="error" variant="subtle" :loading="disabling" :disabled="!disablePassword" :label="t('account.twoFactor.disable')" @click="disableTwoFactor" />
+          </div>
+        </div>
+      </UCard>
+
+      <UCard>
+        <template #header>
+          <h2 class="text-sm font-medium text-error">{{ t('account.delete.title') }}</h2>
+        </template>
+
+        <!-- The super admin is a system account, outside the individual right to erasure — the
+             server refuses it too, this only avoids offering a button that always fails. -->
+        <UAlert
+          v-if="isSuperAdmin"
+          color="neutral"
+          variant="subtle"
+          icon="i-lucide-shield"
+          :title="t('account.delete.superAdminTitle')"
+          :description="t('account.delete.superAdminHint')"
+        />
+
+        <div v-else class="space-y-3">
+          <UAlert color="error" variant="subtle" icon="i-lucide-triangle-alert" :title="t('account.delete.warningTitle')" :description="t('account.delete.warningHint')" />
+
+          <UFormField :label="t('account.delete.passwordLabel')">
+            <UInput v-model="deletePassword" type="password" class="w-full" autocomplete="current-password" />
           </UFormField>
-          <UButton color="error" variant="subtle" :loading="disabling" :disabled="!disablePassword" :label="t('account.twoFactor.disable')" @click="disableTwoFactor" />
+          <UFormField :label="t('account.delete.confirmationLabel')" :hint="user?.email">
+            <UInput v-model="deleteConfirmation" class="w-full" />
+          </UFormField>
+
+          <UAlert v-if="deleteError" color="error" variant="subtle" :title="deleteError" />
+
+          <UButton
+            color="error"
+            icon="i-lucide-trash-2"
+            :loading="deleting"
+            :disabled="!deletePassword || !deleteConfirmation"
+            :label="t('account.delete.submit')"
+            @click="deleteAccount"
+          />
         </div>
       </UCard>
     </div>

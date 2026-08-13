@@ -8,6 +8,11 @@ await ensureAuthSessionLoaded()
 const user = useAuthUser()
 const isAuthenticated = computed(() => !!user.value)
 
+const publicSettings = await ensurePublicSettingsLoaded()
+// Mirrors the server-side check in POST /api/pastes: with `public_paste_enabled` off, the instance
+// is accounts-only. Reading an existing paste stays open to everyone either way.
+const anonymousBlocked = computed(() => !isAuthenticated.value && publicSettings.value?.publicPasteEnabled === false)
+
 const kindItems = computed<TabsItem[]>(() => [
   { label: t('create.kindText'), value: 'text', icon: 'i-lucide-file-text' },
   { label: t('create.kindFile'), value: 'file', icon: 'i-lucide-paperclip', disabled: !isAuthenticated.value }
@@ -26,6 +31,25 @@ const maxReadsInput = ref<number | null>(null)
 
 const turnstileToken = ref('')
 
+// Email sharing is offered only at creation and only to authenticated users — it's the one moment
+// the decryption key may reach the server (see server/utils/paste-sharing.ts). There is deliberately
+// no way to share an already-created paste.
+const canShareByEmail = computed(() => isAuthenticated.value && publicSettings.value?.mailEnabled === true)
+const shareByEmail = ref(false)
+const recipientsInput = ref('')
+const recipients = computed(() =>
+  recipientsInput.value.split(/[,;\s]+/).map(value => value.trim()).filter(Boolean)
+)
+const emailShareSent = ref<boolean | null>(null)
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+// Not translated, and deliberately not in i18n: names and address format are the same in every
+// locale, and `example.com` is the domain RFC 2606 reserves for documentation — a localised
+// variant would point at somebody's real domain. Keeping it out of the message catalogue also
+// avoids escaping `@`, which vue-i18n reads as its linked-message marker.
+const RECIPIENTS_PLACEHOLDER = 'alice@example.com, bob@example.com'
+
 const submitting = ref(false)
 const errorMessage = ref('')
 const resultUrl = ref('')
@@ -35,6 +59,15 @@ function validate(): string | null {
   if (kind.value === 'file' && !file.value) return t('create.errors.noFile')
   if (passwordProtected.value && password.value.length < 4) return t('create.errors.passwordTooShort')
   if (!turnstileToken.value) return t('create.errors.missingTurnstile')
+
+  if (shareByEmail.value && canShareByEmail.value) {
+    if (!recipients.value.length) return t('create.errors.noRecipients')
+    if (recipients.value.some(email => !EMAIL_PATTERN.test(email))) return t('create.errors.invalidRecipient')
+    const max = publicSettings.value?.maxEmailRecipients
+    if (max !== null && max !== undefined && recipients.value.length > max) {
+      return t('create.errors.tooManyRecipients', { max })
+    }
+  }
   return null
 }
 
@@ -75,9 +108,18 @@ async function submit() {
       payload.fileMime = selectedFile.type || 'application/octet-stream'
     }
 
-    const paste = await $fetch<{ id: string }>('/api/pastes', { method: 'POST', body: payload })
     const fragment = bytesToBase64Url(fragmentKeyBytes)
+
+    // The server builds the emailed link itself (it alone knows the paste id), so it needs the
+    // fragment key. Sent in the same request as the paste — there is no second call, and no
+    // endpoint that accepts a key for an already-existing paste.
+    if (shareByEmail.value && canShareByEmail.value) {
+      payload.share = { fragmentKey: fragment, recipients: recipients.value }
+    }
+
+    const paste = await $fetch<{ id: string, shared?: boolean }>('/api/pastes', { method: 'POST', body: payload })
     resultUrl.value = `${window.location.origin}${localePath(`/p/${paste.id}`)}#key=${fragment}`
+    emailShareSent.value = paste.shared ?? null
   } catch (error: any) {
     errorMessage.value = error?.data?.statusMessage || error?.data?.message || t('create.errors.generic')
   } finally {
@@ -92,6 +134,16 @@ async function copyLink() {
   setTimeout(() => (copied.value = false), 2000)
 }
 
+// Client-side share for everyone, authenticated or not: opens the user's own mail client with the
+// body pre-filled and the To field left empty (RFC 6068 makes the recipient optional). The link
+// never leaves the browser this way, so it stays available even on an instance with no mail
+// provider — and for anonymous users, who can't use the server-side path at all.
+const mailtoHref = computed(() => {
+  const subject = t('create.result.mailtoSubject')
+  const body = `${t('create.result.mailtoBody')}\n\n${resultUrl.value}`
+  return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+})
+
 function reset() {
   resultUrl.value = ''
   textContent.value = ''
@@ -102,6 +154,9 @@ function reset() {
   unlimitedReads.value = false
   maxReadsInput.value = null
   turnstileToken.value = ''
+  shareByEmail.value = false
+  recipientsInput.value = ''
+  emailShareSent.value = null
 }
 </script>
 
@@ -118,13 +173,44 @@ function reset() {
         </div>
       </template>
 
-      <div v-if="resultUrl" class="space-y-4">
+      <div v-if="anonymousBlocked" class="space-y-4">
+        <UAlert
+          color="warning"
+          variant="subtle"
+          icon="i-lucide-lock"
+          :title="t('create.anonymousDisabled.title')"
+          :description="t('create.anonymousDisabled.description')"
+        />
+        <UButton block icon="i-lucide-log-in" :label="t('login.submit')" :to="localePath('/login')" />
+      </div>
+
+      <div v-else-if="resultUrl" class="space-y-4">
         <UAlert color="success" variant="subtle" :title="t('create.result.title')" :description="t('create.result.warning')" />
         <div class="flex items-center gap-2">
           <UInput :model-value="resultUrl" readonly class="w-full font-mono text-xs" />
           <UButton :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'" :label="copied ? t('create.result.copied') : t('create.result.copy')" @click="copyLink" />
         </div>
-        <UButton variant="ghost" :label="t('create.result.createAnother')" @click="reset" />
+
+        <UAlert
+          v-if="emailShareSent === true"
+          color="success"
+          variant="subtle"
+          icon="i-lucide-mail-check"
+          :title="t('create.result.emailSent')"
+        />
+        <UAlert
+          v-else-if="emailShareSent === false"
+          color="warning"
+          variant="subtle"
+          icon="i-lucide-mail-x"
+          :title="t('create.result.emailFailed')"
+          :description="t('create.result.emailFailedHint')"
+        />
+
+        <div class="flex items-center gap-2">
+          <UButton variant="subtle" icon="i-lucide-mail" :label="t('create.result.mailtoShare')" :href="mailtoHref" />
+          <UButton variant="ghost" :label="t('create.result.createAnother')" @click="reset" />
+        </div>
       </div>
 
       <div v-else class="space-y-5">
@@ -158,6 +244,16 @@ function reset() {
           </UFormField>
         </div>
         <USwitch v-model="unlimitedReads" :label="t('create.unlimitedReads')" />
+
+        <template v-if="canShareByEmail">
+          <USwitch v-model="shareByEmail" :label="t('create.shareByEmail')" />
+          <div v-if="shareByEmail" class="space-y-2">
+            <UFormField :label="t('create.recipients')" :hint="publicSettings?.maxEmailRecipients !== null ? t('create.recipientsMax', { max: publicSettings?.maxEmailRecipients }) : undefined">
+              <UInput v-model="recipientsInput" :placeholder="RECIPIENTS_PLACEHOLDER" class="w-full" />
+            </UFormField>
+            <p class="text-xs text-muted">{{ t('create.recipientsHint') }}</p>
+          </div>
+        </template>
 
         <NuxtTurnstile v-model="turnstileToken" />
 

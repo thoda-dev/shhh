@@ -12,8 +12,6 @@ export const APP_SETTINGS_KEYS = [
   'rate_limit_uploads_per_period',
   'rate_limit_period_minutes',
   'max_email_recipients_per_paste',
-  'max_emails_sent_per_period',
-  'email_rate_limit_period_hours',
   'invitation_expiry_days',
   'registration_enabled',
   'public_paste_enabled',
@@ -34,8 +32,6 @@ interface AppSettingsShape {
   rate_limit_uploads_per_period: number | null
   rate_limit_period_minutes: number
   max_email_recipients_per_paste: number | null
-  max_emails_sent_per_period: number | null
-  email_rate_limit_period_hours: number
   invitation_expiry_days: number | null
   registration_enabled: boolean
   public_paste_enabled: boolean
@@ -59,8 +55,6 @@ const APP_SETTINGS_DEFAULTS: AppSettingsShape = {
   rate_limit_uploads_per_period: null,
   rate_limit_period_minutes: 10,
   max_email_recipients_per_paste: 3,
-  max_emails_sent_per_period: null,
-  email_rate_limit_period_hours: 1,
   invitation_expiry_days: 7,
   registration_enabled: true,
   public_paste_enabled: true,

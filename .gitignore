@@ -1,4 +1,15 @@
 node_modules
 
+# Local env files. `.env` lives at the repo root because docker-compose reads it from there —
+# without this rule, following .env.example would stage real secrets.
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+.DS_Store
+
 # Utilities for Thoda, manage by a local app to follow specs, roadmap, and todo lists.
 .thoda

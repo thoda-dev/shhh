@@ -5,11 +5,21 @@ import { z } from 'zod'
 // duration — matches the same numbers as the app_settings defaults (project.md section 5).
 const DEFAULT_RETENTION_DAYS = { anonymous: 7, authenticated: 30 } as const
 
+// Email sharing is only ever accepted here, at creation, and only from an authenticated session —
+// see the zero-knowledge note in `server/utils/paste-sharing.ts` for why the key may only cross the
+// wire at this single point. `fragmentKey` is the base64url key from the URL fragment; the server
+// composes the link itself since the paste id doesn't exist client-side yet.
+const shareSchema = z.object({
+  fragmentKey: z.string().min(1).max(256),
+  recipients: z.array(z.string().email()).min(1)
+})
+
 const baseFields = {
   passwordProtected: z.boolean().default(false),
   maxReads: z.number().int().positive().nullable().optional(),
   expiresInDays: z.number().int().positive().optional(),
-  turnstileToken: z.string()
+  turnstileToken: z.string(),
+  share: shareSchema.optional()
 }
 
 const textPasteSchema = z.object({
@@ -39,6 +49,15 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, statusMessage: 'File uploads require an authenticated account' })
   }
 
+  if (body.share) {
+    if (!session) {
+      throw createError({ statusCode: 403, statusMessage: 'Email sharing requires an authenticated account' })
+    }
+    if (!isMailEnabled()) {
+      throw createError({ statusCode: 503, statusMessage: 'This instance has no mail provider configured' })
+    }
+  }
+
   const tier = session ? 'authenticated' : 'anonymous'
 
   const settings = await getSettings([
@@ -51,8 +70,33 @@ export default defineEventHandler(async (event) => {
     'rate_limit_anonymous_creates_per_period',
     'rate_limit_authenticated_creates_per_period',
     'rate_limit_uploads_per_period',
-    'rate_limit_period_minutes'
+    'rate_limit_period_minutes',
+    'public_paste_enabled',
+    'require_2fa',
+    'max_total_pastes',
+    'max_total_storage_bytes',
+    'max_email_recipients_per_paste'
   ])
+
+  // The only email setting that still bites: with one Bcc'd message per paste there is no send
+  // volume to throttle, but the size of that single message is still worth capping.
+  if (body.share && settings.max_email_recipients_per_paste !== null
+    && body.share.recipients.length > settings.max_email_recipients_per_paste) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: `A paste can be shared with at most ${settings.max_email_recipients_per_paste} recipients`
+    })
+  }
+
+  // Turning `public_paste_enabled` off makes the instance accounts-only; it doesn't close it down.
+  // Authenticated creation, and reading an existing paste, are both unaffected.
+  if (!session && !settings.public_paste_enabled) {
+    throw createError({ statusCode: 403, statusMessage: 'Anonymous pastes are disabled on this instance' })
+  }
+
+  if (session) {
+    await assertTwoFactorCompliance(session.user, settings.require_2fa)
+  }
 
   const identifier = session ? session.user.id : (getRequestIP(event, { xForwardedFor: true }) ?? 'unknown')
 
@@ -140,6 +184,30 @@ export default defineEventHandler(async (event) => {
     values.fileSize = fileBlob.length
   }
 
+  // Instance-wide quotas (project.md section 5). Read live from `pastes` rather than the
+  // denormalised `app_stats`, which the purge task only refreshes hourly — an hour of drift on a
+  // disk-exhaustion guard would defeat its purpose. Not atomic against concurrent creates (same
+  // deliberate tradeoff as the rate limiter): a guard rail, not an accountant. Skipped entirely
+  // when both quotas are unlimited, so the default instance never pays for the scan.
+  if (settings.max_total_pastes !== null || settings.max_total_storage_bytes !== null) {
+    const [totals] = await db
+      .select({
+        pasteCount: count(),
+        storedBytes: sql<string>`coalesce(sum(coalesce(octet_length(${schema.pastes.ciphertext}), 0) + coalesce(octet_length(${schema.pastes.fileBlob}), 0)), 0)`
+      })
+      .from(schema.pastes)
+
+    const incomingBytes = (values.ciphertext?.length ?? 0) + (values.fileBlob?.length ?? 0)
+
+    if (settings.max_total_pastes !== null && Number(totals?.pasteCount ?? 0) + 1 > settings.max_total_pastes) {
+      throw createError({ statusCode: 503, statusMessage: 'This instance has reached its paste limit' })
+    }
+
+    if (settings.max_total_storage_bytes !== null && Number(totals?.storedBytes ?? 0) + incomingBytes > settings.max_total_storage_bytes) {
+      throw createError({ statusCode: 507, statusMessage: 'This instance has reached its storage quota' })
+    }
+  }
+
   const [paste] = await db.insert(schema.pastes).values(values).returning({
     id: schema.pastes.id,
     kind: schema.pastes.kind,
@@ -148,6 +216,23 @@ export default defineEventHandler(async (event) => {
     passwordProtected: schema.pastes.passwordProtected
   })
 
+  // After the insert: the link can only be composed once the paste id exists. A delivery failure is
+  // reported back (`shared: false`) rather than thrown — the paste is already created and perfectly
+  // usable, so the caller still needs its id and link.
+  let shared: boolean | undefined
+  if (body.share && session) {
+    const result = await sharePasteByEmail({
+      pasteId: paste!.id,
+      fragmentKey: body.share.fragmentKey,
+      recipients: body.share.recipients,
+      senderName: session.user.name || session.user.email,
+      senderEmail: session.user.email,
+      remainingReads: paste!.maxReads,
+      expiresAt: paste!.expiresAt
+    })
+    shared = result.sent
+  }
+
   setResponseStatus(event, 201)
-  return paste
+  return { ...paste, ...(shared === undefined ? {} : { shared }) }
 })

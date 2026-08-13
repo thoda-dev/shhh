@@ -25,6 +25,9 @@ const IGNORED_IPS = new Set(['::1', '127.0.0.1', '::ffff:127.0.0.1'])
 
 const PUBLIC_PATHS = new Set([
   '/',
+  // Monitoring probes (Uptime Kuma and friends) send their own User-Agent and would be classified
+  // as untrusted bots — which doesn't just return 403, it permanently bans the monitor's IP.
+  '/api/health',
   '/robots.txt',
   '/favicon.ico',
   '/apple-touch-icon.png',

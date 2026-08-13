@@ -79,11 +79,12 @@ function isExpired(ip: BannedIp) {
       <h1 class="text-xl font-semibold">{{ t('admin.bannedIps.title') }}</h1>
       <UButton variant="ghost" icon="i-lucide-arrow-left" :label="t('dashboard.backToCreate')" :to="localePath('/')" />
     </div>
-    <div class="mb-6 flex gap-2">
+    <div class="mb-6 flex flex-wrap gap-2">
       <UButton variant="ghost" size="sm" icon="i-lucide-settings" :label="t('admin.settings.title')" :to="localePath('/admin/settings')" />
       <UButton variant="ghost" size="sm" icon="i-lucide-shield" :label="t('admin.allowedIps.title')" :to="localePath('/admin/allowed-ips')" />
       <UButton variant="ghost" size="sm" icon="i-lucide-ban" :label="t('admin.bannedIps.title')" :to="localePath('/admin/banned-ips')" disabled />
       <UButton variant="ghost" size="sm" icon="i-lucide-users" :label="t('admin.users.title')" :to="localePath('/admin/users')" />
+      <UButton variant="ghost" size="sm" icon="i-lucide-mail-plus" :label="t('admin.invitations.title')" :to="localePath('/admin/invitations')" />
     </div>
 
     <p class="mb-4 text-sm text-muted">{{ t('admin.bannedIps.description') }}</p>

@@ -1,0 +1,61 @@
+# Run from the repo root:
+#   cp .env.example .env && docker compose -f docker/docker-compose.yml up -d
+#
+# To use an existing Postgres instead of the bundled one, drop the `db` service and its volume,
+# remove the `depends_on` block, and point DATABASE_URL at your server. Nothing else changes —
+# the app only ever talks to the database through that one variable.
+name: shhh
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgres://shhh:shhh@db:5432/shhh}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?set BETTER_AUTH_URL in .env}
+      NUXT_PUBLIC_TURNSTILE_SITE_KEY: ${NUXT_PUBLIC_TURNSTILE_SITE_KEY:-}
+      NUXT_TURNSTILE_SECRET_KEY: ${NUXT_TURNSTILE_SECRET_KEY:-}
+      MAIL_PROVIDER: ${MAIL_PROVIDER:-none}
+      MAIL_FROM: ${MAIL_FROM:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      MAIL_SMTP_HOST: ${MAIL_SMTP_HOST:-}
+      MAIL_SMTP_PORT: ${MAIL_SMTP_PORT:-}
+      MAIL_SMTP_SECURE: ${MAIL_SMTP_SECURE:-}
+      MAIL_SMTP_USER: ${MAIL_SMTP_USER:-}
+      MAIL_SMTP_PASS: ${MAIL_SMTP_PASS:-}
+    depends_on:
+      db:
+        # Not just "started": the entrypoint migrates before the server boots, so the database has
+        # to be accepting connections by then, not merely have a running container.
+        condition: service_healthy
+
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-shhh}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shhh}
+      POSTGRES_DB: ${POSTGRES_DB:-shhh}
+    volumes:
+      # Postgres 18 changed this: the mount goes on /var/lib/postgresql, not .../data. The image
+      # now stores the cluster in a major-version subdirectory so `pg_upgrade --link` can work
+      # across a single mount point, and it refuses to start if it finds data under the old path
+      # while /var/lib/postgresql is unmounted.
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      # -d/-U are explicit: without them pg_isready probes the `postgres` database as the `postgres`
+      # role, which need not exist under a custom POSTGRES_USER.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-shhh} -d ${POSTGRES_DB:-shhh}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Not published on the host by default: the app reaches it over the compose network, and
+    # exposing a database to the host is a footgun on a self-hosted box.
+
+volumes:
+  db-data:
