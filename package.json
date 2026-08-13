@@ -1,6 +1,7 @@
 {
   "name": "shhh",
   "private": true,
+  "license": "MIT",
   "packageManager": "pnpm@11.10.0",
   "engines": {
     "node": ">=24"

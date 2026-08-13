@@ -4,8 +4,6 @@ Anything not listed here is either done or deliberately out of scope (see the bo
 
 ## Before a public v1
 
-- **Choose a licence.** No `LICENSE` file exists yet, so the code is currently all-rights-reserved by
-  default despite being intended as open source. This blocks anyone from legitimately self-hosting it.
 - **Documentation site.** `apps/docs` is still the untouched Docus template. English only, by design.
 - **Rich text editing and markdown rendering.** Pastes are plain text today. Nuxt UI's `UEditor`
   handles both editing and read-only rendering, so the two arrive together rather than shipping a

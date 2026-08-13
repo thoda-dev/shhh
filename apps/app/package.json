@@ -2,6 +2,7 @@
   "name": "app",
   "type": "module",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "build": "node ../../scripts/nuxt.mjs build",
     "dev": "node ../../scripts/nuxt.mjs dev",

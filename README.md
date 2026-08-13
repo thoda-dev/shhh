@@ -127,5 +127,4 @@ See [ROADMAP.md](ROADMAP.md).
 
 ## Licence
 
-Not chosen yet. Until a `LICENSE` file lands, no permission to use, modify or redistribute this code
-is granted — see [ROADMAP.md](ROADMAP.md).
+[MIT](LICENSE).
