@@ -4,13 +4,22 @@ Anything not listed here is either done or deliberately out of scope (see the bo
 
 ## Before a public v1
 
-- **Automated tests.** There are none. Every route has been verified by hand, which caught real
-  bugs, but nothing replays those checks on the next change. The paths worth covering first are the
-  ones where a silent regression is worst: the read counter (a one-read link must stay one-read
-  under concurrency), the permission matrix, invitation single-use, and the zero-knowledge round
-  trip.
-- **Continuous integration.** No workflow exists. `pnpm typecheck` and `pnpm build` on every push and
-  pull request is the minimum before accepting outside contributions.
+- **Integration tests.** Unit tests cover the pure logic (see below), but nothing exercises the
+  routes. The paths where a silent regression would cost most, in order:
+  1. **The read counter under concurrency** — fire many simultaneous reveals at a one-read paste and
+     assert exactly one succeeds. This is the test that guards the atomic
+     `UPDATE … WHERE read_count < max_reads RETURNING`.
+  2. **The permission matrix** — the table in the security docs, case by case.
+  3. **Invitations** — single use including two concurrent accepts, address fixed by the invitation
+     rather than the request body, role always `user`, registration bypass.
+  4. **Anonymous restrictions** — no uploads, no server-side sharing, `public_paste_enabled` off.
+  5. **Settings semantics** — an absent row means the default, a row holding `null` means unlimited.
+  6. **Account deletion** — full cascade, audit log anonymised rather than deleted.
+
+  Needs Vitest with `@nuxt/test-utils` and a real PostgreSQL (a service container in CI), with
+  tables truncated between tests. Turnstile is bypassed with Cloudflare's always-valid test keys.
+  Assert on `paste_email_recipients` rows rather than on delivered mail, to avoid depending on a
+  mail server in CI.
 
 ## Waiting on upstream
 
@@ -47,6 +56,10 @@ These were evaluated and rejected. Reopening them needs a new reason, not a remi
   no account, no follow-up. Counters are a feature of the authenticated tier.
 - **A global write circuit breaker** and **any CAPTCHA beyond Turnstile.** The existing layers are
   enough at the scale this targets.
+- **Browser end-to-end tests (Playwright).** The encryption is covered by unit tests and the API
+  will be covered by integration tests; what would remain browser-specific is small — that the
+  fragment never leaves the client, and that revealing requires a click. Not worth the heaviest
+  tooling in the stack for that margin. Reconsider if the interface grows substantially.
 - **Per-account email volume throttling.** Sharing sends a single message with recipients in blind
   copy, so there is no volume to throttle. It would only make sense alongside a return to one message
   per recipient.

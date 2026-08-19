@@ -103,6 +103,16 @@ pnpm db:migrate
 pnpm dev
 ```
 
+Checks, all runnable without a database:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+```
+
+`pnpm test` runs the unit suite (Vitest). Integration tests are on the [roadmap](ROADMAP.md).
+
 `pnpm dev` and `pnpm build` route through [scripts/nuxt.mjs](scripts/nuxt.mjs), which injects secrets
 via the Infisical CLI when it is installed and logged in, and runs Nuxt directly otherwise.
 

@@ -20,6 +20,7 @@
     "build": "pnpm --filter app build",
     "build:docs": "pnpm --filter docs build",
     "typecheck": "pnpm --filter app typecheck",
+    "test": "pnpm --filter app test",
     "lint": "pnpm --filter app lint",
     "lint:fix": "pnpm --filter app lint:fix",
     "db:generate": "pnpm --filter app db:generate",
