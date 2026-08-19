@@ -40,14 +40,33 @@ without trusting the server with the contents.
 
 ## Deploy
 
-Two files, no checkout — the image is published on
-[Docker Hub](https://hub.docker.com/r/thodadev/shhh).
+No checkout — the image is published on [Docker Hub](https://hub.docker.com/r/thodadev/shhh).
+The installer fetches the compose file, generates the database password and the auth secret, writes
+a `.env` with mode 600, and starts the stack.
 
 ```bash
 mkdir shhh && cd shhh
+curl -fsSLO https://raw.githubusercontent.com/thoda-dev/shhh/master/install.sh
+less install.sh && sh install.sh
+```
+
+It asks for the public URL, whether to use the bundled PostgreSQL, and the Turnstile keys. Answer
+yes on the database and there is nothing to fill in — the password is generated and written to both
+the variable that initialises the cluster and the one the app connects with. Answer no and it asks
+for your connection string, then writes a compose override that removes the bundled service so it
+is neither started nor waited on.
+
+Set `BETTER_AUTH_URL`, `SHHH_BUNDLED_DB`, `DATABASE_URL`, `TURNSTILE_SITE_KEY`,
+`TURNSTILE_SECRET_KEY` and `SHHH_START` in the environment and it asks nothing, which is what makes
+it usable from cloud-init or Ansible. It refuses to run where a `.env` already exists, rather than
+regenerating secrets that would sign everyone out and orphan the database volume.
+
+Or do it by hand — two files, no script:
+
+```bash
 curl -O https://raw.githubusercontent.com/thoda-dev/shhh/master/docker/docker-compose.yml
 curl -o .env https://raw.githubusercontent.com/thoda-dev/shhh/master/.env.example
-# Fill in BETTER_AUTH_SECRET (openssl rand -base64 32) and BETTER_AUTH_URL
+# Fill in BETTER_AUTH_SECRET (openssl rand -base64 32), BETTER_AUTH_URL and the Turnstile keys
 docker compose up -d
 ```
 
@@ -56,9 +75,18 @@ the initial limits. Migrations are applied automatically on every boot.
 
 ### Using an existing PostgreSQL
 
-Point `DATABASE_URL` at your server, then drop the `db` service, its `depends_on` block and the
-`db-data` volume from `docker/docker-compose.yml`. Nothing else changes — the app only ever reaches
-the database through that one variable.
+`install.sh` handles this — answer no when it asks about the bundled database. By hand: point
+`DATABASE_URL` at your server and drop the bundled service with a `docker-compose.override.yml`
+next to the compose file, so upgrades keep replacing the published file cleanly.
+
+```yaml
+services:
+  app:
+    depends_on: !reset null
+  db: !reset null
+```
+
+Nothing else changes — the app only ever reaches the database through that one variable.
 
 ### Behind a reverse proxy
 
