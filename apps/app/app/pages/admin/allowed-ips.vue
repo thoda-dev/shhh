@@ -31,7 +31,7 @@ const state = reactive({ ip: '', label: '' })
 const adding = ref(false)
 const errorMessage = ref('')
 
-async function add(event: FormSubmitEvent<typeof state>) {
+async function add(event: FormSubmitEvent<z.output<typeof schema>>) {
   adding.value = true
   errorMessage.value = ''
   try {

@@ -33,7 +33,7 @@ const pasteId = route.params.id as string
 const missingKey = ref(false)
 const metaError = ref('')
 const meta = ref<MetaResponse | null>(null)
-const fragmentKey = ref<Uint8Array | null>(null)
+const fragmentKey = ref<Bytes | null>(null)
 
 onMounted(async () => {
   const keyParam = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('key')

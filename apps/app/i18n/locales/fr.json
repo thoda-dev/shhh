@@ -303,6 +303,13 @@
       "confirm": "Supprimer définitivement votre compte et tous vos pastes ? Cette action est irréversible.",
       "superAdminTitle": "Le compte super admin ne peut pas être supprimé",
       "superAdminHint": "C'est un compte système. Transférez d'abord le rôle super admin à quelqu'un d'autre, puis supprimez ce compte."
+    },
+    "email": {
+      "new": "Nouvelle adresse email",
+      "hint": "la confirmation est envoyée à votre adresse actuelle",
+      "submit": "Demander le changement d'adresse",
+      "requested": "Confirmation envoyée",
+      "requestedHint": "Consultez votre boîte actuelle et suivez le lien. Votre adresse reste inchangée tant que vous ne l'avez pas fait."
     }
   },
   "register": {

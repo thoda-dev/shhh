@@ -11,7 +11,8 @@
     "postinstall": "nuxt prepare",
     "db:generate": "node ../../scripts/drizzle-kit.mjs generate",
     "db:migrate": "node ../../scripts/drizzle-kit.mjs migrate",
-    "db:studio": "node ../../scripts/drizzle-kit.mjs studio"
+    "db:studio": "node ../../scripts/drizzle-kit.mjs studio",
+    "typecheck": "nuxt typecheck"
   },
   "dependencies": {
     "@nuxt/scripts": "^1.3.0",
@@ -33,6 +34,7 @@
   "devDependencies": {
     "@types/nodemailer": "^8.0.1",
     "@types/qrcode": "^1.5.6",
-    "drizzle-kit": "^0.31.10"
+    "drizzle-kit": "^0.31.10",
+    "vue-tsc": "^3.3.9"
   }
 }

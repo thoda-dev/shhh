@@ -65,9 +65,13 @@ const submitting = ref(false)
 const errorMessage = ref('')
 const completed = ref(false)
 
+function goBack() {
+  activeStep.value--
+}
+
 async function goNext() {
   try {
-    await accountForm.value?.validate()
+    await accountForm.value?.validate({})
     activeStep.value++
   } catch {
     // Errors are already displayed inline by UForm/UFormField.
@@ -76,7 +80,7 @@ async function goNext() {
 
 async function finish() {
   try {
-    await settingsForm.value?.validate()
+    await settingsForm.value?.validate({})
   } catch {
     return
   }
@@ -181,7 +185,7 @@ async function finish() {
             variant="ghost"
             :label="t('setup.actions.back')"
             icon="i-lucide-arrow-left"
-            @click="activeStep--"
+            @click="goBack"
           />
           <div v-else />
 

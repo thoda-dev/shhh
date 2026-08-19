@@ -109,7 +109,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!rateLimit.allowed) {
-    setResponseHeader(event, 'Retry-After', Math.ceil((rateLimit.resetAt - Date.now()) / 1000).toString())
+    setResponseHeader(event, 'Retry-After', Math.ceil((rateLimit.resetAt - Date.now()) / 1000))
     throw createError({ statusCode: 429, statusMessage: 'Too many pastes created, try again later' })
   }
 
@@ -133,7 +133,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!uploadRateLimit.allowed) {
-      setResponseHeader(event, 'Retry-After', Math.ceil((uploadRateLimit.resetAt - Date.now()) / 1000).toString())
+      setResponseHeader(event, 'Retry-After', Math.ceil((uploadRateLimit.resetAt - Date.now()) / 1000))
       throw createError({ statusCode: 429, statusMessage: 'Too many file uploads created, try again later' })
     }
   }

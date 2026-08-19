@@ -41,6 +41,12 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    // Only meaningful when a provider is configured; with MAIL_PROVIDER='none' nobody could ever
+    // verify and the instance would be unusable. Scope is narrower than it looks: the setup wizard
+    // and invitation acceptance both mark the address verified themselves, so the only path this
+    // gates is public self-registration — exactly where an unverified address is a problem, since
+    // it is also the address every password reset would be sent to.
+    requireEmailVerification: isMailEnabled(),
     // With MAIL_PROVIDER='none' there is no way to deliver a reset link, so the flow is disabled
     // outright rather than left to fail silently — resetting a password becomes a manual admin
     // action in that configuration (project.md section 9).
@@ -55,6 +61,9 @@ export const auth = betterAuth({
     // Same reasoning: an instance running without mail must stay usable, so verification is only
     // required when a provider is actually configured.
     sendOnSignUp: isMailEnabled(),
+    // Re-sends on a sign-in attempt by an unverified account. Without it, anyone whose first
+    // verification mail was lost would be permanently locked out with no self-service way back.
+    sendOnSignIn: isMailEnabled(),
     autoSignInAfterVerification: true,
     sendVerificationEmail: isMailEnabled()
       ? async ({ user, url }) => {
@@ -65,6 +74,22 @@ export const auth = betterAuth({
   },
   user: {
     modelName: 'users',
+    changeEmail: {
+      // Only offered when a provider is configured: the confirmation goes to the *current* address,
+      // which is what stops someone with a hijacked session from quietly moving the account to an
+      // address they control. Without mail there is no such safeguard, so the flow stays off.
+      enabled: isMailEnabled(),
+      // Deliberately left at false even for unverified accounts — an unverified address is still the
+      // one the operator sees, and skipping confirmation would make the check trivially avoidable by
+      // simply never verifying.
+      updateEmailWithoutVerification: false,
+      sendChangeEmailConfirmation: isMailEnabled()
+        ? async ({ user, newEmail, url }) => {
+            const mail = changeEmailTemplate({ url, newEmail })
+            await sendMail({ to: user.email, ...mail })
+          }
+        : undefined
+    },
     additionalFields: {
       role: {
         type: 'string',

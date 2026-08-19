@@ -303,6 +303,13 @@
       "confirm": "Permanently delete your account and all your pastes? This cannot be undone.",
       "superAdminTitle": "The super admin account cannot be deleted",
       "superAdminHint": "It is a system account. Transfer the super admin role to somebody else first, then delete this account."
+    },
+    "email": {
+      "new": "New email address",
+      "hint": "confirmation is sent to your current address",
+      "submit": "Request email change",
+      "requested": "Confirmation sent",
+      "requestedHint": "Check your current inbox and follow the link. Your address stays unchanged until you do."
     }
   },
   "register": {

@@ -41,7 +41,7 @@ without trusting the server with the contents.
 ## Deploy
 
 ```bash
-git clone https://github.com/<you>/shhh.git && cd shhh
+git clone https://github.com/thoda-dev/shhh.git && cd shhh
 cp .env.example .env
 # Fill in BETTER_AUTH_SECRET (openssl rand -base64 32) and BETTER_AUTH_URL
 docker compose -f docker/docker-compose.yml up -d

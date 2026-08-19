@@ -76,6 +76,19 @@ export function resetPasswordTemplate(params: { url: string }): RenderedMail {
   }
 }
 
+export function changeEmailTemplate(params: { url: string, newEmail: string }): RenderedMail {
+  // Sent to the CURRENT address, not the new one: the point is to let the account's existing owner
+  // approve — or notice and refuse — a move to an address they may not control.
+  const intro = `A request was made to change the email address of your shhh account to ${params.newEmail}.`
+  const ignore = 'If this was not you, ignore this email and change your password — your address stays unchanged until this link is used.'
+
+  return {
+    subject: 'Confirm your new email address',
+    html: layout('Confirm your new email address', paragraph(intro) + button(params.url, 'Confirm the change') + paragraph(ignore)),
+    text: `${intro}\n\n${params.url}\n\n${ignore}`
+  }
+}
+
 export function invitationTemplate(params: { url: string, expiresInDays: number | null }): RenderedMail {
   const intro = 'You have been invited to create an account on this shhh instance.'
   const expiry = params.expiresInDays === null

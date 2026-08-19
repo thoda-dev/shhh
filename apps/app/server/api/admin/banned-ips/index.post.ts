@@ -19,6 +19,10 @@ export default defineEventHandler(async (event) => {
     })
     .returning()
 
+  if (!banned) {
+    throw createError({ statusCode: 500, statusMessage: 'Could not create the ban' })
+  }
+
   await db.insert(schema.adminAuditLog).values({
     actorId: session.user.id,
     action: 'banned_ip.create',

@@ -34,7 +34,11 @@ export type InvitationRow = typeof schema.invitations.$inferSelect
  * deadline and is judged at read time. Same approach as banned IPs and pastes elsewhere in the
  * project — no scheduled job has to run for the rule to hold.
  */
-export function invitationState(invitation: InvitationRow): 'pending' | 'accepted' | 'revoked' | 'expired' {
+export function invitationState(
+  // Only the two fields the rule actually reads, so the admin list route can pass its projection
+  // (which deliberately omits the token) without casting a partial row to a full one.
+  invitation: Pick<InvitationRow, 'status' | 'expiresAt'>
+): 'pending' | 'accepted' | 'revoked' | 'expired' {
   if (invitation.status === 'pending' && invitation.expiresAt.getTime() <= Date.now()) {
     return 'expired'
   }

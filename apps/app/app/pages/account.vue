@@ -41,6 +41,33 @@ async function saveName(event: FormSubmitEvent<typeof nameState>) {
   }
 }
 
+// --- Email address ---
+// Only offered when the instance can send mail: the confirmation goes to the current address, and
+// without it the change would be unverifiable (see `changeEmail` in server/utils/auth.ts).
+const canChangeEmail = computed(() => publicSettings.value?.mailEnabled === true)
+const newEmail = ref('')
+const changingEmail = ref(false)
+const emailRequested = ref(false)
+const emailError = ref('')
+
+async function requestEmailChange() {
+  changingEmail.value = true
+  emailError.value = ''
+  emailRequested.value = false
+  try {
+    await $fetch('/api/auth/change-email', {
+      method: 'POST',
+      body: { newEmail: newEmail.value, callbackURL: '/account' }
+    })
+    emailRequested.value = true
+    newEmail.value = ''
+  } catch (error: any) {
+    emailError.value = error?.data?.message || error?.data?.statusMessage || t('account.errors.generic')
+  } finally {
+    changingEmail.value = false
+  }
+}
+
 // --- Password ---
 const passwordSchema = z
   .object({
@@ -233,6 +260,21 @@ async function deleteAccount() {
           <UAlert v-if="nameSaved" color="success" variant="subtle" :title="t('account.saved')" />
           <UButton type="submit" :loading="savingName" :label="t('account.profile.save')" />
         </UForm>
+
+        <div v-if="canChangeEmail" class="mt-4 space-y-3 border-t border-default pt-4">
+          <UFormField :label="t('account.email.new')" :hint="t('account.email.hint')">
+            <UInput v-model="newEmail" type="email" class="w-full" autocomplete="email" />
+          </UFormField>
+          <UAlert v-if="emailError" color="error" variant="subtle" :title="emailError" />
+          <UAlert v-if="emailRequested" color="success" variant="subtle" :title="t('account.email.requested')" :description="t('account.email.requestedHint')" />
+          <UButton
+            variant="subtle"
+            :loading="changingEmail"
+            :disabled="!newEmail"
+            :label="t('account.email.submit')"
+            @click="requestEmailChange"
+          />
+        </div>
       </UCard>
 
       <UCard>

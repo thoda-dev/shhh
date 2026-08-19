@@ -10,7 +10,7 @@ interface AdminUser {
 }
 
 const ADMIN_ROLES = new Set(['admin', 'super_admin'])
-const ROLE_OPTIONS = ['user', 'admin', 'super_admin'] as const
+const ROLE_OPTIONS: AdminUser['role'][] = ['user', 'admin', 'super_admin']
 
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
