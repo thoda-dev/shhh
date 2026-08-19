@@ -4,6 +4,12 @@ Anything not listed here is either done or deliberately out of scope (see the bo
 
 ## Before a public v1
 
+- **A logo, and a favicon that isn't Nuxt's.** `apps/app/public/favicon.ico` is still the scaffold
+  default, so every instance currently ships with the Nuxt logo in the browser tab. Needs a mark
+  first, then the derived assets: `.ico` and an SVG for the tab, an apple-touch icon, and the same
+  mark reused in the Docus site and in the mail templates' header. While in there, the app sets no
+  `<title>` and no Open Graph tags at all — the same pass should give it both.
+
 - **Integration tests.** Unit tests cover the pure logic (see below), but nothing exercises the
   routes. The paths where a silent regression would cost most, in order:
   1. **The read counter under concurrency** — fire many simultaneous reveals at a one-read paste and
