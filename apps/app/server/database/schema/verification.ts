@@ -11,7 +11,7 @@ export const verifications = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .notNull()
       .defaultNow()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => new Date())
   },
-  table => [index('verifications_identifier_idx').on(table.identifier)],
+  table => [index('verifications_identifier_idx').on(table.identifier)]
 )

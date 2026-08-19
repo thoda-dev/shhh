@@ -14,5 +14,11 @@ const selected = computed({
 </script>
 
 <template>
-  <USelect v-model="selected" :items="items" value-key="value" size="sm" class="w-28" />
+  <USelect
+    v-model="selected"
+    :items="items"
+    value-key="value"
+    size="sm"
+    class="w-28"
+  />
 </template>

@@ -34,8 +34,9 @@ async function saveName(event: FormSubmitEvent<typeof nameState>) {
     await refreshAuthSession()
     nameSaved.value = true
     setTimeout(() => (nameSaved.value = false), 2000)
-  } catch (error: any) {
-    nameError.value = error?.data?.message || error?.data?.statusMessage || t('account.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    nameError.value = message || statusMessage || t('account.errors.generic')
   } finally {
     savingName.value = false
   }
@@ -61,8 +62,9 @@ async function requestEmailChange() {
     })
     emailRequested.value = true
     newEmail.value = ''
-  } catch (error: any) {
-    emailError.value = error?.data?.message || error?.data?.statusMessage || t('account.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    emailError.value = message || statusMessage || t('account.errors.generic')
   } finally {
     changingEmail.value = false
   }
@@ -97,8 +99,9 @@ async function savePassword(event: FormSubmitEvent<typeof passwordState>) {
     passwordState.confirmPassword = ''
     passwordSaved.value = true
     setTimeout(() => (passwordSaved.value = false), 2000)
-  } catch (error: any) {
-    passwordError.value = error?.data?.message || error?.data?.statusMessage || t('account.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    passwordError.value = message || statusMessage || t('account.errors.generic')
   } finally {
     savingPassword.value = false
   }
@@ -126,8 +129,9 @@ async function startEnroll() {
     totpSecret.value = new URL(result.totpURI).searchParams.get('secret') ?? ''
     backupCodes.value = result.backupCodes
     twoFactorStep.value = 'confirming'
-  } catch (error: any) {
-    twoFactorError.value = error?.data?.message || error?.data?.statusMessage || t('account.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    twoFactorError.value = message || statusMessage || t('account.errors.generic')
   } finally {
     twoFactorLoading.value = false
   }
@@ -165,8 +169,9 @@ async function disableTwoFactor() {
     await $fetch('/api/auth/two-factor/disable', { method: 'POST', body: { password: disablePassword.value } })
     await refreshAuthSession()
     disablePassword.value = ''
-  } catch (error: any) {
-    twoFactorError.value = error?.data?.message || error?.data?.statusMessage || t('account.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    twoFactorError.value = message || statusMessage || t('account.errors.generic')
   } finally {
     disabling.value = false
   }
@@ -194,8 +199,9 @@ async function regenerateBackupCodes() {
     // so these must be shown once with the same warning.
     backupCodes.value = result.backupCodes
     regeneratePassword.value = ''
-  } catch (error: any) {
-    twoFactorError.value = error?.data?.message || error?.data?.statusMessage || t('account.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    twoFactorError.value = message || statusMessage || t('account.errors.generic')
   } finally {
     regenerating.value = false
   }
@@ -219,8 +225,9 @@ async function deleteAccount() {
     })
     await refreshAuthSession()
     await navigateTo(localePath('/'))
-  } catch (error: any) {
-    deleteError.value = error?.data?.statusMessage || error?.data?.message || t('account.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    deleteError.value = statusMessage || message || t('account.errors.generic')
   } finally {
     deleting.value = false
   }
@@ -230,8 +237,15 @@ async function deleteAccount() {
 <template>
   <div class="mx-auto max-w-xl p-4 pt-12">
     <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-xl font-semibold">{{ t('account.title') }}</h1>
-      <UButton variant="ghost" icon="i-lucide-arrow-left" :label="t('dashboard.backToCreate')" :to="localePath('/')" />
+      <h1 class="text-xl font-semibold">
+        {{ t('account.title') }}
+      </h1>
+      <UButton
+        variant="ghost"
+        icon="i-lucide-arrow-left"
+        :label="t('dashboard.backToCreate')"
+        :to="localePath('/')"
+      />
     </div>
 
     <UAlert
@@ -247,26 +261,79 @@ async function deleteAccount() {
     <div class="space-y-6">
       <UCard>
         <template #header>
-          <h2 class="text-sm font-medium">{{ t('account.profile.title') }}</h2>
+          <h2 class="text-sm font-medium">
+            {{ t('account.profile.title') }}
+          </h2>
         </template>
-        <UForm :schema="nameSchema" :state="nameState" class="space-y-3" @submit="saveName">
-          <UFormField :label="t('account.profile.name')" name="name">
-            <UInput v-model="nameState.name" class="w-full" />
+        <UForm
+          :schema="nameSchema"
+          :state="nameState"
+          class="space-y-3"
+          @submit="saveName"
+        >
+          <UFormField
+            :label="t('account.profile.name')"
+            name="name"
+          >
+            <UInput
+              v-model="nameState.name"
+              class="w-full"
+            />
           </UFormField>
           <UFormField :label="t('account.profile.email')">
-            <UInput :model-value="user?.email" disabled class="w-full" />
+            <UInput
+              :model-value="user?.email"
+              disabled
+              class="w-full"
+            />
           </UFormField>
-          <UAlert v-if="nameError" color="error" variant="subtle" :title="nameError" />
-          <UAlert v-if="nameSaved" color="success" variant="subtle" :title="t('account.saved')" />
-          <UButton type="submit" :loading="savingName" :label="t('account.profile.save')" />
+          <UAlert
+            v-if="nameError"
+            color="error"
+            variant="subtle"
+            :title="nameError"
+          />
+          <UAlert
+            v-if="nameSaved"
+            color="success"
+            variant="subtle"
+            :title="t('account.saved')"
+          />
+          <UButton
+            type="submit"
+            :loading="savingName"
+            :label="t('account.profile.save')"
+          />
         </UForm>
 
-        <div v-if="canChangeEmail" class="mt-4 space-y-3 border-t border-default pt-4">
-          <UFormField :label="t('account.email.new')" :hint="t('account.email.hint')">
-            <UInput v-model="newEmail" type="email" class="w-full" autocomplete="email" />
+        <div
+          v-if="canChangeEmail"
+          class="mt-4 space-y-3 border-t border-default pt-4"
+        >
+          <UFormField
+            :label="t('account.email.new')"
+            :hint="t('account.email.hint')"
+          >
+            <UInput
+              v-model="newEmail"
+              type="email"
+              class="w-full"
+              autocomplete="email"
+            />
           </UFormField>
-          <UAlert v-if="emailError" color="error" variant="subtle" :title="emailError" />
-          <UAlert v-if="emailRequested" color="success" variant="subtle" :title="t('account.email.requested')" :description="t('account.email.requestedHint')" />
+          <UAlert
+            v-if="emailError"
+            color="error"
+            variant="subtle"
+            :title="emailError"
+          />
+          <UAlert
+            v-if="emailRequested"
+            color="success"
+            variant="subtle"
+            :title="t('account.email.requested')"
+            :description="t('account.email.requestedHint')"
+          />
           <UButton
             variant="subtle"
             :loading="changingEmail"
@@ -279,96 +346,274 @@ async function deleteAccount() {
 
       <UCard>
         <template #header>
-          <h2 class="text-sm font-medium">{{ t('account.password.title') }}</h2>
+          <h2 class="text-sm font-medium">
+            {{ t('account.password.title') }}
+          </h2>
         </template>
-        <UForm :schema="passwordSchema" :state="passwordState" class="space-y-3" @submit="savePassword">
-          <UFormField :label="t('account.password.current')" name="currentPassword">
-            <UInput v-model="passwordState.currentPassword" type="password" class="w-full" autocomplete="current-password" />
+        <UForm
+          :schema="passwordSchema"
+          :state="passwordState"
+          class="space-y-3"
+          @submit="savePassword"
+        >
+          <UFormField
+            :label="t('account.password.current')"
+            name="currentPassword"
+          >
+            <UInput
+              v-model="passwordState.currentPassword"
+              type="password"
+              class="w-full"
+              autocomplete="current-password"
+            />
           </UFormField>
-          <UFormField :label="t('account.password.new')" name="newPassword">
-            <UInput v-model="passwordState.newPassword" type="password" class="w-full" autocomplete="new-password" />
+          <UFormField
+            :label="t('account.password.new')"
+            name="newPassword"
+          >
+            <UInput
+              v-model="passwordState.newPassword"
+              type="password"
+              class="w-full"
+              autocomplete="new-password"
+            />
           </UFormField>
-          <UFormField :label="t('account.password.confirm')" name="confirmPassword">
-            <UInput v-model="passwordState.confirmPassword" type="password" class="w-full" autocomplete="new-password" />
+          <UFormField
+            :label="t('account.password.confirm')"
+            name="confirmPassword"
+          >
+            <UInput
+              v-model="passwordState.confirmPassword"
+              type="password"
+              class="w-full"
+              autocomplete="new-password"
+            />
           </UFormField>
-          <UAlert v-if="passwordError" color="error" variant="subtle" :title="passwordError" />
-          <UAlert v-if="passwordSaved" color="success" variant="subtle" :title="t('account.saved')" />
-          <UButton type="submit" :loading="savingPassword" :label="t('account.password.save')" />
+          <UAlert
+            v-if="passwordError"
+            color="error"
+            variant="subtle"
+            :title="passwordError"
+          />
+          <UAlert
+            v-if="passwordSaved"
+            color="success"
+            variant="subtle"
+            :title="t('account.saved')"
+          />
+          <UButton
+            type="submit"
+            :loading="savingPassword"
+            :label="t('account.password.save')"
+          />
         </UForm>
       </UCard>
 
       <UCard>
         <template #header>
           <div class="flex items-center gap-2">
-            <h2 class="text-sm font-medium">{{ t('account.twoFactor.title') }}</h2>
-            <UBadge v-if="user?.twoFactorEnabled" color="success" variant="subtle" size="sm">{{ t('account.twoFactor.enabled') }}</UBadge>
-            <UBadge v-else color="neutral" variant="subtle" size="sm">{{ t('account.twoFactor.disabled') }}</UBadge>
+            <h2 class="text-sm font-medium">
+              {{ t('account.twoFactor.title') }}
+            </h2>
+            <UBadge
+              v-if="user?.twoFactorEnabled"
+              color="success"
+              variant="subtle"
+              size="sm"
+            >
+              {{ t('account.twoFactor.enabled') }}
+            </UBadge>
+            <UBadge
+              v-else
+              color="neutral"
+              variant="subtle"
+              size="sm"
+            >
+              {{ t('account.twoFactor.disabled') }}
+            </UBadge>
           </div>
         </template>
 
-        <UAlert v-if="twoFactorError" color="error" variant="subtle" :title="twoFactorError" class="mb-3" />
+        <UAlert
+          v-if="twoFactorError"
+          color="error"
+          variant="subtle"
+          :title="twoFactorError"
+          class="mb-3"
+        />
 
         <!-- Enrollment: step 1, ask for password -->
-        <div v-if="!user?.twoFactorEnabled && twoFactorStep === 'idle'" class="flex items-end gap-2">
-          <UFormField :label="t('account.twoFactor.passwordToEnable')" class="flex-1">
-            <UInput v-model="enrollPassword" type="password" class="w-full" autocomplete="current-password" />
+        <div
+          v-if="!user?.twoFactorEnabled && twoFactorStep === 'idle'"
+          class="flex items-end gap-2"
+        >
+          <UFormField
+            :label="t('account.twoFactor.passwordToEnable')"
+            class="flex-1"
+          >
+            <UInput
+              v-model="enrollPassword"
+              type="password"
+              class="w-full"
+              autocomplete="current-password"
+            />
           </UFormField>
-          <UButton :loading="twoFactorLoading" :disabled="!enrollPassword" :label="t('account.twoFactor.enable')" @click="startEnroll" />
+          <UButton
+            :loading="twoFactorLoading"
+            :disabled="!enrollPassword"
+            :label="t('account.twoFactor.enable')"
+            @click="startEnroll"
+          />
         </div>
 
         <!-- Enrollment: step 2, scan QR + confirm code -->
-        <div v-else-if="twoFactorStep === 'confirming'" class="space-y-4">
-          <p class="text-sm text-muted">{{ t('account.twoFactor.scanInstructions') }}</p>
-          <img :src="totpQrDataUrl" :alt="t('account.twoFactor.title')" class="size-48 rounded-lg border border-default p-2">
-          <p class="font-mono text-xs text-muted">{{ t('account.twoFactor.manualEntry') }}: {{ totpSecret }}</p>
+        <div
+          v-else-if="twoFactorStep === 'confirming'"
+          class="space-y-4"
+        >
+          <p class="text-sm text-muted">
+            {{ t('account.twoFactor.scanInstructions') }}
+          </p>
+          <img
+            :src="totpQrDataUrl"
+            :alt="t('account.twoFactor.title')"
+            class="size-48 rounded-lg border border-default p-2"
+          >
+          <p class="font-mono text-xs text-muted">
+            {{ t('account.twoFactor.manualEntry') }}: {{ totpSecret }}
+          </p>
 
-          <UAlert color="warning" variant="subtle" :title="t('account.twoFactor.backupCodesTitle')" :description="t('account.twoFactor.backupCodesWarning')" />
+          <UAlert
+            color="warning"
+            variant="subtle"
+            :title="t('account.twoFactor.backupCodesTitle')"
+            :description="t('account.twoFactor.backupCodesWarning')"
+          />
           <div class="grid grid-cols-2 gap-1 rounded-lg bg-elevated p-3 font-mono text-xs">
-            <span v-for="code in backupCodes" :key="code">{{ code }}</span>
+            <span
+              v-for="code in backupCodes"
+              :key="code"
+            >{{ code }}</span>
           </div>
-          <UButton size="sm" variant="ghost" :icon="copiedBackupCodes ? 'i-lucide-check' : 'i-lucide-copy'" :label="copiedBackupCodes ? t('create.result.copied') : t('account.twoFactor.copyBackupCodes')" @click="copyBackupCodes" />
+          <UButton
+            size="sm"
+            variant="ghost"
+            :icon="copiedBackupCodes ? 'i-lucide-check' : 'i-lucide-copy'"
+            :label="copiedBackupCodes ? t('create.result.copied') : t('account.twoFactor.copyBackupCodes')"
+            @click="copyBackupCodes"
+          />
 
           <UFormField :label="t('account.twoFactor.confirmCode')">
-            <UInput v-model="confirmCode" :placeholder="t('account.twoFactor.codePlaceholder')" class="w-full" />
+            <UInput
+              v-model="confirmCode"
+              :placeholder="t('account.twoFactor.codePlaceholder')"
+              class="w-full"
+            />
           </UFormField>
           <div class="flex gap-2">
-            <UButton :loading="twoFactorLoading" :disabled="confirmCode.length < 6" :label="t('account.twoFactor.confirm')" @click="confirmEnroll" />
-            <UButton variant="ghost" :label="t('account.twoFactor.cancel')" @click="cancelEnroll" />
+            <UButton
+              :loading="twoFactorLoading"
+              :disabled="confirmCode.length < 6"
+              :label="t('account.twoFactor.confirm')"
+              @click="confirmEnroll"
+            />
+            <UButton
+              variant="ghost"
+              :label="t('account.twoFactor.cancel')"
+              @click="cancelEnroll"
+            />
           </div>
         </div>
 
         <!-- Already enabled: regenerate backup codes, and disable unless the instance forbids it -->
-        <div v-else class="space-y-4">
-          <div v-if="backupCodes.length" class="space-y-2">
-            <UAlert color="warning" variant="subtle" :title="t('account.twoFactor.backupCodesTitle')" :description="t('account.twoFactor.regeneratedWarning')" />
+        <div
+          v-else
+          class="space-y-4"
+        >
+          <div
+            v-if="backupCodes.length"
+            class="space-y-2"
+          >
+            <UAlert
+              color="warning"
+              variant="subtle"
+              :title="t('account.twoFactor.backupCodesTitle')"
+              :description="t('account.twoFactor.regeneratedWarning')"
+            />
             <div class="grid grid-cols-2 gap-1 rounded-lg bg-elevated p-3 font-mono text-xs">
-              <span v-for="code in backupCodes" :key="code">{{ code }}</span>
+              <span
+                v-for="code in backupCodes"
+                :key="code"
+              >{{ code }}</span>
             </div>
-            <UButton size="sm" variant="ghost" :icon="copiedBackupCodes ? 'i-lucide-check' : 'i-lucide-copy'" :label="copiedBackupCodes ? t('create.result.copied') : t('account.twoFactor.copyBackupCodes')" @click="copyBackupCodes" />
+            <UButton
+              size="sm"
+              variant="ghost"
+              :icon="copiedBackupCodes ? 'i-lucide-check' : 'i-lucide-copy'"
+              :label="copiedBackupCodes ? t('create.result.copied') : t('account.twoFactor.copyBackupCodes')"
+              @click="copyBackupCodes"
+            />
           </div>
 
           <div class="flex items-end gap-2">
-            <UFormField :label="t('account.twoFactor.passwordToRegenerate')" class="flex-1">
-              <UInput v-model="regeneratePassword" type="password" class="w-full" autocomplete="current-password" />
+            <UFormField
+              :label="t('account.twoFactor.passwordToRegenerate')"
+              class="flex-1"
+            >
+              <UInput
+                v-model="regeneratePassword"
+                type="password"
+                class="w-full"
+                autocomplete="current-password"
+              />
             </UFormField>
-            <UButton variant="subtle" :loading="regenerating" :disabled="!regeneratePassword" :label="t('account.twoFactor.regenerate')" @click="regenerateBackupCodes" />
+            <UButton
+              variant="subtle"
+              :loading="regenerating"
+              :disabled="!regeneratePassword"
+              :label="t('account.twoFactor.regenerate')"
+              @click="regenerateBackupCodes"
+            />
           </div>
 
-          <p v-if="twoFactorRequired" class="text-sm text-muted">
+          <p
+            v-if="twoFactorRequired"
+            class="text-sm text-muted"
+          >
             {{ t('account.twoFactor.lockedByInstance') }}
           </p>
-          <div v-else class="flex items-end gap-2 border-t border-default pt-4">
-            <UFormField :label="t('account.twoFactor.passwordToDisable')" class="flex-1">
-              <UInput v-model="disablePassword" type="password" class="w-full" autocomplete="current-password" />
+          <div
+            v-else
+            class="flex items-end gap-2 border-t border-default pt-4"
+          >
+            <UFormField
+              :label="t('account.twoFactor.passwordToDisable')"
+              class="flex-1"
+            >
+              <UInput
+                v-model="disablePassword"
+                type="password"
+                class="w-full"
+                autocomplete="current-password"
+              />
             </UFormField>
-            <UButton color="error" variant="subtle" :loading="disabling" :disabled="!disablePassword" :label="t('account.twoFactor.disable')" @click="disableTwoFactor" />
+            <UButton
+              color="error"
+              variant="subtle"
+              :loading="disabling"
+              :disabled="!disablePassword"
+              :label="t('account.twoFactor.disable')"
+              @click="disableTwoFactor"
+            />
           </div>
         </div>
       </UCard>
 
       <UCard>
         <template #header>
-          <h2 class="text-sm font-medium text-error">{{ t('account.delete.title') }}</h2>
+          <h2 class="text-sm font-medium text-error">
+            {{ t('account.delete.title') }}
+          </h2>
         </template>
 
         <!-- The super admin is a system account, outside the individual right to erasure — the
@@ -382,17 +627,42 @@ async function deleteAccount() {
           :description="t('account.delete.superAdminHint')"
         />
 
-        <div v-else class="space-y-3">
-          <UAlert color="error" variant="subtle" icon="i-lucide-triangle-alert" :title="t('account.delete.warningTitle')" :description="t('account.delete.warningHint')" />
+        <div
+          v-else
+          class="space-y-3"
+        >
+          <UAlert
+            color="error"
+            variant="subtle"
+            icon="i-lucide-triangle-alert"
+            :title="t('account.delete.warningTitle')"
+            :description="t('account.delete.warningHint')"
+          />
 
           <UFormField :label="t('account.delete.passwordLabel')">
-            <UInput v-model="deletePassword" type="password" class="w-full" autocomplete="current-password" />
+            <UInput
+              v-model="deletePassword"
+              type="password"
+              class="w-full"
+              autocomplete="current-password"
+            />
           </UFormField>
-          <UFormField :label="t('account.delete.confirmationLabel')" :hint="user?.email">
-            <UInput v-model="deleteConfirmation" class="w-full" />
+          <UFormField
+            :label="t('account.delete.confirmationLabel')"
+            :hint="user?.email"
+          >
+            <UInput
+              v-model="deleteConfirmation"
+              class="w-full"
+            />
           </UFormField>
 
-          <UAlert v-if="deleteError" color="error" variant="subtle" :title="deleteError" />
+          <UAlert
+            v-if="deleteError"
+            color="error"
+            variant="subtle"
+            :title="deleteError"
+          />
 
           <UButton
             color="error"

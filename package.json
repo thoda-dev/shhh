@@ -10,7 +10,7 @@
     "url": "https://github.com/thoda-dev/shhh/issues"
   },
   "homepage": "https://github.com/thoda-dev/shhh#readme",
-  "packageManager": "pnpm@11.10.0",
+  "packageManager": "pnpm@11.22.0",
   "engines": {
     "node": ">=24"
   },
@@ -20,6 +20,8 @@
     "build": "pnpm --filter app build",
     "build:docs": "pnpm --filter docs build",
     "typecheck": "pnpm --filter app typecheck",
+    "lint": "pnpm --filter app lint",
+    "lint:fix": "pnpm --filter app lint:fix",
     "db:generate": "pnpm --filter app db:generate",
     "db:migrate": "pnpm --filter app db:migrate",
     "db:studio": "pnpm --filter app db:studio"

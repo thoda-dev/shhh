@@ -43,8 +43,9 @@ async function changeRole(target: AdminUser, role: AdminUser['role']) {
   try {
     await $fetch(`/api/admin/users/${target.id}`, { method: 'PATCH', body: { role } })
     await refresh()
-  } catch (error: any) {
-    errorMessage.value = error?.data?.statusMessage || error?.data?.message || t('admin.users.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    errorMessage.value = statusMessage || message || t('admin.users.errors.generic')
   } finally {
     updatingId.value = null
   }
@@ -58,8 +59,9 @@ async function remove(target: AdminUser) {
   try {
     await $fetch(`/api/admin/users/${target.id}`, { method: 'DELETE' })
     await refresh()
-  } catch (error: any) {
-    errorMessage.value = error?.data?.statusMessage || error?.data?.message || t('admin.users.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    errorMessage.value = statusMessage || message || t('admin.users.errors.generic')
   } finally {
     removingId.value = null
   }
@@ -75,34 +77,114 @@ const roleColor = { user: 'neutral', admin: 'info', super_admin: 'warning' } as 
 <template>
   <div class="mx-auto max-w-3xl p-4 pt-12">
     <div class="mb-2 flex items-center justify-between">
-      <h1 class="text-xl font-semibold">{{ t('admin.users.title') }}</h1>
-      <UButton variant="ghost" icon="i-lucide-arrow-left" :label="t('dashboard.backToCreate')" :to="localePath('/')" />
+      <h1 class="text-xl font-semibold">
+        {{ t('admin.users.title') }}
+      </h1>
+      <UButton
+        variant="ghost"
+        icon="i-lucide-arrow-left"
+        :label="t('dashboard.backToCreate')"
+        :to="localePath('/')"
+      />
     </div>
     <div class="mb-6 flex flex-wrap gap-2">
-      <UButton variant="ghost" size="sm" icon="i-lucide-settings" :label="t('admin.settings.title')" :to="localePath('/admin/settings')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-shield" :label="t('admin.allowedIps.title')" :to="localePath('/admin/allowed-ips')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-ban" :label="t('admin.bannedIps.title')" :to="localePath('/admin/banned-ips')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-users" :label="t('admin.users.title')" :to="localePath('/admin/users')" disabled />
-      <UButton variant="ghost" size="sm" icon="i-lucide-mail-plus" :label="t('admin.invitations.title')" :to="localePath('/admin/invitations')" />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-settings"
+        :label="t('admin.settings.title')"
+        :to="localePath('/admin/settings')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-shield"
+        :label="t('admin.allowedIps.title')"
+        :to="localePath('/admin/allowed-ips')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-ban"
+        :label="t('admin.bannedIps.title')"
+        :to="localePath('/admin/banned-ips')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-users"
+        :label="t('admin.users.title')"
+        :to="localePath('/admin/users')"
+        disabled
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-mail-plus"
+        :label="t('admin.invitations.title')"
+        :to="localePath('/admin/invitations')"
+      />
     </div>
 
-    <UAlert v-if="errorMessage" color="error" variant="subtle" :title="errorMessage" class="mb-4" />
-    <UAlert v-if="!isSuperAdmin" color="info" variant="subtle" :title="t('admin.users.adminScopeNotice')" class="mb-4" />
+    <UAlert
+      v-if="errorMessage"
+      color="error"
+      variant="subtle"
+      :title="errorMessage"
+      class="mb-4"
+    />
+    <UAlert
+      v-if="!isSuperAdmin"
+      color="info"
+      variant="subtle"
+      :title="t('admin.users.adminScopeNotice')"
+      class="mb-4"
+    />
 
-    <div v-if="status === 'pending'" class="flex justify-center py-12">
-      <UIcon name="i-lucide-loader-circle" class="size-6 animate-spin" />
+    <div
+      v-if="status === 'pending'"
+      class="flex justify-center py-12"
+    >
+      <UIcon
+        name="i-lucide-loader-circle"
+        class="size-6 animate-spin"
+      />
     </div>
 
-    <div v-else class="space-y-2">
-      <UCard v-for="target in users" :key="target.id">
+    <div
+      v-else
+      class="space-y-2"
+    >
+      <UCard
+        v-for="target in users"
+        :key="target.id"
+      >
         <div class="flex items-center justify-between gap-4">
           <div>
             <div class="flex items-center gap-2">
-              <p class="text-sm font-medium">{{ target.name }}</p>
-              <UBadge :color="roleColor[target.role]" variant="subtle" size="sm">{{ target.role }}</UBadge>
-              <UBadge v-if="target.twoFactorEnabled" variant="subtle" color="success" size="sm" icon="i-lucide-shield-check">2FA</UBadge>
+              <p class="text-sm font-medium">
+                {{ target.name }}
+              </p>
+              <UBadge
+                :color="roleColor[target.role]"
+                variant="subtle"
+                size="sm"
+              >
+                {{ target.role }}
+              </UBadge>
+              <UBadge
+                v-if="target.twoFactorEnabled"
+                variant="subtle"
+                color="success"
+                size="sm"
+                icon="i-lucide-shield-check"
+              >
+                2FA
+              </UBadge>
             </div>
-            <p class="text-xs text-muted">{{ target.email }} · {{ t('admin.users.joined', { date: formatDate(target.createdAt) }) }}</p>
+            <p class="text-xs text-muted">
+              {{ target.email }} · {{ t('admin.users.joined', { date: formatDate(target.createdAt) }) }}
+            </p>
           </div>
           <div class="flex items-center gap-2">
             <USelect

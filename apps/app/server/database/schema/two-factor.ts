@@ -13,14 +13,14 @@ export const twoFactors = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     verified: boolean('verified').default(true),
     failedVerificationCount: integer('failed_verification_count').default(0),
-    lockedUntil: timestamp('locked_until', { withTimezone: true }),
+    lockedUntil: timestamp('locked_until', { withTimezone: true })
   },
   table => [
     index('two_factors_secret_idx').on(table.secret),
-    index('two_factors_user_id_idx').on(table.userId),
-  ],
+    index('two_factors_user_id_idx').on(table.userId)
+  ]
 )
 
 export const twoFactorsRelations = relations(twoFactors, ({ one }) => ({
-  user: one(users, { fields: [twoFactors.userId], references: [users.id] }),
+  user: one(users, { fields: [twoFactors.userId], references: [users.id] })
 }))

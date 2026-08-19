@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   }
   // project.md section 7: nobody can change their own role, super_admin included.
   if (targetId === session.user.id) {
-    throw createError({ statusCode: 403, statusMessage: "You can't change your own role" })
+    throw createError({ statusCode: 403, statusMessage: 'You can\'t change your own role' })
   }
 
   const body = await readValidatedBody(event, updateRoleSchema.parse)

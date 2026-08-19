@@ -69,8 +69,9 @@ async function save() {
     await refreshPublicSettings()
     saved.value = true
     setTimeout(() => (saved.value = false), 2000)
-  } catch (error: any) {
-    errorMessage.value = error?.data?.statusMessage || error?.data?.message || t('admin.settings.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    errorMessage.value = statusMessage || message || t('admin.settings.errors.generic')
   } finally {
     saving.value = false
   }
@@ -80,65 +81,183 @@ async function save() {
 <template>
   <div class="mx-auto max-w-2xl p-4 pt-12">
     <div class="mb-2 flex items-center justify-between">
-      <h1 class="text-xl font-semibold">{{ t('admin.settings.title') }}</h1>
-      <UButton variant="ghost" icon="i-lucide-arrow-left" :label="t('dashboard.backToCreate')" :to="localePath('/')" />
+      <h1 class="text-xl font-semibold">
+        {{ t('admin.settings.title') }}
+      </h1>
+      <UButton
+        variant="ghost"
+        icon="i-lucide-arrow-left"
+        :label="t('dashboard.backToCreate')"
+        :to="localePath('/')"
+      />
     </div>
     <div class="mb-6 flex flex-wrap gap-2">
-      <UButton variant="ghost" size="sm" icon="i-lucide-settings" :label="t('admin.settings.title')" :to="localePath('/admin/settings')" disabled />
-      <UButton variant="ghost" size="sm" icon="i-lucide-shield" :label="t('admin.allowedIps.title')" :to="localePath('/admin/allowed-ips')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-ban" :label="t('admin.bannedIps.title')" :to="localePath('/admin/banned-ips')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-users" :label="t('admin.users.title')" :to="localePath('/admin/users')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-mail-plus" :label="t('admin.invitations.title')" :to="localePath('/admin/invitations')" />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-settings"
+        :label="t('admin.settings.title')"
+        :to="localePath('/admin/settings')"
+        disabled
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-shield"
+        :label="t('admin.allowedIps.title')"
+        :to="localePath('/admin/allowed-ips')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-ban"
+        :label="t('admin.bannedIps.title')"
+        :to="localePath('/admin/banned-ips')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-users"
+        :label="t('admin.users.title')"
+        :to="localePath('/admin/users')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-mail-plus"
+        :label="t('admin.invitations.title')"
+        :to="localePath('/admin/invitations')"
+      />
     </div>
 
     <div class="space-y-8">
       <fieldset class="space-y-4">
-        <legend class="mb-2 text-sm font-medium">{{ t('admin.settings.retentionSection') }}</legend>
-        <UnlimitedNumberField v-model="state.max_retention_days_anonymous" :label="t('admin.settings.maxRetentionDaysAnonymous')" />
-        <UnlimitedNumberField v-model="state.max_retention_days_authenticated" :label="t('admin.settings.maxRetentionDaysAuthenticated')" />
-        <UnlimitedNumberField v-model="state.max_reads_anonymous" :label="t('admin.settings.maxReadsAnonymous')" />
-        <UnlimitedNumberField v-model="state.max_reads_authenticated" :label="t('admin.settings.maxReadsAuthenticated')" />
+        <legend class="mb-2 text-sm font-medium">
+          {{ t('admin.settings.retentionSection') }}
+        </legend>
+        <UnlimitedNumberField
+          v-model="state.max_retention_days_anonymous"
+          :label="t('admin.settings.maxRetentionDaysAnonymous')"
+        />
+        <UnlimitedNumberField
+          v-model="state.max_retention_days_authenticated"
+          :label="t('admin.settings.maxRetentionDaysAuthenticated')"
+        />
+        <UnlimitedNumberField
+          v-model="state.max_reads_anonymous"
+          :label="t('admin.settings.maxReadsAnonymous')"
+        />
+        <UnlimitedNumberField
+          v-model="state.max_reads_authenticated"
+          :label="t('admin.settings.maxReadsAuthenticated')"
+        />
       </fieldset>
 
       <fieldset class="space-y-4">
-        <legend class="mb-2 text-sm font-medium">{{ t('admin.settings.sizesSection') }}</legend>
-        <UnlimitedNumberField v-model="state.max_text_size_bytes" :label="t('admin.settings.maxTextSizeBytes')" />
-        <UnlimitedNumberField v-model="state.max_upload_size_bytes" :label="t('admin.settings.maxUploadSizeBytes')" />
-        <UnlimitedNumberField v-model="state.max_total_pastes" :label="t('admin.settings.maxTotalPastes')" />
-        <UnlimitedNumberField v-model="state.max_total_storage_bytes" :label="t('admin.settings.maxTotalStorageBytes')" />
+        <legend class="mb-2 text-sm font-medium">
+          {{ t('admin.settings.sizesSection') }}
+        </legend>
+        <UnlimitedNumberField
+          v-model="state.max_text_size_bytes"
+          :label="t('admin.settings.maxTextSizeBytes')"
+        />
+        <UnlimitedNumberField
+          v-model="state.max_upload_size_bytes"
+          :label="t('admin.settings.maxUploadSizeBytes')"
+        />
+        <UnlimitedNumberField
+          v-model="state.max_total_pastes"
+          :label="t('admin.settings.maxTotalPastes')"
+        />
+        <UnlimitedNumberField
+          v-model="state.max_total_storage_bytes"
+          :label="t('admin.settings.maxTotalStorageBytes')"
+        />
       </fieldset>
 
       <fieldset class="space-y-4">
-        <legend class="mb-2 text-sm font-medium">{{ t('admin.settings.rateLimitsSection') }}</legend>
-        <UnlimitedNumberField v-model="state.rate_limit_anonymous_creates_per_period" :label="t('admin.settings.rateLimitAnonymousCreatesPerPeriod')" />
-        <UnlimitedNumberField v-model="state.rate_limit_authenticated_creates_per_period" :label="t('admin.settings.rateLimitAuthenticatedCreatesPerPeriod')" />
-        <UnlimitedNumberField v-model="state.rate_limit_uploads_per_period" :label="t('admin.settings.rateLimitUploadsPerPeriod')" />
+        <legend class="mb-2 text-sm font-medium">
+          {{ t('admin.settings.rateLimitsSection') }}
+        </legend>
+        <UnlimitedNumberField
+          v-model="state.rate_limit_anonymous_creates_per_period"
+          :label="t('admin.settings.rateLimitAnonymousCreatesPerPeriod')"
+        />
+        <UnlimitedNumberField
+          v-model="state.rate_limit_authenticated_creates_per_period"
+          :label="t('admin.settings.rateLimitAuthenticatedCreatesPerPeriod')"
+        />
+        <UnlimitedNumberField
+          v-model="state.rate_limit_uploads_per_period"
+          :label="t('admin.settings.rateLimitUploadsPerPeriod')"
+        />
         <UFormField :label="t('admin.settings.rateLimitPeriodMinutes')">
-          <UInput v-model.number="state.rate_limit_period_minutes" type="number" min="1" class="w-full" />
+          <UInput
+            v-model.number="state.rate_limit_period_minutes"
+            type="number"
+            min="1"
+            class="w-full"
+          />
         </UFormField>
       </fieldset>
 
       <fieldset class="space-y-4">
-        <legend class="mb-2 text-sm font-medium">{{ t('admin.settings.emailSection') }}</legend>
-        <UnlimitedNumberField v-model="state.max_email_recipients_per_paste" :label="t('admin.settings.maxEmailRecipientsPerPaste')" />
+        <legend class="mb-2 text-sm font-medium">
+          {{ t('admin.settings.emailSection') }}
+        </legend>
+        <UnlimitedNumberField
+          v-model="state.max_email_recipients_per_paste"
+          :label="t('admin.settings.maxEmailRecipientsPerPaste')"
+        />
       </fieldset>
 
       <fieldset class="space-y-4">
-        <legend class="mb-2 text-sm font-medium">{{ t('admin.settings.invitationsSection') }}</legend>
-        <UnlimitedNumberField v-model="state.invitation_expiry_days" :label="t('admin.settings.invitationExpiryDays')" />
+        <legend class="mb-2 text-sm font-medium">
+          {{ t('admin.settings.invitationsSection') }}
+        </legend>
+        <UnlimitedNumberField
+          v-model="state.invitation_expiry_days"
+          :label="t('admin.settings.invitationExpiryDays')"
+        />
       </fieldset>
 
       <fieldset class="space-y-3">
-        <legend class="mb-2 text-sm font-medium">{{ t('admin.settings.accessSection') }}</legend>
-        <USwitch v-model="state.registration_enabled" :label="t('admin.settings.registrationEnabled')" />
-        <USwitch v-model="state.public_paste_enabled" :label="t('admin.settings.publicPasteEnabled')" />
-        <USwitch v-model="state.require_2fa" :label="t('admin.settings.require2fa')" />
+        <legend class="mb-2 text-sm font-medium">
+          {{ t('admin.settings.accessSection') }}
+        </legend>
+        <USwitch
+          v-model="state.registration_enabled"
+          :label="t('admin.settings.registrationEnabled')"
+        />
+        <USwitch
+          v-model="state.public_paste_enabled"
+          :label="t('admin.settings.publicPasteEnabled')"
+        />
+        <USwitch
+          v-model="state.require_2fa"
+          :label="t('admin.settings.require2fa')"
+        />
       </fieldset>
 
-      <UAlert v-if="errorMessage" color="error" variant="subtle" :title="errorMessage" />
-      <UAlert v-if="saved" color="success" variant="subtle" :title="t('admin.settings.saved')" />
+      <UAlert
+        v-if="errorMessage"
+        color="error"
+        variant="subtle"
+        :title="errorMessage"
+      />
+      <UAlert
+        v-if="saved"
+        color="success"
+        variant="subtle"
+        :title="t('admin.settings.saved')"
+      />
 
-      <UButton block :loading="saving" :label="t('admin.settings.save')" @click="save" />
+      <UButton
+        block
+        :loading="saving"
+        :label="t('admin.settings.save')"
+        @click="save"
+      />
     </div>
   </div>
 </template>

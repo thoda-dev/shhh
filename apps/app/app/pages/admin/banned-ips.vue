@@ -46,8 +46,9 @@ async function add(event: FormSubmitEvent<typeof state>) {
     state.reason = ''
     expiresInDays.value = null
     await refresh()
-  } catch (error: any) {
-    errorMessage.value = error?.data?.statusMessage || error?.data?.message || t('admin.bannedIps.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    errorMessage.value = statusMessage || message || t('admin.bannedIps.errors.generic')
   } finally {
     adding.value = false
   }
@@ -76,55 +77,177 @@ function isExpired(ip: BannedIp) {
 <template>
   <div class="mx-auto max-w-2xl p-4 pt-12">
     <div class="mb-2 flex items-center justify-between">
-      <h1 class="text-xl font-semibold">{{ t('admin.bannedIps.title') }}</h1>
-      <UButton variant="ghost" icon="i-lucide-arrow-left" :label="t('dashboard.backToCreate')" :to="localePath('/')" />
+      <h1 class="text-xl font-semibold">
+        {{ t('admin.bannedIps.title') }}
+      </h1>
+      <UButton
+        variant="ghost"
+        icon="i-lucide-arrow-left"
+        :label="t('dashboard.backToCreate')"
+        :to="localePath('/')"
+      />
     </div>
     <div class="mb-6 flex flex-wrap gap-2">
-      <UButton variant="ghost" size="sm" icon="i-lucide-settings" :label="t('admin.settings.title')" :to="localePath('/admin/settings')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-shield" :label="t('admin.allowedIps.title')" :to="localePath('/admin/allowed-ips')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-ban" :label="t('admin.bannedIps.title')" :to="localePath('/admin/banned-ips')" disabled />
-      <UButton variant="ghost" size="sm" icon="i-lucide-users" :label="t('admin.users.title')" :to="localePath('/admin/users')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-mail-plus" :label="t('admin.invitations.title')" :to="localePath('/admin/invitations')" />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-settings"
+        :label="t('admin.settings.title')"
+        :to="localePath('/admin/settings')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-shield"
+        :label="t('admin.allowedIps.title')"
+        :to="localePath('/admin/allowed-ips')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-ban"
+        :label="t('admin.bannedIps.title')"
+        :to="localePath('/admin/banned-ips')"
+        disabled
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-users"
+        :label="t('admin.users.title')"
+        :to="localePath('/admin/users')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-mail-plus"
+        :label="t('admin.invitations.title')"
+        :to="localePath('/admin/invitations')"
+      />
     </div>
 
-    <p class="mb-4 text-sm text-muted">{{ t('admin.bannedIps.description') }}</p>
+    <p class="mb-4 text-sm text-muted">
+      {{ t('admin.bannedIps.description') }}
+    </p>
 
-    <UForm :schema="schema" :state="state" class="mb-6 max-w-sm space-y-3" @submit="add">
-      <UFormField :label="t('admin.bannedIps.ipLabel')" name="ip">
-        <UInput v-model="state.ip" :placeholder="t('admin.bannedIps.ipPlaceholder')" class="w-full" />
+    <UForm
+      :schema="schema"
+      :state="state"
+      class="mb-6 max-w-sm space-y-3"
+      @submit="add"
+    >
+      <UFormField
+        :label="t('admin.bannedIps.ipLabel')"
+        name="ip"
+      >
+        <UInput
+          v-model="state.ip"
+          :placeholder="t('admin.bannedIps.ipPlaceholder')"
+          class="w-full"
+        />
       </UFormField>
-      <UFormField :label="t('admin.bannedIps.reasonLabel')" name="reason">
-        <UInput v-model="state.reason" :placeholder="t('admin.bannedIps.reasonPlaceholder')" class="w-full" />
+      <UFormField
+        :label="t('admin.bannedIps.reasonLabel')"
+        name="reason"
+      >
+        <UInput
+          v-model="state.reason"
+          :placeholder="t('admin.bannedIps.reasonPlaceholder')"
+          class="w-full"
+        />
       </UFormField>
       <UFormField :label="t('admin.bannedIps.expiresInDays')">
-        <UInput v-model.number="expiresInDays" type="number" min="1" :placeholder="t('admin.bannedIps.permanent')" class="w-full" />
+        <UInput
+          v-model.number="expiresInDays"
+          type="number"
+          min="1"
+          :placeholder="t('admin.bannedIps.permanent')"
+          class="w-full"
+        />
       </UFormField>
-      <UButton type="submit" icon="i-lucide-ban" :loading="adding" :label="t('admin.bannedIps.add')" />
+      <UButton
+        type="submit"
+        icon="i-lucide-ban"
+        :loading="adding"
+        :label="t('admin.bannedIps.add')"
+      />
     </UForm>
 
-    <UAlert v-if="errorMessage" color="error" variant="subtle" :title="errorMessage" class="mb-4" />
+    <UAlert
+      v-if="errorMessage"
+      color="error"
+      variant="subtle"
+      :title="errorMessage"
+      class="mb-4"
+    />
 
-    <div v-if="status === 'pending'" class="flex justify-center py-12">
-      <UIcon name="i-lucide-loader-circle" class="size-6 animate-spin" />
+    <div
+      v-if="status === 'pending'"
+      class="flex justify-center py-12"
+    >
+      <UIcon
+        name="i-lucide-loader-circle"
+        class="size-6 animate-spin"
+      />
     </div>
 
-    <div v-else-if="!bannedIps?.length" class="py-12 text-center text-muted">
+    <div
+      v-else-if="!bannedIps?.length"
+      class="py-12 text-center text-muted"
+    >
       {{ t('admin.bannedIps.empty') }}
     </div>
 
-    <div v-else class="space-y-2">
-      <UCard v-for="entry in bannedIps" :key="entry.id">
+    <div
+      v-else
+      class="space-y-2"
+    >
+      <UCard
+        v-for="entry in bannedIps"
+        :key="entry.id"
+      >
         <div class="flex items-center justify-between gap-4">
           <div>
             <div class="flex items-center gap-2">
-              <p class="font-mono text-sm">{{ entry.ip }}</p>
-              <UBadge v-if="isExpired(entry)" variant="subtle" color="neutral" size="sm">{{ t('admin.bannedIps.statusExpired') }}</UBadge>
-              <UBadge v-else-if="entry.expiresAt === null" variant="subtle" color="error" size="sm">{{ t('admin.bannedIps.permanent') }}</UBadge>
-              <UBadge v-else variant="subtle" color="warning" size="sm">{{ t('admin.bannedIps.expiresAt', { date: formatDate(entry.expiresAt) }) }}</UBadge>
+              <p class="font-mono text-sm">
+                {{ entry.ip }}
+              </p>
+              <UBadge
+                v-if="isExpired(entry)"
+                variant="subtle"
+                color="neutral"
+                size="sm"
+              >
+                {{ t('admin.bannedIps.statusExpired') }}
+              </UBadge>
+              <UBadge
+                v-else-if="entry.expiresAt === null"
+                variant="subtle"
+                color="error"
+                size="sm"
+              >
+                {{ t('admin.bannedIps.permanent') }}
+              </UBadge>
+              <UBadge
+                v-else
+                variant="subtle"
+                color="warning"
+                size="sm"
+              >
+                {{ t('admin.bannedIps.expiresAt', { date: formatDate(entry.expiresAt) }) }}
+              </UBadge>
             </div>
-            <p class="text-xs text-muted">{{ entry.reason }} · {{ t('admin.bannedIps.bannedAt', { date: formatDate(entry.bannedAt) }) }}</p>
+            <p class="text-xs text-muted">
+              {{ entry.reason }} · {{ t('admin.bannedIps.bannedAt', { date: formatDate(entry.bannedAt) }) }}
+            </p>
           </div>
-          <UButton color="error" variant="ghost" icon="i-lucide-trash-2" :loading="removingId === entry.id" @click="remove(entry.id)" />
+          <UButton
+            color="error"
+            variant="ghost"
+            icon="i-lucide-trash-2"
+            :loading="removingId === entry.id"
+            @click="remove(entry.id)"
+          />
         </div>
       </UCard>
     </div>

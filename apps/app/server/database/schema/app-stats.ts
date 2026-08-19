@@ -11,7 +11,7 @@ export const appStats = pgTable(
       .notNull()
       .default(0),
     activeBytesStored: bigint('active_bytes_stored', { mode: 'number' }).notNull().default(0),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
   },
-  table => [check('app_stats_singleton_check', sql`${table.id} = 1`)],
+  table => [check('app_stats_singleton_check', sql`${table.id} = 1`)]
 )

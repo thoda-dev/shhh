@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   // project.md section 7: nobody can delete themselves, no exceptions — a simple id check, not a
   // remaining-super_admin count (explicitly decided against that complexity).
   if (targetId === session.user.id) {
-    throw createError({ statusCode: 403, statusMessage: "You can't delete your own account here" })
+    throw createError({ statusCode: 403, statusMessage: 'You can\'t delete your own account here' })
   }
 
   const [target] = await db.select({ id: schema.users.id, role: schema.users.role, email: schema.users.email }).from(schema.users).where(eq(schema.users.id, targetId)).limit(1)

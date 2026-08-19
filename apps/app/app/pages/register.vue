@@ -40,7 +40,11 @@ const schema = z.object({
 const state = reactive({ name: '', email: invitation.value?.email ?? '', password: '' })
 // The address is fixed by the invitation, so the field is filled and locked — the server ignores
 // any email sent alongside a token anyway.
-watch(invitation, value => { if (value) state.email = value.email })
+watch(invitation, (value) => {
+  if (value) {
+    state.email = value.email
+  }
+})
 
 const submitting = ref(false)
 const errorMessage = ref('')
@@ -62,8 +66,9 @@ async function submit(event: FormSubmitEvent<typeof state>) {
     }
     await refreshAuthSession()
     await navigateTo(localePath('/'))
-  } catch (error: any) {
-    errorMessage.value = error?.data?.message || error?.data?.statusMessage || t('register.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    errorMessage.value = message || statusMessage || t('register.errors.generic')
   } finally {
     submitting.value = false
   }
@@ -74,7 +79,9 @@ async function submit(event: FormSubmitEvent<typeof state>) {
   <div class="flex min-h-screen items-center justify-center p-4">
     <UCard class="w-full max-w-sm">
       <template #header>
-        <h1 class="text-xl font-semibold">{{ t('register.title') }}</h1>
+        <h1 class="text-xl font-semibold">
+          {{ t('register.title') }}
+        </h1>
       </template>
 
       <UAlert
@@ -95,7 +102,13 @@ async function submit(event: FormSubmitEvent<typeof state>) {
         :description="t('register.closedHint')"
       />
 
-      <UForm v-else :schema="schema" :state="state" class="space-y-4" @submit="submit">
+      <UForm
+        v-else
+        :schema="schema"
+        :state="state"
+        class="space-y-4"
+        @submit="submit"
+      >
         <UAlert
           v-if="invitation"
           color="info"
@@ -105,23 +118,66 @@ async function submit(event: FormSubmitEvent<typeof state>) {
           :description="t('register.invitedHint', { email: invitation.email })"
         />
 
-        <UFormField :label="t('register.name')" name="name" required>
-          <UInput v-model="state.name" class="w-full" autocomplete="name" />
+        <UFormField
+          :label="t('register.name')"
+          name="name"
+          required
+        >
+          <UInput
+            v-model="state.name"
+            class="w-full"
+            autocomplete="name"
+          />
         </UFormField>
-        <UFormField :label="t('register.email')" name="email" required>
-          <UInput v-model="state.email" type="email" :disabled="!!invitation" class="w-full" autocomplete="email" />
+        <UFormField
+          :label="t('register.email')"
+          name="email"
+          required
+        >
+          <UInput
+            v-model="state.email"
+            type="email"
+            :disabled="!!invitation"
+            class="w-full"
+            autocomplete="email"
+          />
         </UFormField>
-        <UFormField :label="t('register.password')" name="password" required :hint="t('register.passwordHint')">
-          <UInput v-model="state.password" type="password" class="w-full" autocomplete="new-password" />
+        <UFormField
+          :label="t('register.password')"
+          name="password"
+          required
+          :hint="t('register.passwordHint')"
+        >
+          <UInput
+            v-model="state.password"
+            type="password"
+            class="w-full"
+            autocomplete="new-password"
+          />
         </UFormField>
 
-        <UAlert v-if="errorMessage" color="error" variant="subtle" :title="errorMessage" />
+        <UAlert
+          v-if="errorMessage"
+          color="error"
+          variant="subtle"
+          :title="errorMessage"
+        />
 
-        <UButton block type="submit" :loading="submitting" :label="t('register.submit')" />
+        <UButton
+          block
+          type="submit"
+          :loading="submitting"
+          :label="t('register.submit')"
+        />
       </UForm>
 
       <template #footer>
-        <UButton variant="ghost" size="sm" :label="t('register.haveAccount')" :to="localePath('/login')" />
+        <UButton
+          variant="ghost"
+          size="sm"
+          :label="t('register.haveAccount')"
+          :to="localePath('/login')"
+        />
       </template>
     </UCard>
   </div>

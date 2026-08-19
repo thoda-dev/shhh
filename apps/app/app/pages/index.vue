@@ -120,8 +120,9 @@ async function submit() {
     const paste = await $fetch<{ id: string, shared?: boolean }>('/api/pastes', { method: 'POST', body: payload })
     resultUrl.value = `${window.location.origin}${localePath(`/p/${paste.id}`)}#key=${fragment}`
     emailShareSent.value = paste.shared ?? null
-  } catch (error: any) {
-    errorMessage.value = error?.data?.statusMessage || error?.data?.message || t('create.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    errorMessage.value = statusMessage || message || t('create.errors.generic')
   } finally {
     submitting.value = false
   }
@@ -166,14 +167,28 @@ function reset() {
       <template #header>
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-xl font-semibold">shhh</h1>
-            <p class="text-sm text-muted">{{ t('create.subtitle') }}</p>
+            <h1 class="text-xl font-semibold">
+              shhh
+            </h1>
+            <p class="text-sm text-muted">
+              {{ t('create.subtitle') }}
+            </p>
           </div>
-          <UButton v-if="isAuthenticated" variant="ghost" size="sm" icon="i-lucide-list" :label="t('dashboard.title')" :to="localePath('/dashboard')" />
+          <UButton
+            v-if="isAuthenticated"
+            variant="ghost"
+            size="sm"
+            icon="i-lucide-list"
+            :label="t('dashboard.title')"
+            :to="localePath('/dashboard')"
+          />
         </div>
       </template>
 
-      <div v-if="anonymousBlocked" class="space-y-4">
+      <div
+        v-if="anonymousBlocked"
+        class="space-y-4"
+      >
         <UAlert
           color="warning"
           variant="subtle"
@@ -181,14 +196,35 @@ function reset() {
           :title="t('create.anonymousDisabled.title')"
           :description="t('create.anonymousDisabled.description')"
         />
-        <UButton block icon="i-lucide-log-in" :label="t('login.submit')" :to="localePath('/login')" />
+        <UButton
+          block
+          icon="i-lucide-log-in"
+          :label="t('login.submit')"
+          :to="localePath('/login')"
+        />
       </div>
 
-      <div v-else-if="resultUrl" class="space-y-4">
-        <UAlert color="success" variant="subtle" :title="t('create.result.title')" :description="t('create.result.warning')" />
+      <div
+        v-else-if="resultUrl"
+        class="space-y-4"
+      >
+        <UAlert
+          color="success"
+          variant="subtle"
+          :title="t('create.result.title')"
+          :description="t('create.result.warning')"
+        />
         <div class="flex items-center gap-2">
-          <UInput :model-value="resultUrl" readonly class="w-full font-mono text-xs" />
-          <UButton :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'" :label="copied ? t('create.result.copied') : t('create.result.copy')" @click="copyLink" />
+          <UInput
+            :model-value="resultUrl"
+            readonly
+            class="w-full font-mono text-xs"
+          />
+          <UButton
+            :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
+            :label="copied ? t('create.result.copied') : t('create.result.copy')"
+            @click="copyLink"
+          />
         </div>
 
         <UAlert
@@ -208,14 +244,34 @@ function reset() {
         />
 
         <div class="flex items-center gap-2">
-          <UButton variant="subtle" icon="i-lucide-mail" :label="t('create.result.mailtoShare')" :href="mailtoHref" />
-          <UButton variant="ghost" :label="t('create.result.createAnother')" @click="reset" />
+          <UButton
+            variant="subtle"
+            icon="i-lucide-mail"
+            :label="t('create.result.mailtoShare')"
+            :href="mailtoHref"
+          />
+          <UButton
+            variant="ghost"
+            :label="t('create.result.createAnother')"
+            @click="reset"
+          />
         </div>
       </div>
 
-      <div v-else class="space-y-5">
-        <UTooltip :text="t('create.fileRequiresLogin')" :disabled="isAuthenticated" :delay-duration="0">
-          <UTabs v-model="kind" :items="kindItems" :content="false" />
+      <div
+        v-else
+        class="space-y-5"
+      >
+        <UTooltip
+          :text="t('create.fileRequiresLogin')"
+          :disabled="isAuthenticated"
+          :delay-duration="0"
+        >
+          <UTabs
+            v-model="kind"
+            :items="kindItems"
+            :content="false"
+          />
         </UTooltip>
 
         <UTextarea
@@ -227,39 +283,100 @@ function reset() {
           :placeholder="t('create.textPlaceholder')"
           class="w-full font-mono"
         />
-        <UFileUpload v-else v-model="file" class="min-h-40 w-full" />
+        <UFileUpload
+          v-else
+          v-model="file"
+          class="min-h-40 w-full"
+        />
 
         <div class="flex items-center gap-3">
-          <USwitch v-model="passwordProtected" :label="t('create.passwordProtect')" />
+          <USwitch
+            v-model="passwordProtected"
+            :label="t('create.passwordProtect')"
+          />
         </div>
-        <UInput v-if="passwordProtected" v-model="password" type="password" :placeholder="t('create.passwordPlaceholder')" class="w-full" autocomplete="new-password" />
+        <UInput
+          v-if="passwordProtected"
+          v-model="password"
+          type="password"
+          :placeholder="t('create.passwordPlaceholder')"
+          class="w-full"
+          autocomplete="new-password"
+        />
 
         <div class="grid grid-cols-2 gap-4">
           <UFormField :label="t('create.expiresInDays')">
-            <UInput v-model.number="expiresInDaysInput" type="number" min="1" :placeholder="t('create.instanceDefault')" class="w-full" />
+            <UInput
+              v-model.number="expiresInDaysInput"
+              type="number"
+              min="1"
+              :placeholder="t('create.instanceDefault')"
+              class="w-full"
+            />
           </UFormField>
           <UFormField :label="t('create.maxReads')">
-            <UInput v-if="!unlimitedReads" v-model.number="maxReadsInput" type="number" min="1" :placeholder="t('create.instanceDefault')" class="w-full" />
-            <UButton v-else disabled variant="subtle" :label="t('create.unlimitedReads')" class="w-full justify-center" />
+            <UInput
+              v-if="!unlimitedReads"
+              v-model.number="maxReadsInput"
+              type="number"
+              min="1"
+              :placeholder="t('create.instanceDefault')"
+              class="w-full"
+            />
+            <UButton
+              v-else
+              disabled
+              variant="subtle"
+              :label="t('create.unlimitedReads')"
+              class="w-full justify-center"
+            />
           </UFormField>
         </div>
-        <USwitch v-model="unlimitedReads" :label="t('create.unlimitedReads')" />
+        <USwitch
+          v-model="unlimitedReads"
+          :label="t('create.unlimitedReads')"
+        />
 
         <template v-if="canShareByEmail">
-          <USwitch v-model="shareByEmail" :label="t('create.shareByEmail')" />
-          <div v-if="shareByEmail" class="space-y-2">
-            <UFormField :label="t('create.recipients')" :hint="publicSettings?.maxEmailRecipients !== null ? t('create.recipientsMax', { max: publicSettings?.maxEmailRecipients }) : undefined">
-              <UInput v-model="recipientsInput" :placeholder="RECIPIENTS_PLACEHOLDER" class="w-full" />
+          <USwitch
+            v-model="shareByEmail"
+            :label="t('create.shareByEmail')"
+          />
+          <div
+            v-if="shareByEmail"
+            class="space-y-2"
+          >
+            <UFormField
+              :label="t('create.recipients')"
+              :hint="publicSettings?.maxEmailRecipients !== null ? t('create.recipientsMax', { max: publicSettings?.maxEmailRecipients }) : undefined"
+            >
+              <UInput
+                v-model="recipientsInput"
+                :placeholder="RECIPIENTS_PLACEHOLDER"
+                class="w-full"
+              />
             </UFormField>
-            <p class="text-xs text-muted">{{ t('create.recipientsHint') }}</p>
+            <p class="text-xs text-muted">
+              {{ t('create.recipientsHint') }}
+            </p>
           </div>
         </template>
 
         <NuxtTurnstile v-model="turnstileToken" />
 
-        <UAlert v-if="errorMessage" color="error" variant="subtle" :title="errorMessage" />
+        <UAlert
+          v-if="errorMessage"
+          color="error"
+          variant="subtle"
+          :title="errorMessage"
+        />
 
-        <UButton block :loading="submitting" :label="t('create.submit')" @click="submit" />
+        <UButton
+          block
+          :loading="submitting"
+          :label="t('create.submit')"
+          @click="submit"
+        />
       </div>
     </UCard>
   </div>

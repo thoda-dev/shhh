@@ -21,11 +21,11 @@ export const accounts = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => new Date())
   },
-  table => [index('accounts_user_id_idx').on(table.userId)],
+  table => [index('accounts_user_id_idx').on(table.userId)]
 )
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
-  user: one(users, { fields: [accounts.userId], references: [users.id] }),
+  user: one(users, { fields: [accounts.userId], references: [users.id] })
 }))

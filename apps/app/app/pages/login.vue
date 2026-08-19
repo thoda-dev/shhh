@@ -44,8 +44,9 @@ async function submit(event: FormSubmitEvent<typeof state>) {
     }
     await refreshAuthSession()
     await navigateTo(localePath('/'))
-  } catch (error: any) {
-    errorMessage.value = error?.data?.message || error?.data?.statusMessage || t('login.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    errorMessage.value = message || statusMessage || t('login.errors.generic')
   } finally {
     submitting.value = false
   }
@@ -71,20 +72,56 @@ async function submitCode() {
   <div class="flex min-h-screen items-center justify-center p-4">
     <UCard class="w-full max-w-sm">
       <template #header>
-        <h1 class="text-xl font-semibold">{{ needsTwoFactor ? t('login.twoFactor.title') : t('login.title') }}</h1>
+        <h1 class="text-xl font-semibold">
+          {{ needsTwoFactor ? t('login.twoFactor.title') : t('login.title') }}
+        </h1>
       </template>
 
-      <UForm v-if="!needsTwoFactor" :schema="schema" :state="state" class="space-y-4" @submit="submit">
-        <UFormField :label="t('login.email')" name="email" required>
-          <UInput v-model="state.email" type="email" class="w-full" autocomplete="email" />
+      <UForm
+        v-if="!needsTwoFactor"
+        :schema="schema"
+        :state="state"
+        class="space-y-4"
+        @submit="submit"
+      >
+        <UFormField
+          :label="t('login.email')"
+          name="email"
+          required
+        >
+          <UInput
+            v-model="state.email"
+            type="email"
+            class="w-full"
+            autocomplete="email"
+          />
         </UFormField>
-        <UFormField :label="t('login.password')" name="password" required>
-          <UInput v-model="state.password" type="password" class="w-full" autocomplete="current-password" />
+        <UFormField
+          :label="t('login.password')"
+          name="password"
+          required
+        >
+          <UInput
+            v-model="state.password"
+            type="password"
+            class="w-full"
+            autocomplete="current-password"
+          />
         </UFormField>
 
-        <UAlert v-if="errorMessage" color="error" variant="subtle" :title="errorMessage" />
+        <UAlert
+          v-if="errorMessage"
+          color="error"
+          variant="subtle"
+          :title="errorMessage"
+        />
 
-        <UButton block type="submit" :loading="submitting" :label="t('login.submit')" />
+        <UButton
+          block
+          type="submit"
+          :loading="submitting"
+          :label="t('login.submit')"
+        />
 
         <!-- Only when the instance is open: an invited user reaches /register through their link,
              so advertising it here would just be a dead end on a closed instance. -->
@@ -98,16 +135,43 @@ async function submitCode() {
         />
       </UForm>
 
-      <div v-else class="space-y-4">
-        <p class="text-sm text-muted">{{ useBackupCode ? t('login.twoFactor.backupCodeHint') : t('login.twoFactor.totpHint') }}</p>
+      <div
+        v-else
+        class="space-y-4"
+      >
+        <p class="text-sm text-muted">
+          {{ useBackupCode ? t('login.twoFactor.backupCodeHint') : t('login.twoFactor.totpHint') }}
+        </p>
         <UFormField :label="useBackupCode ? t('login.twoFactor.backupCode') : t('login.twoFactor.code')">
-          <UInput v-model="code" :placeholder="useBackupCode ? undefined : t('account.twoFactor.codePlaceholder')" class="w-full" autofocus />
+          <UInput
+            v-model="code"
+            :placeholder="useBackupCode ? undefined : t('account.twoFactor.codePlaceholder')"
+            class="w-full"
+            autofocus
+          />
         </UFormField>
 
-        <UAlert v-if="errorMessage" color="error" variant="subtle" :title="errorMessage" />
+        <UAlert
+          v-if="errorMessage"
+          color="error"
+          variant="subtle"
+          :title="errorMessage"
+        />
 
-        <UButton block :loading="submitting" :disabled="!code" :label="t('login.twoFactor.submit')" @click="submitCode" />
-        <UButton block variant="ghost" size="sm" :label="useBackupCode ? t('login.twoFactor.useTotp') : t('login.twoFactor.useBackupCode')" @click="useBackupCode = !useBackupCode; code = ''; errorMessage = ''" />
+        <UButton
+          block
+          :loading="submitting"
+          :disabled="!code"
+          :label="t('login.twoFactor.submit')"
+          @click="submitCode"
+        />
+        <UButton
+          block
+          variant="ghost"
+          size="sm"
+          :label="useBackupCode ? t('login.twoFactor.useTotp') : t('login.twoFactor.useBackupCode')"
+          @click="useBackupCode = !useBackupCode; code = ''; errorMessage = ''"
+        />
       </div>
     </UCard>
   </div>

@@ -54,8 +54,9 @@ async function invite(event: FormSubmitEvent<typeof state>) {
     deliveryFailed.value = !created.sent
     state.email = ''
     await refresh()
-  } catch (error: any) {
-    errorMessage.value = error?.data?.statusMessage || error?.data?.message || t('admin.invitations.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    errorMessage.value = statusMessage || message || t('admin.invitations.errors.generic')
   } finally {
     inviting.value = false
   }
@@ -81,18 +82,58 @@ function formatDate(value: string) {
 <template>
   <div class="mx-auto max-w-2xl p-4 pt-12">
     <div class="mb-2 flex items-center justify-between">
-      <h1 class="text-xl font-semibold">{{ t('admin.invitations.title') }}</h1>
-      <UButton variant="ghost" icon="i-lucide-arrow-left" :label="t('dashboard.backToCreate')" :to="localePath('/')" />
+      <h1 class="text-xl font-semibold">
+        {{ t('admin.invitations.title') }}
+      </h1>
+      <UButton
+        variant="ghost"
+        icon="i-lucide-arrow-left"
+        :label="t('dashboard.backToCreate')"
+        :to="localePath('/')"
+      />
     </div>
     <div class="mb-6 flex flex-wrap gap-2">
-      <UButton variant="ghost" size="sm" icon="i-lucide-settings" :label="t('admin.settings.title')" :to="localePath('/admin/settings')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-shield" :label="t('admin.allowedIps.title')" :to="localePath('/admin/allowed-ips')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-ban" :label="t('admin.bannedIps.title')" :to="localePath('/admin/banned-ips')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-users" :label="t('admin.users.title')" :to="localePath('/admin/users')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-mail-plus" :label="t('admin.invitations.title')" :to="localePath('/admin/invitations')" disabled />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-settings"
+        :label="t('admin.settings.title')"
+        :to="localePath('/admin/settings')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-shield"
+        :label="t('admin.allowedIps.title')"
+        :to="localePath('/admin/allowed-ips')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-ban"
+        :label="t('admin.bannedIps.title')"
+        :to="localePath('/admin/banned-ips')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-users"
+        :label="t('admin.users.title')"
+        :to="localePath('/admin/users')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-mail-plus"
+        :label="t('admin.invitations.title')"
+        :to="localePath('/admin/invitations')"
+        disabled
+      />
     </div>
 
-    <p class="mb-4 text-sm text-muted">{{ t('admin.invitations.description') }}</p>
+    <p class="mb-4 text-sm text-muted">
+      {{ t('admin.invitations.description') }}
+    </p>
 
     <UAlert
       v-if="publicSettings?.mailEnabled === false"
@@ -104,14 +145,38 @@ function formatDate(value: string) {
       class="mb-6"
     />
 
-    <UForm v-else :schema="schema" :state="state" class="mb-6 max-w-sm space-y-3" @submit="invite">
-      <UFormField :label="t('admin.invitations.emailLabel')" name="email">
-        <UInput v-model="state.email" type="email" class="w-full" />
+    <UForm
+      v-else
+      :schema="schema"
+      :state="state"
+      class="mb-6 max-w-sm space-y-3"
+      @submit="invite"
+    >
+      <UFormField
+        :label="t('admin.invitations.emailLabel')"
+        name="email"
+      >
+        <UInput
+          v-model="state.email"
+          type="email"
+          class="w-full"
+        />
       </UFormField>
-      <UButton type="submit" icon="i-lucide-send" :loading="inviting" :label="t('admin.invitations.send')" />
+      <UButton
+        type="submit"
+        icon="i-lucide-send"
+        :loading="inviting"
+        :label="t('admin.invitations.send')"
+      />
     </UForm>
 
-    <UAlert v-if="errorMessage" color="error" variant="subtle" :title="errorMessage" class="mb-4" />
+    <UAlert
+      v-if="errorMessage"
+      color="error"
+      variant="subtle"
+      :title="errorMessage"
+      class="mb-4"
+    />
     <UAlert
       v-if="deliveryFailed"
       color="warning"
@@ -121,21 +186,42 @@ function formatDate(value: string) {
       class="mb-4"
     />
 
-    <div v-if="status === 'pending'" class="flex justify-center py-12">
-      <UIcon name="i-lucide-loader-circle" class="size-6 animate-spin" />
+    <div
+      v-if="status === 'pending'"
+      class="flex justify-center py-12"
+    >
+      <UIcon
+        name="i-lucide-loader-circle"
+        class="size-6 animate-spin"
+      />
     </div>
 
-    <div v-else-if="!invitations?.length" class="py-12 text-center text-muted">
+    <div
+      v-else-if="!invitations?.length"
+      class="py-12 text-center text-muted"
+    >
       {{ t('admin.invitations.empty') }}
     </div>
 
-    <div v-else class="space-y-2">
-      <UCard v-for="entry in invitations" :key="entry.id">
+    <div
+      v-else
+      class="space-y-2"
+    >
+      <UCard
+        v-for="entry in invitations"
+        :key="entry.id"
+      >
         <div class="flex items-center justify-between gap-4">
           <div class="min-w-0">
             <div class="flex items-center gap-2">
-              <p class="truncate text-sm">{{ entry.email }}</p>
-              <UBadge :color="STATE_COLORS[entry.state]" variant="subtle" size="sm">
+              <p class="truncate text-sm">
+                {{ entry.email }}
+              </p>
+              <UBadge
+                :color="STATE_COLORS[entry.state]"
+                variant="subtle"
+                size="sm"
+              >
                 {{ t(`admin.invitations.states.${entry.state}`) }}
               </UBadge>
             </div>

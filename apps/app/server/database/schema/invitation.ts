@@ -6,7 +6,7 @@ export const invitationStatusEnum = pgEnum('invitation_status', [
   'pending',
   'accepted',
   'expired',
-  'revoked',
+  'revoked'
 ])
 
 export const invitations = pgTable(
@@ -19,16 +19,16 @@ export const invitations = pgTable(
     status: invitationStatusEnum('status').notNull().default('pending'),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-    acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true })
   },
   table => [
     // Enforces "no duplicate pending invitation for the same email" at the DB level too.
     uniqueIndex('invitations_pending_email_idx')
       .on(table.email)
-      .where(sql`${table.status} = 'pending'`),
-  ],
+      .where(sql`${table.status} = 'pending'`)
+  ]
 )
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
-  invitedByUser: one(users, { fields: [invitations.invitedBy], references: [users.id] }),
+  invitedByUser: one(users, { fields: [invitations.invitedBy], references: [users.id] })
 }))

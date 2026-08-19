@@ -41,5 +41,5 @@ export {
   avg,
   max,
   min,
-  sql,
+  sql
 } from 'drizzle-orm'

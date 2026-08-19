@@ -111,17 +111,32 @@ async function finish() {
   <div class="flex min-h-screen items-center justify-center p-4">
     <UCard class="w-full max-w-2xl">
       <template #header>
-        <h1 class="text-xl font-semibold">{{ t('setup.title') }}</h1>
-        <p class="text-sm text-muted">{{ t('setup.subtitle') }}</p>
+        <h1 class="text-xl font-semibold">
+          {{ t('setup.title') }}
+        </h1>
+        <p class="text-sm text-muted">
+          {{ t('setup.subtitle') }}
+        </p>
       </template>
 
-      <div v-if="completed" class="flex flex-col items-center gap-3 py-8 text-center">
-        <UIcon name="i-lucide-circle-check" class="size-10 text-success" />
+      <div
+        v-if="completed"
+        class="flex flex-col items-center gap-3 py-8 text-center"
+      >
+        <UIcon
+          name="i-lucide-circle-check"
+          class="size-10 text-success"
+        />
         <p>{{ t('setup.success') }}</p>
       </div>
 
       <template v-else>
-        <UStepper v-model="activeStep" :items="stepperItems" disabled class="mb-6" />
+        <UStepper
+          v-model="activeStep"
+          :items="stepperItems"
+          disabled
+          class="mb-6"
+        />
 
         <UForm
           v-if="activeStep === 0"
@@ -131,17 +146,52 @@ async function finish() {
           class="space-y-4"
           @submit="goNext"
         >
-          <UFormField :label="t('setup.account.name')" name="name" required>
-            <UInput v-model="accountState.name" class="w-full" autocomplete="name" />
+          <UFormField
+            :label="t('setup.account.name')"
+            name="name"
+            required
+          >
+            <UInput
+              v-model="accountState.name"
+              class="w-full"
+              autocomplete="name"
+            />
           </UFormField>
-          <UFormField :label="t('setup.account.email')" name="email" required>
-            <UInput v-model="accountState.email" type="email" class="w-full" autocomplete="email" />
+          <UFormField
+            :label="t('setup.account.email')"
+            name="email"
+            required
+          >
+            <UInput
+              v-model="accountState.email"
+              type="email"
+              class="w-full"
+              autocomplete="email"
+            />
           </UFormField>
-          <UFormField :label="t('setup.account.password')" name="password" required>
-            <UInput v-model="accountState.password" type="password" class="w-full" autocomplete="new-password" />
+          <UFormField
+            :label="t('setup.account.password')"
+            name="password"
+            required
+          >
+            <UInput
+              v-model="accountState.password"
+              type="password"
+              class="w-full"
+              autocomplete="new-password"
+            />
           </UFormField>
-          <UFormField :label="t('setup.account.passwordConfirm')" name="passwordConfirm" required>
-            <UInput v-model="accountState.passwordConfirm" type="password" class="w-full" autocomplete="new-password" />
+          <UFormField
+            :label="t('setup.account.passwordConfirm')"
+            name="passwordConfirm"
+            required
+          >
+            <UInput
+              v-model="accountState.passwordConfirm"
+              type="password"
+              class="w-full"
+              autocomplete="new-password"
+            />
           </UFormField>
         </UForm>
 
@@ -154,30 +204,75 @@ async function finish() {
           @submit="finish"
         >
           <fieldset class="space-y-4">
-            <legend class="mb-2 text-sm font-medium">{{ t('setup.settings.retentionSection') }}</legend>
-            <UnlimitedNumberField v-model="settingsState.max_retention_days_anonymous" :label="t('setup.settings.maxRetentionDaysAnonymous')" />
-            <UnlimitedNumberField v-model="settingsState.max_retention_days_authenticated" :label="t('setup.settings.maxRetentionDaysAuthenticated')" />
+            <legend class="mb-2 text-sm font-medium">
+              {{ t('setup.settings.retentionSection') }}
+            </legend>
+            <UnlimitedNumberField
+              v-model="settingsState.max_retention_days_anonymous"
+              :label="t('setup.settings.maxRetentionDaysAnonymous')"
+            />
+            <UnlimitedNumberField
+              v-model="settingsState.max_retention_days_authenticated"
+              :label="t('setup.settings.maxRetentionDaysAuthenticated')"
+            />
           </fieldset>
 
           <fieldset class="space-y-4">
-            <legend class="mb-2 text-sm font-medium">{{ t('setup.settings.sizesSection') }}</legend>
-            <UnlimitedNumberField v-model="settingsState.max_text_size_bytes" :label="t('setup.settings.maxTextSizeBytes')" />
-            <UnlimitedNumberField v-model="settingsState.max_upload_size_bytes" :label="t('setup.settings.maxUploadSizeBytes')" />
-            <UnlimitedNumberField v-model="settingsState.max_total_storage_bytes" :label="t('setup.settings.maxTotalStorageBytes')" />
+            <legend class="mb-2 text-sm font-medium">
+              {{ t('setup.settings.sizesSection') }}
+            </legend>
+            <UnlimitedNumberField
+              v-model="settingsState.max_text_size_bytes"
+              :label="t('setup.settings.maxTextSizeBytes')"
+            />
+            <UnlimitedNumberField
+              v-model="settingsState.max_upload_size_bytes"
+              :label="t('setup.settings.maxUploadSizeBytes')"
+            />
+            <UnlimitedNumberField
+              v-model="settingsState.max_total_storage_bytes"
+              :label="t('setup.settings.maxTotalStorageBytes')"
+            />
           </fieldset>
 
           <fieldset class="space-y-4">
-            <legend class="mb-2 text-sm font-medium">{{ t('setup.settings.rateLimitsSection') }}</legend>
-            <UnlimitedNumberField v-model="settingsState.rate_limit_anonymous_creates_per_period" :label="t('setup.settings.rateLimitAnonymousCreatesPerPeriod')" />
-            <UnlimitedNumberField v-model="settingsState.rate_limit_authenticated_creates_per_period" :label="t('setup.settings.rateLimitAuthenticatedCreatesPerPeriod')" />
-            <UnlimitedNumberField v-model="settingsState.rate_limit_uploads_per_period" :label="t('setup.settings.rateLimitUploadsPerPeriod')" />
-            <UFormField :label="t('setup.settings.rateLimitPeriodMinutes')" name="rate_limit_period_minutes" required>
-              <UInput v-model.number="settingsState.rate_limit_period_minutes" type="number" min="1" class="w-full" />
+            <legend class="mb-2 text-sm font-medium">
+              {{ t('setup.settings.rateLimitsSection') }}
+            </legend>
+            <UnlimitedNumberField
+              v-model="settingsState.rate_limit_anonymous_creates_per_period"
+              :label="t('setup.settings.rateLimitAnonymousCreatesPerPeriod')"
+            />
+            <UnlimitedNumberField
+              v-model="settingsState.rate_limit_authenticated_creates_per_period"
+              :label="t('setup.settings.rateLimitAuthenticatedCreatesPerPeriod')"
+            />
+            <UnlimitedNumberField
+              v-model="settingsState.rate_limit_uploads_per_period"
+              :label="t('setup.settings.rateLimitUploadsPerPeriod')"
+            />
+            <UFormField
+              :label="t('setup.settings.rateLimitPeriodMinutes')"
+              name="rate_limit_period_minutes"
+              required
+            >
+              <UInput
+                v-model.number="settingsState.rate_limit_period_minutes"
+                type="number"
+                min="1"
+                class="w-full"
+              />
             </UFormField>
           </fieldset>
         </UForm>
 
-        <UAlert v-if="errorMessage" color="error" variant="subtle" :title="errorMessage" class="my-4" />
+        <UAlert
+          v-if="errorMessage"
+          color="error"
+          variant="subtle"
+          :title="errorMessage"
+          class="my-4"
+        />
 
         <div class="mt-6 flex justify-between">
           <UButton

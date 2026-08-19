@@ -52,9 +52,9 @@ export const auth = betterAuth({
     // action in that configuration (project.md section 9).
     sendResetPassword: isMailEnabled()
       ? async ({ user, url }) => {
-          const mail = resetPasswordTemplate({ url })
-          await sendMail({ to: user.email, ...mail })
-        }
+        const mail = resetPasswordTemplate({ url })
+        await sendMail({ to: user.email, ...mail })
+      }
       : undefined
   },
   emailVerification: {
@@ -67,9 +67,9 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     sendVerificationEmail: isMailEnabled()
       ? async ({ user, url }) => {
-          const mail = verifyEmailTemplate({ url })
-          await sendMail({ to: user.email, ...mail })
-        }
+        const mail = verifyEmailTemplate({ url })
+        await sendMail({ to: user.email, ...mail })
+      }
       : undefined
   },
   user: {
@@ -85,9 +85,9 @@ export const auth = betterAuth({
       updateEmailWithoutVerification: false,
       sendChangeEmailConfirmation: isMailEnabled()
         ? async ({ user, newEmail, url }) => {
-            const mail = changeEmailTemplate({ url, newEmail })
-            await sendMail({ to: user.email, ...mail })
-          }
+          const mail = changeEmailTemplate({ url, newEmail })
+          await sendMail({ to: user.email, ...mail })
+        }
         : undefined
     },
     additionalFields: {

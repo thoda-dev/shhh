@@ -18,8 +18,29 @@ async function logout() {
 
 <template>
   <template v-if="isAuthenticated">
-    <UButton variant="ghost" size="sm" icon="i-lucide-user" :to="localePath('/account')" :aria-label="t('account.title')" />
-    <UButton color="error" variant="subtle" size="sm" icon="i-lucide-log-out" :label="t('login.logout')" @click="logout" />
+    <UButton
+      variant="ghost"
+      size="sm"
+      icon="i-lucide-user"
+      :to="localePath('/account')"
+      :aria-label="t('account.title')"
+    />
+    <UButton
+      color="error"
+      variant="subtle"
+      size="sm"
+      icon="i-lucide-log-out"
+      :label="t('login.logout')"
+      @click="logout"
+    />
   </template>
-  <UButton v-else color="primary" variant="subtle" size="sm" icon="i-lucide-log-in" :label="t('login.title')" :to="localePath('/login')" />
+  <UButton
+    v-else
+    color="primary"
+    variant="subtle"
+    size="sm"
+    icon="i-lucide-log-in"
+    :label="t('login.title')"
+    :to="localePath('/login')"
+  />
 </template>

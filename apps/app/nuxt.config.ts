@@ -1,7 +1,17 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: '2025-07-15',
+
+  modules: [
+    '@nuxt/ui',
+    '@nuxtjs/i18n',
+    '@nuxtjs/turnstile',
+    '@nuxtjs/robots',
+    '@nuxt/eslint'
+  ],
   devtools: { enabled: true },
+
+  css: ['~/assets/css/main.css'],
+  compatibilityDate: '2025-07-15',
 
   nitro: {
     experimental: {
@@ -15,9 +25,14 @@ export default defineNuxtConfig({
     }
   },
 
-  modules: ['@nuxt/ui', '@nuxtjs/i18n', '@nuxtjs/turnstile', '@nuxtjs/robots'],
-
-  css: ['~/assets/css/main.css'],
+  eslint: {
+    config: {
+      stylistic: {
+        commaDangle: 'never',
+        braceStyle: '1tbs'
+      }
+    }
+  },
 
   i18n: {
     locales: [

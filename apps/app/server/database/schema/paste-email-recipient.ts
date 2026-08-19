@@ -14,11 +14,11 @@ export const pasteEmailRecipients = pgTable(
     email: text('email').notNull(),
     status: emailRecipientStatusEnum('status').notNull().default('sent'),
     sentAt: timestamp('sent_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
   },
-  table => [index('paste_email_recipients_paste_id_idx').on(table.pasteId)],
+  table => [index('paste_email_recipients_paste_id_idx').on(table.pasteId)]
 )
 
 export const pasteEmailRecipientsRelations = relations(pasteEmailRecipients, ({ one }) => ({
-  paste: one(pastes, { fields: [pasteEmailRecipients.pasteId], references: [pastes.id] }),
+  paste: one(pastes, { fields: [pasteEmailRecipients.pasteId], references: [pastes.id] })
 }))

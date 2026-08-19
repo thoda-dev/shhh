@@ -58,7 +58,7 @@ const APP_SETTINGS_DEFAULTS: AppSettingsShape = {
   invitation_expiry_days: 7,
   registration_enabled: true,
   public_paste_enabled: true,
-  require_2fa: false,
+  require_2fa: false
 }
 
 export async function getSettings<K extends keyof AppSettingsShape>(

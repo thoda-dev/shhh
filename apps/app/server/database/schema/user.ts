@@ -19,12 +19,12 @@ export const users = pgTable('users', {
     .defaultNow()
     .$onUpdate(() => new Date()),
   twoFactorEnabled: boolean('two_factor_enabled').notNull().default(false),
-  role: roleEnum('role').notNull().default('user'),
+  role: roleEnum('role').notNull().default('user')
 })
 
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   accounts: many(accounts),
   twoFactors: many(twoFactors),
-  pastes: many(pastes),
+  pastes: many(pastes)
 }))

@@ -8,6 +8,7 @@ allowBuilds:
   better-sqlite3: true
   esbuild: true
   sharp: true
+  unrs-resolver: true
   vue-demi: true
 
 minimumReleaseAge: 1440

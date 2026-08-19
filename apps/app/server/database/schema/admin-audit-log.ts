@@ -8,9 +8,9 @@ export const adminAuditLog = pgTable('admin_audit_log', {
   action: text('action').notNull(),
   targetId: text('target_id'),
   details: jsonb('details'),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 })
 
 export const adminAuditLogRelations = relations(adminAuditLog, ({ one }) => ({
-  actor: one(users, { fields: [adminAuditLog.actorId], references: [users.id] }),
+  actor: one(users, { fields: [adminAuditLog.actorId], references: [users.id] })
 }))

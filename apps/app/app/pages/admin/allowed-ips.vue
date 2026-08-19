@@ -42,8 +42,9 @@ async function add(event: FormSubmitEvent<z.output<typeof schema>>) {
     state.ip = ''
     state.label = ''
     await refresh()
-  } catch (error: any) {
-    errorMessage.value = error?.data?.statusMessage || error?.data?.message || t('admin.allowedIps.errors.generic')
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    errorMessage.value = statusMessage || message || t('admin.allowedIps.errors.generic')
   } finally {
     adding.value = false
   }
@@ -69,49 +70,142 @@ function formatDate(value: string) {
 <template>
   <div class="mx-auto max-w-2xl p-4 pt-12">
     <div class="mb-2 flex items-center justify-between">
-      <h1 class="text-xl font-semibold">{{ t('admin.allowedIps.title') }}</h1>
-      <UButton variant="ghost" icon="i-lucide-arrow-left" :label="t('dashboard.backToCreate')" :to="localePath('/')" />
+      <h1 class="text-xl font-semibold">
+        {{ t('admin.allowedIps.title') }}
+      </h1>
+      <UButton
+        variant="ghost"
+        icon="i-lucide-arrow-left"
+        :label="t('dashboard.backToCreate')"
+        :to="localePath('/')"
+      />
     </div>
     <div class="mb-6 flex flex-wrap gap-2">
-      <UButton variant="ghost" size="sm" icon="i-lucide-settings" :label="t('admin.settings.title')" :to="localePath('/admin/settings')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-shield" :label="t('admin.allowedIps.title')" :to="localePath('/admin/allowed-ips')" disabled />
-      <UButton variant="ghost" size="sm" icon="i-lucide-ban" :label="t('admin.bannedIps.title')" :to="localePath('/admin/banned-ips')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-users" :label="t('admin.users.title')" :to="localePath('/admin/users')" />
-      <UButton variant="ghost" size="sm" icon="i-lucide-mail-plus" :label="t('admin.invitations.title')" :to="localePath('/admin/invitations')" />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-settings"
+        :label="t('admin.settings.title')"
+        :to="localePath('/admin/settings')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-shield"
+        :label="t('admin.allowedIps.title')"
+        :to="localePath('/admin/allowed-ips')"
+        disabled
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-ban"
+        :label="t('admin.bannedIps.title')"
+        :to="localePath('/admin/banned-ips')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-users"
+        :label="t('admin.users.title')"
+        :to="localePath('/admin/users')"
+      />
+      <UButton
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-mail-plus"
+        :label="t('admin.invitations.title')"
+        :to="localePath('/admin/invitations')"
+      />
     </div>
 
-    <p class="mb-4 text-sm text-muted">{{ t('admin.allowedIps.description') }}</p>
+    <p class="mb-4 text-sm text-muted">
+      {{ t('admin.allowedIps.description') }}
+    </p>
 
-    <UForm :schema="schema" :state="state" class="mb-6 max-w-sm space-y-3" @submit="add">
-      <UFormField :label="t('admin.allowedIps.ipLabel')" name="ip">
-        <UInput v-model="state.ip" :placeholder="t('admin.allowedIps.ipPlaceholder')" class="w-full" />
+    <UForm
+      :schema="schema"
+      :state="state"
+      class="mb-6 max-w-sm space-y-3"
+      @submit="add"
+    >
+      <UFormField
+        :label="t('admin.allowedIps.ipLabel')"
+        name="ip"
+      >
+        <UInput
+          v-model="state.ip"
+          :placeholder="t('admin.allowedIps.ipPlaceholder')"
+          class="w-full"
+        />
       </UFormField>
-      <UFormField :label="t('admin.allowedIps.labelLabel')" name="label">
-        <UInput v-model="state.label" :placeholder="t('admin.allowedIps.labelPlaceholder')" class="w-full" />
+      <UFormField
+        :label="t('admin.allowedIps.labelLabel')"
+        name="label"
+      >
+        <UInput
+          v-model="state.label"
+          :placeholder="t('admin.allowedIps.labelPlaceholder')"
+          class="w-full"
+        />
       </UFormField>
-      <UButton type="submit" icon="i-lucide-plus" :loading="adding" :label="t('admin.allowedIps.add')" />
+      <UButton
+        type="submit"
+        icon="i-lucide-plus"
+        :loading="adding"
+        :label="t('admin.allowedIps.add')"
+      />
     </UForm>
 
-    <UAlert v-if="errorMessage" color="error" variant="subtle" :title="errorMessage" class="mb-4" />
+    <UAlert
+      v-if="errorMessage"
+      color="error"
+      variant="subtle"
+      :title="errorMessage"
+      class="mb-4"
+    />
 
-    <div v-if="status === 'pending'" class="flex justify-center py-12">
-      <UIcon name="i-lucide-loader-circle" class="size-6 animate-spin" />
+    <div
+      v-if="status === 'pending'"
+      class="flex justify-center py-12"
+    >
+      <UIcon
+        name="i-lucide-loader-circle"
+        class="size-6 animate-spin"
+      />
     </div>
 
-    <div v-else-if="!allowedIps?.length" class="py-12 text-center text-muted">
+    <div
+      v-else-if="!allowedIps?.length"
+      class="py-12 text-center text-muted"
+    >
       {{ t('admin.allowedIps.empty') }}
     </div>
 
-    <div v-else class="space-y-2">
-      <UCard v-for="entry in allowedIps" :key="entry.id">
+    <div
+      v-else
+      class="space-y-2"
+    >
+      <UCard
+        v-for="entry in allowedIps"
+        :key="entry.id"
+      >
         <div class="flex items-center justify-between gap-4">
           <div>
-            <p class="font-mono text-sm">{{ entry.ip }}</p>
+            <p class="font-mono text-sm">
+              {{ entry.ip }}
+            </p>
             <p class="text-xs text-muted">
               <span v-if="entry.label">{{ entry.label }} · </span>{{ t('admin.allowedIps.addedAt', { date: formatDate(entry.createdAt) }) }}
             </p>
           </div>
-          <UButton color="error" variant="ghost" icon="i-lucide-trash-2" :loading="removingId === entry.id" @click="remove(entry.id)" />
+          <UButton
+            color="error"
+            variant="ghost"
+            icon="i-lucide-trash-2"
+            :loading="removingId === entry.id"
+            @click="remove(entry.id)"
+          />
         </div>
       </UCard>
     </div>

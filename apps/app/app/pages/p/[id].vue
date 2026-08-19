@@ -93,45 +93,103 @@ async function copyText() {
   <div class="flex min-h-screen items-center justify-center p-4">
     <UCard class="w-full max-w-2xl">
       <template #header>
-        <h1 class="text-xl font-semibold">shhh</h1>
+        <h1 class="text-xl font-semibold">
+          shhh
+        </h1>
       </template>
 
       <div v-if="missingKey">
-        <UAlert color="error" variant="subtle" :title="t('read.errors.missingKeyTitle')" :description="t('read.errors.missingKeyDescription')" />
+        <UAlert
+          color="error"
+          variant="subtle"
+          :title="t('read.errors.missingKeyTitle')"
+          :description="t('read.errors.missingKeyDescription')"
+        />
       </div>
 
       <div v-else-if="metaError">
-        <UAlert color="error" variant="subtle" :title="metaError" />
+        <UAlert
+          color="error"
+          variant="subtle"
+          :title="metaError"
+        />
       </div>
 
-      <div v-else-if="decryptedText || decryptedFile" class="space-y-4">
+      <div
+        v-else-if="decryptedText || decryptedFile"
+        class="space-y-4"
+      >
         <template v-if="decryptedText">
           <pre class="max-h-96 overflow-auto rounded-lg bg-elevated p-4 text-sm whitespace-pre-wrap">{{ decryptedText }}</pre>
-          <UButton :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'" :label="copied ? t('create.result.copied') : t('read.copyText')" @click="copyText" />
+          <UButton
+            :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
+            :label="copied ? t('create.result.copied') : t('read.copyText')"
+            @click="copyText"
+          />
         </template>
         <template v-else-if="decryptedFile">
-          <UButton :label="t('read.downloadFile', { name: decryptedFile.name })" icon="i-lucide-download" :to="decryptedFile.url" :download="decryptedFile.name" external />
+          <UButton
+            :label="t('read.downloadFile', { name: decryptedFile.name })"
+            icon="i-lucide-download"
+            :to="decryptedFile.url"
+            :download="decryptedFile.name"
+            external
+          />
         </template>
       </div>
 
-      <div v-else-if="meta" class="space-y-4">
+      <div
+        v-else-if="meta"
+        class="space-y-4"
+      >
         <div class="space-y-1 text-sm text-muted">
           <p>{{ t('read.expiresAt', { date: new Date(meta.expiresAt).toLocaleString() }) }}</p>
-          <p v-if="meta.readsRemaining !== null">{{ t('read.readsRemaining', { count: meta.readsRemaining }) }}</p>
+          <p v-if="meta.readsRemaining !== null">
+            {{ t('read.readsRemaining', { count: meta.readsRemaining }) }}
+          </p>
         </div>
 
-        <UFormField v-if="meta.passwordProtected" :label="t('read.passwordLabel')">
-          <UInput v-model="password" type="password" class="w-full" autocomplete="off" />
+        <UFormField
+          v-if="meta.passwordProtected"
+          :label="t('read.passwordLabel')"
+        >
+          <UInput
+            v-model="password"
+            type="password"
+            class="w-full"
+            autocomplete="off"
+          />
         </UFormField>
 
-        <UAlert color="warning" variant="subtle" :title="t('read.burnWarningTitle')" :description="t('read.burnWarningDescription')" />
-        <UAlert v-if="revealError" color="error" variant="subtle" :title="revealError" />
+        <UAlert
+          color="warning"
+          variant="subtle"
+          :title="t('read.burnWarningTitle')"
+          :description="t('read.burnWarningDescription')"
+        />
+        <UAlert
+          v-if="revealError"
+          color="error"
+          variant="subtle"
+          :title="revealError"
+        />
 
-        <UButton block :loading="revealing" :label="t('read.reveal')" @click="reveal" />
+        <UButton
+          block
+          :loading="revealing"
+          :label="t('read.reveal')"
+          @click="reveal"
+        />
       </div>
 
-      <div v-else class="flex justify-center py-8">
-        <UIcon name="i-lucide-loader-circle" class="size-6 animate-spin" />
+      <div
+        v-else
+        class="flex justify-center py-8"
+      >
+        <UIcon
+          name="i-lucide-loader-circle"
+          class="size-6 animate-spin"
+        />
       </div>
     </UCard>
   </div>

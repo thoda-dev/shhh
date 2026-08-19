@@ -9,7 +9,7 @@ import {
   uuid,
   index,
   check,
-  customType,
+  customType
 } from 'drizzle-orm/pg-core'
 import { users } from './user'
 import { pasteEmailRecipients } from './paste-email-recipient'
@@ -18,7 +18,7 @@ import { pasteEmailRecipients } from './paste-email-recipient'
 const bytea = customType<{ data: Buffer }>({
   dataType() {
     return 'bytea'
-  },
+  }
 })
 
 export const pasteKindEnum = pgEnum('paste_kind', ['text', 'file'])
@@ -47,7 +47,7 @@ export const pastes = pgTable(
     readCount: integer('read_count').notNull().default(0),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-    lastReadAt: timestamp('last_read_at', { withTimezone: true }),
+    lastReadAt: timestamp('last_read_at', { withTimezone: true })
   },
   table => [
     index('pastes_owner_id_idx').on(table.ownerId),
@@ -55,12 +55,12 @@ export const pastes = pgTable(
     check(
       'pastes_kind_payload_check',
       sql`(${table.kind} = 'text' AND ${table.ciphertext} IS NOT NULL AND ${table.fileBlob} IS NULL)
-        OR (${table.kind} = 'file' AND ${table.fileBlob} IS NOT NULL AND ${table.ciphertext} IS NULL)`,
-    ),
-  ],
+        OR (${table.kind} = 'file' AND ${table.fileBlob} IS NOT NULL AND ${table.ciphertext} IS NULL)`
+    )
+  ]
 )
 
 export const pastesRelations = relations(pastes, ({ one, many }) => ({
   owner: one(users, { fields: [pastes.ownerId], references: [users.id] }),
-  emailRecipients: many(pasteEmailRecipients),
+  emailRecipients: many(pasteEmailRecipients)
 }))
