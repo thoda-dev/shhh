@@ -4,12 +4,20 @@ Anything not listed here is either done or deliberately out of scope (see the bo
 
 ## Before a public v1
 
-- **Documentation site.** `apps/docs` is still the untouched Docus template. English only, by design.
+- **Automated tests.** There are none. Every route has been verified by hand, which caught real
+  bugs, but nothing replays those checks on the next change. The paths worth covering first are the
+  ones where a silent regression is worst: the read counter (a one-read link must stay one-read
+  under concurrency), the permission matrix, invitation single-use, and the zero-knowledge round
+  trip.
+- **Continuous integration.** No workflow exists. `pnpm typecheck` and `pnpm build` on every push and
+  pull request is the minimum before accepting outside contributions.
+
+## Waiting on upstream
+
 - **Rich text editing and markdown rendering.** Pastes are plain text today. Nuxt UI's `UEditor`
   handles both editing and read-only rendering, so the two arrive together rather than shipping a
   separate renderer first — waiting on the component to stabilise (open bugs in v4.x around external
   `modelValue` breaking markdown rendering, plugin conflicts, no table support).
-- **Email change flow.** Better Auth exposes `change-email`; it needs the verification mail wired up.
 
 ## Later
 
