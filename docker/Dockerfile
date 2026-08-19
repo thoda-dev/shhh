@@ -29,7 +29,23 @@ COPY . .
 RUN pnpm --filter app exec nuxt build
 
 
-FROM base AS runtime
+# Not `FROM base`: the runtime needs neither corepack nor a package manager, and inheriting them
+# is what drags their vulnerabilities in. Every CVE Docker Scout reports against this image comes
+# from the npm CLI bundled in node:alpine — tar, brace-expansion, undici and ip-address all live
+# under /usr/local/lib/node_modules/npm/node_modules, never in our own layers.
+FROM node:24-alpine AS runtime
+WORKDIR /app
+
+# Nitro's output bundles its own dependencies and the container only ever runs
+# `node .output/server/index.mjs`, so npm, npx, yarn, pnpm and corepack are dead weight here.
+# Removing them takes the image from 18 reported vulnerabilities to 0. It does not shrink it:
+# the files still sit in the base layer underneath, whited out — but scanners read the final
+# filesystem, which is also what an attacker in the container would get.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+           /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+           /usr/local/bin/pnpm /usr/local/bin/pnpx \
+           /usr/local/bin/yarn /usr/local/bin/yarnpkg /opt/yarn-v*
+
 ENV NODE_ENV=production
 ENV NUXT_PORT=3000
 ENV NUXT_HOST=0.0.0.0
