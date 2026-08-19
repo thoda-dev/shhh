@@ -1,5 +1,9 @@
-# Run from the repo root:
-#   cp .env.example .env && docker compose -f docker/docker-compose.yml up -d
+# This file and a .env are all you need — the image is published, nothing is built here:
+#   docker compose -f docker-compose.yml up -d
+#
+# To build from source instead (testing a change before releasing it), add the override, which
+# has to run from the repo root because it needs the whole tree as build context:
+#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.build.yml up -d --build
 #
 # To use an existing Postgres instead of the bundled one, drop the `db` service and its volume,
 # remove the `depends_on` block, and point DATABASE_URL at your server. Nothing else changes —
@@ -8,9 +12,8 @@ name: shhh
 
 services:
   app:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
+    # `latest` never points at a pre-release. Swap the tag for a version to stay on it.
+    image: thodadev/shhh:latest
     restart: unless-stopped
     ports:
       - "${PORT:-3000}:3000"

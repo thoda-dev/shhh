@@ -40,11 +40,15 @@ without trusting the server with the contents.
 
 ## Deploy
 
+Two files, no checkout — the image is published on
+[Docker Hub](https://hub.docker.com/r/thodadev/shhh).
+
 ```bash
-git clone https://github.com/thoda-dev/shhh.git && cd shhh
-cp .env.example .env
+mkdir shhh && cd shhh
+curl -O https://raw.githubusercontent.com/thoda-dev/shhh/master/docker/docker-compose.yml
+curl -o .env https://raw.githubusercontent.com/thoda-dev/shhh/master/.env.example
 # Fill in BETTER_AUTH_SECRET (openssl rand -base64 32) and BETTER_AUTH_URL
-docker compose -f docker/docker-compose.yml up -d
+docker compose up -d
 ```
 
 Open your instance and the setup wizard will walk you through creating the super admin account and

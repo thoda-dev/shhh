@@ -1,6 +1,7 @@
 {
   "name": "shhh",
   "private": true,
+  "version": "0.0.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
     "test": "pnpm --filter app test",
     "lint": "pnpm --filter app lint",
     "lint:fix": "pnpm --filter app lint:fix",
+    "release": "node scripts/release.mjs",
     "db:generate": "pnpm --filter app db:generate",
     "db:migrate": "pnpm --filter app db:migrate",
     "db:studio": "pnpm --filter app db:studio"
