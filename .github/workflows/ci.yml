@@ -18,7 +18,7 @@ env:
 
 jobs:
   checks:
-    name: Typecheck, build, schema
+    name: Lint, Typecheck, build, schema
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
