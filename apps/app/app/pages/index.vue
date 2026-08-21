@@ -24,9 +24,29 @@ const file = ref<File | null>(null)
 const passwordProtected = ref(false)
 const password = ref('')
 
+// The caps for the tier the visitor is actually in. Signing in mid-session changes them, hence the
+// computed rather than a value read once.
+const limits = computed(() =>
+  publicSettings.value?.limits[isAuthenticated.value ? 'authenticated' : 'anonymous']
+)
+
+// Prefilled with the instance's own cap rather than left blank behind a placeholder: it is both the
+// highest value the server accepts and exactly what it applies when the field is omitted, so what
+// the form shows is what the paste gets.
 const expiresInDaysInput = ref<number | null>(null)
 const unlimitedReads = ref(false)
 const maxReadsInput = ref<number | null>(null)
+
+// Offering "unlimited" where the instance caps reads only earns a 400 on submit — the server refuses
+// a null maxReads whenever a cap exists.
+const canChooseUnlimitedReads = computed(() => limits.value?.maxReads === null)
+
+watch(limits, (tier) => {
+  if (!tier) return
+  expiresInDaysInput.value = tier.maxRetentionDays
+  maxReadsInput.value = tier.maxReads
+  unlimitedReads.value = tier.maxReads === null
+}, { immediate: true })
 
 const turnstileToken = ref('')
 
@@ -145,9 +165,11 @@ function reset() {
   file.value = null
   passwordProtected.value = false
   password.value = ''
-  expiresInDaysInput.value = null
-  unlimitedReads.value = false
-  maxReadsInput.value = null
+  // Back to the instance's caps, not to blank: an empty field after the first paste would put the
+  // form right back in the state this prefill exists to avoid.
+  expiresInDaysInput.value = limits.value?.maxRetentionDays ?? null
+  maxReadsInput.value = limits.value?.maxReads ?? null
+  unlimitedReads.value = limits.value?.maxReads === null
   turnstileToken.value = ''
   shareByEmail.value = false
   recipientsInput.value = ''
@@ -304,7 +326,7 @@ function reset() {
               v-model.number="expiresInDaysInput"
               type="number"
               min="1"
-              :placeholder="t('create.instanceDefault')"
+              :max="limits?.maxRetentionDays ?? undefined"
               class="w-full"
             />
           </UFormField>
@@ -314,7 +336,7 @@ function reset() {
               v-model.number="maxReadsInput"
               type="number"
               min="1"
-              :placeholder="t('create.instanceDefault')"
+              :max="limits?.maxReads ?? undefined"
               class="w-full"
             />
             <UButton
@@ -327,6 +349,7 @@ function reset() {
           </UFormField>
         </div>
         <USwitch
+          v-if="canChooseUnlimitedReads"
           v-model="unlimitedReads"
           :label="t('create.unlimitedReads')"
         />
