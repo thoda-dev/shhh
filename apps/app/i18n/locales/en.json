@@ -332,5 +332,9 @@
   },
   "nav": {
     "documentation": "Documentation"
+  },
+  "seo": {
+    "title": "shhh — share a secret that expires",
+    "description": "A self-hostable, zero-knowledge pastebin. The server stores ciphertext and nothing else: the key lives in the URL fragment and never reaches it."
   }
 }

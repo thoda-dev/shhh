@@ -332,5 +332,9 @@
   },
   "nav": {
     "documentation": "Documentation"
+  },
+  "seo": {
+    "title": "shhh — partagez un secret qui expire",
+    "description": "Un pastebin zero-knowledge auto-hébergeable. Le serveur ne stocke que du chiffré : la clé vit dans le fragment de l'URL et ne lui parvient jamais."
   }
 }
