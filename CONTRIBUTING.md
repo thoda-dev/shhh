@@ -22,6 +22,8 @@ pnpm test
 Schema changes need a migration committed alongside them: `pnpm db:generate`. CI fails if the
 migrations and the schema disagree.
 
+By taking part, you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Scope
 
 [ROADMAP.md](ROADMAP.md) lists what is planned and, at the bottom, what was evaluated and rejected.
