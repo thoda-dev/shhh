@@ -3,6 +3,26 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.1.2
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.1...v1.1.2)
+
+### 🩹 Fixes
+
+- **auth:** Add the issuer column Better Auth 1.7 requires ([#4](https://github.com/thoda-dev/shhh/pull/4))
+
+### 📖 Documentation
+
+- Drop the stale Unreleased changelog section ([#2](https://github.com/thoda-dev/shhh/pull/2))
+
+### 🏡 Chore
+
+- Add funding file ([5a99bb3](https://github.com/thoda-dev/shhh/commit/5a99bb3))
+
+### ❤️ Contributors
+
+- Thomas ([@thoda-dev](https://github.com/thoda-dev))
+
 ## v1.1.1
 
 [compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.0...v1.1.1)
