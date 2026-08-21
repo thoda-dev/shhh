@@ -4,23 +4,36 @@ Anything not listed here is either done or deliberately out of scope (see the bo
 
 ## Before a public v1
 
-- **A logo, and a favicon that isn't Nuxt's.** `apps/app/public/favicon.ico` is still the scaffold
-  default, so every instance currently ships with the Nuxt logo in the browser tab. Needs a mark
-  first, then the derived assets: `.ico` and an SVG for the tab, an apple-touch icon, and the same
-  mark reused in the Docus site and in the mail templates' header. While in there, the app sets no
-  `<title>` and no Open Graph tags at all — the same pass should give it both.
+- **An SVG icon.** The app and the documentation share a `favicon.ico`, an apple-touch icon and a
+  1200×630 share image, and the app carries a localised `<title>`, description and Open Graph tags.
+  What is missing is a vector icon: modern browsers prefer one for a tab that stays crisp at any
+  scale and adapts to dark mode. It cannot be derived from the raster mark — it has to be drawn.
+
+  The share image is the square mark padded onto a flat background. Readable, but it says nothing;
+  a version carrying the tagline would earn its place on a link far better.
+
+  The mail templates have no header image, which is deliberate: an image in an email means either an
+  external URL that tells the sender the message was opened, or a base64 payload in every message.
 
 - **Integration tests.** Unit tests cover the pure logic (see below), but nothing exercises the
-  routes. The paths where a silent regression would cost most, in order:
-  1. **The read counter under concurrency** — fire many simultaneous reveals at a one-read paste and
+  routes — and that gap has already shipped a broken release. v1.1.0 and v1.1.1 could not complete
+  their setup wizard at all: bumping Better Auth to 1.7 needed a new `issuer` column on `accounts`,
+  and nothing noticed, because lint, types, 86 unit tests, both builds and both Docker images all
+  pass without a single request ever reaching `signUpEmail`. The paths where a silent regression
+  would cost most, in order:
+  1. **Sign-up and the setup wizard** — the one that was actually broken. A fresh database, the
+     wizard completed, a super admin created. It would have caught the schema drift on the commit
+     that introduced it rather than on a self-hoster's first boot.
+  2. **The read counter under concurrency** — fire many simultaneous reveals at a one-read paste and
      assert exactly one succeeds. This is the test that guards the atomic
-     `UPDATE … WHERE read_count < max_reads RETURNING`.
-  2. **The permission matrix** — the table in the security docs, case by case.
-  3. **Invitations** — single use including two concurrent accepts, address fixed by the invitation
+     `UPDATE … WHERE read_count < max_reads RETURNING`, and now also that a caller without the
+     unlock hash moves nothing.
+  3. **The permission matrix** — the table in the security docs, case by case.
+  4. **Invitations** — single use including two concurrent accepts, address fixed by the invitation
      rather than the request body, role always `user`, registration bypass.
-  4. **Anonymous restrictions** — no uploads, no server-side sharing, `public_paste_enabled` off.
-  5. **Settings semantics** — an absent row means the default, a row holding `null` means unlimited.
-  6. **Account deletion** — full cascade, audit log anonymised rather than deleted.
+  5. **Anonymous restrictions** — no uploads, no server-side sharing, `public_paste_enabled` off.
+  6. **Settings semantics** — an absent row means the default, a row holding `null` means unlimited.
+  7. **Account deletion** — full cascade, audit log anonymised rather than deleted.
 
   Needs Vitest with `@nuxt/test-utils` and a real PostgreSQL (a service container in CI), with
   tables truncated between tests. Turnstile is bypassed with Cloudflare's always-valid test keys.
