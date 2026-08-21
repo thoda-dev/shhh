@@ -27,8 +27,10 @@ By taking part, you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 ## Scope
 
 [ROADMAP.md](ROADMAP.md) lists what is planned and, at the bottom, what was evaluated and rejected.
-Reopening something from that second list needs a new argument, not a reminder. If a change is
-larger than a bug fix, open an issue before writing it.
+Reopening something from that second list needs a new argument, not a reminder.
+
+**Every pull request has to close an issue**, and CI enforces it. Open one first, so the discussion
+happens before the work rather than on top of a finished branch.
 
 ## AI assistance
 

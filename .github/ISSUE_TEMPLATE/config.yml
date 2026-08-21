@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/thoda-dev/shhh/security/advisories/new
+    about: Never report a vulnerability in a public issue. Open a private advisory — see SECURITY.md.
+  - name: Code of conduct
+    url: https://github.com/thoda-dev/shhh/blob/master/CODE_OF_CONDUCT.md
+    about: Reporting a conduct issue is a private channel, not an issue.

@@ -1,0 +1,46 @@
+name: Pull request
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linked-issue:
+    name: Closes an issue
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # `closingIssuesReferences` is what GitHub itself resolves, so it counts both a "Closes #12"
+      # keyword in the description and an issue linked by hand from the Development sidebar.
+      # Grepping the body would only catch the first.
+      - name: Check the pull request closes an issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          count=$(gh api graphql \
+            -f query='
+              query($owner: String!, $name: String!, $pr: Int!) {
+                repository(owner: $owner, name: $name) {
+                  pullRequest(number: $pr) {
+                    closingIssuesReferences(first: 1) { totalCount }
+                  }
+                }
+              }' \
+            -F owner="${REPO%/*}" -F name="${REPO#*/}" -F pr="$PR" \
+            --jq '.data.repository.pullRequest.closingIssuesReferences.totalCount')
+
+          if [ "$count" -eq 0 ]; then
+            echo "::error::This pull request closes no issue. Add \"Closes #123\" to the description, or link one from the Development sidebar, then push or edit to re-run."
+            exit 1
+          fi
+
+          echo "Linked issues: $count"

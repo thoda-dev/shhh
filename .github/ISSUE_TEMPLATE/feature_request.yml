@@ -1,0 +1,28 @@
+name: Feature request
+description: Suggest something shhh doesn't do yet
+labels: [enhancement]
+body:
+  - type: checkboxes
+    id: roadmap
+    attributes:
+      label: Roadmap
+      description: >
+        ROADMAP.md lists what is planned and, at the bottom, what was evaluated and rejected.
+        Reopening something from that second list needs a new argument, not a reminder.
+      options:
+        - label: I read ROADMAP.md, including the "Deliberately out of scope" section
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you are trying to do that shhh makes hard today.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you have in mind
+      description: Optional. The problem matters more than the solution.
