@@ -4,6 +4,16 @@ export interface PublicSettings {
   require2fa: boolean
   mailEnabled: boolean
   maxEmailRecipients: number | null
+  limits: {
+    anonymous: TierLimits
+    authenticated: TierLimits
+  }
+}
+
+/** `null` means the instance sets no cap, which is the only case where "unlimited" may be offered. */
+export interface TierLimits {
+  maxRetentionDays: number | null
+  maxReads: number | null
 }
 
 // Same shape as `useAuth.ts`: one shared `useState` ref so the 2FA middleware and the creation form read the same value from a single request, loaded once per app lifecycle via `callOnce`.

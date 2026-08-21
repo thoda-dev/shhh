@@ -6,6 +6,11 @@
 
 > Say it once. We'll forget.
 
+**[Try the demo](https://shhh.thoda.dev)** · **[Documentation](https://shhh-docs.thoda.dev)**
+
+The demo is a public instance with short retention and tight limits, reset without warning. Don't
+put anything in it you would mind losing.
+
 A self-hostable, zero-knowledge pastebin for sharing secrets — text and files — that expire on their
 own. The server stores ciphertext and nothing else: the decryption key lives in the URL fragment and
 is never sent to it.

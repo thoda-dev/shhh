@@ -329,5 +329,8 @@
     "errors": {
       "generic": "Impossible de créer le compte."
     }
+  },
+  "nav": {
+    "documentation": "Documentation"
   }
 }
