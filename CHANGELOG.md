@@ -3,6 +3,23 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.1.0
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.0.1...v1.1.0)
+
+### 🚀 Enhancements
+
+- Add commit and pr validation ([81e3b34](https://github.com/thoda-dev/shhh/commit/81e3b34))
+- **pastes:** Require proof of the key to spend a read ([af3b28e](https://github.com/thoda-dev/shhh/commit/af3b28e))
+
+### 🩹 Fixes
+
+- Broken ci with doc image ([5623be5](https://github.com/thoda-dev/shhh/commit/5623be5))
+
+### ❤️ Contributors
+
+- Thomas <github.passage306@passmail.net>
+
 ## Unreleased
 
 ### Added
