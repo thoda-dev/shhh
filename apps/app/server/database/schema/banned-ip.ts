@@ -1,7 +1,6 @@
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 
-// IP stored in clear (not hashed) — needed for an admin panel to list/manage entries.
-// Treated as operational security data (GDPR: legitimate interest), not user profile data.
+// Stored in clear, not hashed: the admin panel has to list and manage entries. Operational security data, not user profile data.
 export const bannedIps = pgTable('banned_ips', {
   id: uuid('id').defaultRandom().primaryKey(),
   ip: text('ip').notNull().unique(),

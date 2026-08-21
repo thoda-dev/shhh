@@ -13,8 +13,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 503, statusMessage: 'This instance has no mail provider configured' })
   }
 
-  // Both duplicate checks from project.md section 7. The pending one is also enforced by a partial
-  // unique index, but checking here turns a constraint violation into a readable 409.
+  // A partial unique index also covers the pending case; checking here turns it into a readable 409.
   const [existingUser] = await db
     .select({ id: schema.users.id })
     .from(schema.users)
@@ -31,8 +30,7 @@ export default defineEventHandler(async (event) => {
     .where(and(eq(schema.invitations.email, email), eq(schema.invitations.status, 'pending')))
     .limit(1)
 
-  // A pending row that has already lapsed shouldn't block a fresh invitation. Flipping it to
-  // 'expired' here is what frees the partial unique index for the new row.
+  // A lapsed pending row shouldn't block a fresh invitation; flipping it to 'expired' frees the partial unique index.
   if (pending) {
     if (invitationState(pending) === 'pending') {
       throw createError({ statusCode: 409, statusMessage: 'An invitation is already pending for this email' })
@@ -41,8 +39,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const expiryDays = await getSetting('invitation_expiry_days')
-  // `null` means "no expiry configured"; the column is NOT NULL, so a far-future date stands in for
-  // it rather than making every read handle a nullable deadline.
+  // `null` means no expiry configured; the column is NOT NULL, so a far-future date stands in rather than making every read handle a nullable deadline.
   const expiresAt = expiryDays === null
     ? new Date('9999-12-31T23:59:59Z')
     : new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000)
@@ -60,8 +57,7 @@ export default defineEventHandler(async (event) => {
       createdAt: schema.invitations.createdAt
     })
 
-  // Same reasoning as paste sharing: built from BETTER_AUTH_URL rather than the request's Host
-  // header, which is attacker-controllable behind a proxy and would land in an email.
+  // Same reasoning as paste sharing: from BETTER_AUTH_URL, not the attacker-controllable Host header, since it lands in an email.
   const origin = process.env.BETTER_AUTH_URL!.replace(/\/+$/, '')
   const mail = invitationTemplate({
     url: `${origin}/register?token=${token}`,
@@ -77,7 +73,6 @@ export default defineEventHandler(async (event) => {
   })
 
   setResponseStatus(event, 201)
-  // The invitation row is kept even when delivery fails — an admin can revoke it and issue a new
-  // one, which is more useful than silently having no trace of the attempt.
+  // The row is kept even when delivery fails: an admin can revoke and reissue, which beats having no trace of the attempt.
   return { ...invitation, sent }
 })

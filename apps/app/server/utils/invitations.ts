@@ -2,14 +2,9 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { randomBytes } from 'node:crypto'
 
 /**
- * Marks "an invitation token was already verified, this signup is legitimate" for the duration of a
- * single accept request. Read by the `/sign-up/email` hook in `server/utils/auth.ts`, which would
- * otherwise refuse the signup whenever `registration_enabled` is off.
- *
- * AsyncLocalStorage rather than a header or a body field: Better Auth's own endpoints are reachable
- * directly by any client, so anything carried in the request could simply be forged to bypass the
- * registration lock. This context can only be entered by our own accept route, after it has checked
- * the token — it is not reachable from outside the process.
+ * Marks a signup as coming from an already-verified invitation token, for the duration of one accept request.
+ * Read by the `/sign-up/email` hook, which would otherwise refuse it whenever `registration_enabled` is off.
+ * AsyncLocalStorage rather than a header or body field: anything carried in the request could be forged, while this context is only reachable from our own accept route.
  */
 const invitedSignupContext = new AsyncLocalStorage<{ invitationId: string }>()
 
@@ -22,21 +17,18 @@ export function runAsInvitedSignup<T>(invitationId: string, fn: () => Promise<T>
 }
 
 export function generateInvitationToken(): string {
-  // 32 bytes — the token is the only thing standing between a stranger and an account on a closed
-  // instance, so it is sized like a session secret, not like a coupon code.
+  // 32 bytes: the only thing between a stranger and an account on a closed instance, so it is sized like a session secret.
   return randomBytes(32).toString('base64url')
 }
 
 export type InvitationRow = typeof schema.invitations.$inferSelect
 
 /**
- * `expired` is derived, never a stored transition: a row keeps `status = 'pending'` past its
- * deadline and is judged at read time. Same approach as banned IPs and pastes elsewhere in the
- * project — no scheduled job has to run for the rule to hold.
+ * `expired` is derived, never a stored transition: a row stays 'pending' past its deadline and is judged at read time.
+ * Same as banned IPs and pastes — no scheduled job has to run for the rule to hold.
  */
 export function invitationState(
-  // Only the two fields the rule actually reads, so the admin list route can pass its projection
-  // (which deliberately omits the token) without casting a partial row to a full one.
+  // Only the two fields the rule reads, so the admin list route can pass its token-less projection without casting.
   invitation: Pick<InvitationRow, 'status' | 'expiresAt'>
 ): 'pending' | 'accepted' | 'revoked' | 'expired' {
   if (invitation.status === 'pending' && invitation.expiresAt.getTime() <= Date.now()) {

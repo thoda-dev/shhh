@@ -9,8 +9,7 @@ const user = useAuthUser()
 const isAuthenticated = computed(() => !!user.value)
 
 const publicSettings = await ensurePublicSettingsLoaded()
-// Mirrors the server-side check in POST /api/pastes: with `public_paste_enabled` off, the instance
-// is accounts-only. Reading an existing paste stays open to everyone either way.
+// Mirrors the check in POST /api/pastes: with `public_paste_enabled` off the instance is accounts-only, but reading an existing paste stays open to everyone.
 const anonymousBlocked = computed(() => !isAuthenticated.value && publicSettings.value?.publicPasteEnabled === false)
 
 const kindItems = computed<TabsItem[]>(() => [
@@ -31,9 +30,7 @@ const maxReadsInput = ref<number | null>(null)
 
 const turnstileToken = ref('')
 
-// Email sharing is offered only at creation and only to authenticated users — it's the one moment
-// the decryption key may reach the server (see server/utils/paste-sharing.ts). There is deliberately
-// no way to share an already-created paste.
+// Offered only at creation and only to authenticated users: it is the one moment the key may reach the server, and there is deliberately no way to share an existing paste.
 const canShareByEmail = computed(() => isAuthenticated.value && publicSettings.value?.mailEnabled === true)
 const shareByEmail = ref(false)
 const recipientsInput = ref('')
@@ -44,10 +41,7 @@ const emailShareSent = ref<boolean | null>(null)
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-// Not translated, and deliberately not in i18n: names and address format are the same in every
-// locale, and `example.com` is the domain RFC 2606 reserves for documentation — a localised
-// variant would point at somebody's real domain. Keeping it out of the message catalogue also
-// avoids escaping `@`, which vue-i18n reads as its linked-message marker.
+// Not in i18n on purpose: address format is the same in every locale, a localised variant would point at somebody's real domain, and it avoids escaping `@`, which vue-i18n reads as its linked-message marker.
 const RECIPIENTS_PLACEHOLDER = 'alice@example.com, bob@example.com'
 
 const submitting = ref(false)
@@ -110,9 +104,7 @@ async function submit() {
 
     const fragment = bytesToBase64Url(fragmentKeyBytes)
 
-    // The server builds the emailed link itself (it alone knows the paste id), so it needs the
-    // fragment key. Sent in the same request as the paste — there is no second call, and no
-    // endpoint that accepts a key for an already-existing paste.
+    // The server builds the emailed link, so it needs the fragment key. Sent in the same request as the paste: no second call, and no endpoint accepts a key for an existing paste.
     if (shareByEmail.value && canShareByEmail.value) {
       payload.share = { fragmentKey: fragment, recipients: recipients.value }
     }
@@ -135,10 +127,8 @@ async function copyLink() {
   setTimeout(() => (copied.value = false), 2000)
 }
 
-// Client-side share for everyone, authenticated or not: opens the user's own mail client with the
-// body pre-filled and the To field left empty (RFC 6068 makes the recipient optional). The link
-// never leaves the browser this way, so it stays available even on an instance with no mail
-// provider — and for anonymous users, who can't use the server-side path at all.
+// Opens the user's own mail client with the body pre-filled and no recipient, so the link never leaves the browser.
+// Available to everyone, including anonymous users and instances with no mail provider.
 const mailtoHref = computed(() => {
   const subject = t('create.result.mailtoSubject')
   const body = `${t('create.result.mailtoBody')}\n\n${resultUrl.value}`

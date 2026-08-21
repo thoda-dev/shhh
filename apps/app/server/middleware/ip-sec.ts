@@ -18,15 +18,12 @@ const FORBIDDEN_ROUTES = [
   'phpinfo.php'
 ]
 
-// Exact loopback addresses only — NOT a blanket `::ffff:` prefix match. That prefix just means
-// "IPv4-mapped IPv6"; behind most proxies/hosts it applies to every real client IP, not just
-// localhost, so matching on it alone would bypass this middleware for effectively everyone.
+// Exact loopback addresses only, never a blanket `::ffff:` prefix match: that prefix means "IPv4-mapped IPv6" and covers every real client behind most proxies, which would bypass this middleware for everyone.
 const IGNORED_IPS = new Set(['::1', '127.0.0.1', '::ffff:127.0.0.1'])
 
 const PUBLIC_PATHS = new Set([
   '/',
-  // Monitoring probes (Uptime Kuma and friends) send their own User-Agent and would be classified
-  // as untrusted bots — which doesn't just return 403, it permanently bans the monitor's IP.
+  // Monitoring probes send their own User-Agent and would be classified as untrusted bots, which bans the monitor's IP outright.
   '/api/health',
   '/robots.txt',
   '/favicon.ico',

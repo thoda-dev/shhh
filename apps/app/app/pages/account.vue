@@ -13,9 +13,7 @@ if (!user.value) {
 }
 
 const publicSettings = await ensurePublicSettingsLoaded()
-// When the instance requires 2FA, this page is the only one a non-enrolled account can reach
-// (see `require-2fa.global.ts`), so it has to explain why — and hide the disable flow, which the
-// server refuses anyway through the `/two-factor/disable` hook in `server/utils/auth.ts`.
+// With 2FA required this is the only page a non-enrolled account can reach, so it explains why and hides the disable flow, which the server refuses anyway.
 const twoFactorRequired = computed(() => publicSettings.value?.require2fa === true)
 const mustEnrollNow = computed(() => twoFactorRequired.value && !user.value?.twoFactorEnabled)
 
@@ -43,8 +41,7 @@ async function saveName(event: FormSubmitEvent<typeof nameState>) {
 }
 
 // --- Email address ---
-// Only offered when the instance can send mail: the confirmation goes to the current address, and
-// without it the change would be unverifiable (see `changeEmail` in server/utils/auth.ts).
+// Only offered when the instance can send mail: the confirmation goes to the current address, and without it the change is unverifiable.
 const canChangeEmail = computed(() => publicSettings.value?.mailEnabled === true)
 const newEmail = ref('')
 const changingEmail = ref(false)
@@ -195,8 +192,7 @@ async function regenerateBackupCodes() {
       method: 'POST',
       body: { password: regeneratePassword.value }
     })
-    // Reuses the enrollment screen's code list, minus the QR step: the previous codes are now dead,
-    // so these must be shown once with the same warning.
+    // Reuses the enrollment screen's code list minus the QR step: the previous codes are dead, so these are shown once with the same warning.
     backupCodes.value = result.backupCodes
     regeneratePassword.value = ''
   } catch (error) {
@@ -207,7 +203,7 @@ async function regenerateBackupCodes() {
   }
 }
 
-// --- Account deletion (GDPR right to erasure, project.md section 8) ---
+// --- Account deletion (GDPR right to erasure) ---
 const isSuperAdmin = computed(() => user.value?.role === 'super_admin')
 const deletePassword = ref('')
 const deleteConfirmation = ref('')

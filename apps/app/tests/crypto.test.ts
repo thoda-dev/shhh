@@ -36,8 +36,7 @@ describe('encoding', () => {
   })
 
   it('produces base64url that is safe in a URL fragment', () => {
-    // The whole scheme depends on this surviving a trip through the address bar untouched:
-    // `+`, `/` and `=` would each be mangled or ambiguous there.
+    // The whole scheme depends on this surviving the address bar untouched: `+`, `/` and `=` would each be mangled or ambiguous there.
     for (let i = 0; i < 50; i++) {
       expect(bytesToBase64Url(generateFragmentKey())).toMatch(/^[A-Za-z0-9_-]+$/)
     }
@@ -75,8 +74,7 @@ describe('encryption without a password', () => {
   })
 
   it('rejects tampered ciphertext', async () => {
-    // GCM authenticates as well as encrypts; a flipped bit must fail loudly rather than decrypt
-    // to garbage.
+    // GCM authenticates as well as encrypts: a flipped bit must fail loudly rather than decrypt to garbage.
     const key = await deriveAesKey(generateFragmentKey())
     const { ciphertext, iv } = await encryptBytes(key, encoder.encode('secret'))
     ciphertext[0] ^= 0xff

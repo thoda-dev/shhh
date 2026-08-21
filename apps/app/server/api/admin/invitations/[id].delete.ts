@@ -6,9 +6,7 @@ export default defineEventHandler(async (event) => {
   const session = await requireAdminSession(event)
   const { id } = await getValidatedRouterParams(event, paramsSchema.parse)
 
-  // Revoked, not deleted: the audit trail of who invited whom is worth keeping, and an accepted
-  // invitation must stay on record. Scoped to 'pending' so an already accepted account can't be
-  // retroactively "un-invited" — that would be a user deletion, which lives elsewhere.
+  // Revoked, not deleted: who invited whom stays on record. Scoped to 'pending' so an accepted account can't be retroactively un-invited — that is a user deletion, which lives elsewhere.
   const [invitation] = await db
     .update(schema.invitations)
     .set({ status: 'revoked' })

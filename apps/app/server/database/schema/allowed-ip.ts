@@ -2,8 +2,7 @@ import { relations } from 'drizzle-orm'
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 import { users } from './user'
 
-// Whitelist that bypasses the ip-sec middleware entirely (project.md section 6) — e.g. for
-// admins/offices behind a shared IP that would otherwise trip bot/probe detection.
+// Bypasses the ip-sec middleware entirely, for offices behind a shared IP that would trip probe detection.
 export const allowedIps = pgTable('allowed_ips', {
   id: uuid('id').defaultRandom().primaryKey(),
   ip: text('ip').notNull().unique(),

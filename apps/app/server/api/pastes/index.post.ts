@@ -1,14 +1,10 @@
 import { z } from 'zod'
 
-// Fallback used only when an admin has explicitly set the retention cap to "unlimited"
-// (app_settings row present with value = null) and the client didn't request a specific
-// duration — matches the same numbers as the app_settings defaults (project.md section 5).
+// Fallback for an "unlimited" retention cap (app_settings row holding null) and no requested duration.
 const DEFAULT_RETENTION_DAYS = { anonymous: 7, authenticated: 30 } as const
 
-// Email sharing is only ever accepted here, at creation, and only from an authenticated session —
-// see the zero-knowledge note in `server/utils/paste-sharing.ts` for why the key may only cross the
-// wire at this single point. `fragmentKey` is the base64url key from the URL fragment; the server
-// composes the link itself since the paste id doesn't exist client-side yet.
+// Email sharing is accepted here only, at creation, from an authenticated session — see `server/utils/paste-sharing.ts` for why the key crosses the wire at this single point.
+// `fragmentKey` is the base64url key from the URL fragment; the server composes the link itself since the paste id doesn't exist client-side yet.
 const shareSchema = z.object({
   fragmentKey: z.string().min(1).max(256),
   recipients: z.array(z.string().email()).min(1)
@@ -78,8 +74,7 @@ export default defineEventHandler(async (event) => {
     'max_email_recipients_per_paste'
   ])
 
-  // The only email setting that still bites: with one Bcc'd message per paste there is no send
-  // volume to throttle, but the size of that single message is still worth capping.
+  // One Bcc'd message per paste leaves no send volume to throttle, but the size of that message is still worth capping.
   if (body.share && settings.max_email_recipients_per_paste !== null
     && body.share.recipients.length > settings.max_email_recipients_per_paste) {
     throw createError({
@@ -88,8 +83,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Turning `public_paste_enabled` off makes the instance accounts-only; it doesn't close it down.
-  // Authenticated creation, and reading an existing paste, are both unaffected.
+  // Turning `public_paste_enabled` off makes the instance accounts-only: authenticated creation and reading an existing paste are unaffected.
   if (!session && !settings.public_paste_enabled) {
     throw createError({ statusCode: 403, statusMessage: 'Anonymous pastes are disabled on this instance' })
   }
@@ -113,16 +107,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 429, statusMessage: 'Too many pastes created, try again later' })
   }
 
-  // Anti-bot frontline (project.md section 6, point 4) — required for every tier, including
-  // authenticated: account sign-up alone doesn't stop a bot operating through a stolen/compromised
-  // account, so Turnstile stays a separate layer regardless of session state.
+  // Required for every tier: a stolen account is still a bot vector, so Turnstile stays independent of the session.
   const verification = await verifyTurnstileToken(body.turnstileToken, event)
   if (!verification.success) {
     throw createError({ statusCode: 403, statusMessage: 'Turnstile verification failed' })
   }
 
-  // Separate, stricter layer on top of the general create cap above — uploads only, always
-  // scoped by user (anonymous file uploads are already rejected earlier). project.md section 6.
+  // Stricter layer on top of the create cap above. Always per-user: anonymous uploads are already rejected.
   if (body.kind === 'file') {
     const uploadRateLimit = await checkRateLimit({
       scope: 'user',
@@ -184,11 +175,8 @@ export default defineEventHandler(async (event) => {
     values.fileSize = fileBlob.length
   }
 
-  // Instance-wide quotas (project.md section 5). Read live from `pastes` rather than the
-  // denormalised `app_stats`, which the purge task only refreshes hourly — an hour of drift on a
-  // disk-exhaustion guard would defeat its purpose. Not atomic against concurrent creates (same
-  // deliberate tradeoff as the rate limiter): a guard rail, not an accountant. Skipped entirely
-  // when both quotas are unlimited, so the default instance never pays for the scan.
+  // Live from `pastes`, not the hourly `app_stats`: an hour of drift would defeat a disk-exhaustion guard.
+  // Not atomic against concurrent creates — a guard rail, not an accountant. Skipped when both are unlimited.
   if (settings.max_total_pastes !== null || settings.max_total_storage_bytes !== null) {
     const [totals] = await db
       .select({
@@ -216,9 +204,7 @@ export default defineEventHandler(async (event) => {
     passwordProtected: schema.pastes.passwordProtected
   })
 
-  // After the insert: the link can only be composed once the paste id exists. A delivery failure is
-  // reported back (`shared: false`) rather than thrown — the paste is already created and perfectly
-  // usable, so the caller still needs its id and link.
+  // After the insert, since the link needs the paste id. A delivery failure is reported as `shared: false` rather than thrown: the paste exists and the caller still needs its link.
   let shared: boolean | undefined
   if (body.share && session) {
     const result = await sharePasteByEmail({

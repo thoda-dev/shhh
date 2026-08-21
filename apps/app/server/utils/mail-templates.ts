@@ -1,7 +1,6 @@
 /**
- * Every template returns `{ subject, html, text }` from a single function, on purpose: the plain
- * text part is mandatory (project.md section 9) and generating it separately is how the two halves
- * drift apart. One minimal wrapper is shared by all mails — no per-template design.
+ * One function per template returns `{ subject, html, text }` — a separate text generator would drift.
+ * One minimal wrapper is shared by all mails, no per-template design.
  */
 export interface RenderedMail {
   subject: string
@@ -17,8 +16,7 @@ const ESCAPES: Record<string, string> = {
   '\'': '&#39;'
 }
 
-// Everything interpolated into these templates is user-controlled (display names, paste URLs,
-// sender addresses), so it is escaped without exception.
+// Everything interpolated here is user-controlled (display names, URLs, sender addresses), so it is escaped without exception.
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, char => ESCAPES[char]!)
 }
@@ -77,8 +75,7 @@ export function resetPasswordTemplate(params: { url: string }): RenderedMail {
 }
 
 export function changeEmailTemplate(params: { url: string, newEmail: string }): RenderedMail {
-  // Sent to the CURRENT address, not the new one: the point is to let the account's existing owner
-  // approve — or notice and refuse — a move to an address they may not control.
+  // Sent to the CURRENT address, not the new one: the existing owner has to approve, or notice and refuse, the move.
   const intro = `A request was made to change the email address of your shhh account to ${params.newEmail}.`
   const ignore = 'If this was not you, ignore this email and change your password — your address stays unchanged until this link is used.'
 
@@ -105,8 +102,7 @@ export function invitationTemplate(params: { url: string, expiresInDays: number 
 export function sharedPasteTemplate(params: { url: string, senderName: string, remainingReads: number | null, expiresAt: Date }): RenderedMail {
   const intro = `${params.senderName} shared an encrypted secret with you through shhh.`
   const expiry = `It expires on ${params.expiresAt.toUTCString()}.`
-  // The read counter belongs to the paste, not to each recipient — worth stating plainly here
-  // since several people may have received this same link (project.md section 9).
+  // The counter belongs to the paste, not to each recipient — several people may hold this same link.
   const reads = params.remainingReads === null
     ? 'It can be opened an unlimited number of times.'
     : `It can be opened ${params.remainingReads} more time${params.remainingReads === 1 ? '' : 's'} in total — that count is shared between everyone who received this link.`

@@ -29,27 +29,16 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   advanced: {
     ipAddress: {
-      // Without this, Better Auth can't resolve a client IP behind a container/proxy and falls back
-      // to one shared rate-limit bucket for every caller — meaning a single attacker throttles
-      // everyone's sign-in attempts. Surfaced by a warning in the container logs, not in dev.
-      //
-      // This matches what the rest of the app already does (`getRequestIP(event, { xForwardedFor: true })`)
-      // and carries the same deployment requirement: the instance must sit behind a reverse proxy
-      // that overwrites X-Forwarded-For rather than appending to a client-supplied value.
+      // Without this, Better Auth falls back to one shared rate-limit bucket for every caller behind a proxy, so a single attacker throttles everyone's sign-in attempts.
+      // Same X-Forwarded-For trust as the rest of the app, and the same requirement: the proxy must overwrite the header, not append to a client-supplied value.
       ipAddressHeaders: ['x-forwarded-for']
     }
   },
   emailAndPassword: {
     enabled: true,
-    // Only meaningful when a provider is configured; with MAIL_PROVIDER='none' nobody could ever
-    // verify and the instance would be unusable. Scope is narrower than it looks: the setup wizard
-    // and invitation acceptance both mark the address verified themselves, so the only path this
-    // gates is public self-registration — exactly where an unverified address is a problem, since
-    // it is also the address every password reset would be sent to.
+    // Narrower than it looks: the setup wizard and invitation acceptance verify the address themselves, so this gates public self-registration only.
     requireEmailVerification: isMailEnabled(),
-    // With MAIL_PROVIDER='none' there is no way to deliver a reset link, so the flow is disabled
-    // outright rather than left to fail silently — resetting a password becomes a manual admin
-    // action in that configuration (project.md section 9).
+    // Without a provider there is no way to deliver a reset link, so resetting becomes a manual admin action.
     sendResetPassword: isMailEnabled()
       ? async ({ user, url }) => {
         const mail = resetPasswordTemplate({ url })
@@ -58,11 +47,9 @@ export const auth = betterAuth({
       : undefined
   },
   emailVerification: {
-    // Same reasoning: an instance running without mail must stay usable, so verification is only
-    // required when a provider is actually configured.
+    // Same reasoning: an instance running without mail must stay usable.
     sendOnSignUp: isMailEnabled(),
-    // Re-sends on a sign-in attempt by an unverified account. Without it, anyone whose first
-    // verification mail was lost would be permanently locked out with no self-service way back.
+    // Re-sends on a sign-in by an unverified account: a lost first mail would otherwise lock the user out for good.
     sendOnSignIn: isMailEnabled(),
     autoSignInAfterVerification: true,
     sendVerificationEmail: isMailEnabled()
@@ -75,13 +62,9 @@ export const auth = betterAuth({
   user: {
     modelName: 'users',
     changeEmail: {
-      // Only offered when a provider is configured: the confirmation goes to the *current* address,
-      // which is what stops someone with a hijacked session from quietly moving the account to an
-      // address they control. Without mail there is no such safeguard, so the flow stays off.
+      // Only with a provider: the confirmation goes to the *current* address, which is what stops a hijacked session from moving the account.
       enabled: isMailEnabled(),
-      // Deliberately left at false even for unverified accounts — an unverified address is still the
-      // one the operator sees, and skipping confirmation would make the check trivially avoidable by
-      // simply never verifying.
+      // False even for unverified accounts: skipping confirmation would make the check avoidable by simply never verifying.
       updateEmailWithoutVerification: false,
       sendChangeEmailConfirmation: isMailEnabled()
         ? async ({ user, newEmail, url }) => {
@@ -110,22 +93,15 @@ export const auth = betterAuth({
   },
   plugins: [
     twoFactor({
-      // Must match the schema export's key (`twoFactors`), not the SQL table name — the drizzle
-      // adapter does an exact `schema[twoFactorTable]` lookup, unrelated to the actual `pgTable('two_factors', ...)` name.
+      // The schema export's key (`twoFactors`), not the SQL table name: the drizzle adapter does an exact `schema[twoFactorTable]` lookup.
       twoFactorTable: 'twoFactors'
     })
   ],
   hooks: {
-    // Better Auth exposes its own endpoints through the `/api/auth/[...all]` catch-all, so a couple
-    // of app_settings switches can only be enforced here — there is no handler of ours to put them in.
+    // Better Auth serves its own endpoints through the catch-all, so these app_settings switches have no handler of ours to live in.
     before: createAuthMiddleware(async (ctx) => {
       if (ctx.path === '/sign-up/email') {
-        // Two legitimate ways past a closed registration, both proven before we get here rather
-        // than claimed by the caller:
-        //  - the setup wizard, creating the very first super_admin through `auth.api.signUpEmail`
-        //    (there is nothing to lock down before the instance exists);
-        //  - an accept route that has already validated an invitation token (project.md section 7:
-        //    an invitation is an explicit bypass of registration_enabled).
+        // Two ways past a closed registration, both proven server-side: the setup wizard, and a validated invitation.
         const bypass = isInvitedSignup() || !(await isSetupComplete())
         if (!bypass && !(await getSetting('registration_enabled'))) {
           throw new APIError('FORBIDDEN', { message: 'Registration is disabled on this instance' })
@@ -148,8 +124,7 @@ export function getAuthSession(event: H3Event) {
 
 /**
  * Blocks an account that hasn't enrolled in 2FA while `app_settings.require_2fa` is on.
- * Callers that already read the setting (paste creation) pass it in to avoid a second query;
- * the others let it be fetched, but only once we know the user isn't enrolled anyway.
+ * Callers that already read the setting pass it in to avoid a second query.
  * Never applies to Better Auth's own endpoints — enrolling would otherwise be impossible.
  */
 export async function assertTwoFactorCompliance(

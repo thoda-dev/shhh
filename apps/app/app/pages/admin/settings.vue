@@ -63,9 +63,7 @@ async function save() {
   try {
     const updated = await $fetch<SettingsShape>('/api/admin/settings', { method: 'PUT', body: state })
     Object.assign(state, updated)
-    // Three of these keys drive app-wide behaviour (anonymous creation, sign-up, forced 2FA) and are
-    // cached in a `useState` loaded once per app lifecycle — without this, toggling one here would
-    // only take effect on the client after a full reload.
+    // Three of these keys drive app-wide behaviour and are cached in a `useState` loaded once per app lifecycle, so without this a toggle would only apply after a full reload.
     await refreshPublicSettings()
     saved.value = true
     setTimeout(() => (saved.value = false), 2000)

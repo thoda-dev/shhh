@@ -14,9 +14,7 @@ if (user.value) {
 
 const publicSettings = await ensurePublicSettingsLoaded()
 
-// One page, two ways in: an invitation link (?token=…) or plain public sign-up. The token path
-// deliberately works even when registration is closed — that is the whole point of an invitation
-// (project.md section 7).
+// One page, two ways in: an invitation link (?token=…) or public sign-up. The token path works even when registration is closed, which is the point of an invitation.
 const token = computed(() => {
   const raw = route.query.token
   return typeof raw === 'string' && raw.length ? raw : null
@@ -38,8 +36,7 @@ const schema = z.object({
 })
 
 const state = reactive({ name: '', email: invitation.value?.email ?? '', password: '' })
-// The address is fixed by the invitation, so the field is filled and locked — the server ignores
-// any email sent alongside a token anyway.
+// The address is fixed by the invitation, so the field is filled and locked; the server ignores any email sent alongside a token anyway.
 watch(invitation, (value) => {
   if (value) {
     state.email = value.email

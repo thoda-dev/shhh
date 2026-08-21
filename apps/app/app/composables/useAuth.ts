@@ -6,19 +6,15 @@ interface SessionUser {
   twoFactorEnabled: boolean
 }
 
-// A shared `useState` ref, not independent `useFetch` calls per component — `AuthButton` lives
-// outside `<NuxtPage>` (app.vue) and never remounts on navigation, so it wouldn't otherwise learn
-// about a sign-in/sign-out that happened on a page. Every consumer reads this same ref and calls
-// `refreshAuthSession()` after any auth change so all of them update in lockstep, no reload needed.
+// A shared `useState` ref rather than a `useFetch` per component: `AuthButton` sits outside `<NuxtPage>` and never remounts, so it would never learn about a sign-in that happened on a page.
+// Every consumer reads this ref and calls `refreshAuthSession()` after an auth change, so they all update in lockstep.
 export function useAuthUser() {
   return useState<SessionUser | null>('auth-user', () => null)
 }
 
 export async function refreshAuthSession() {
   const user = useAuthUser()
-  // On SSR (full page reload), $fetch doesn't automatically forward the browser's cookies to
-  // this internal call — without this, the server never sees the session cookie and every reload
-  // looks logged-out, bouncing authenticated pages back to `/`.
+  // On SSR, $fetch doesn't forward the browser's cookies to this internal call: without them every reload looks logged-out and bounces authenticated pages back to `/`.
   const headers = import.meta.server ? useRequestHeaders(['cookie']) : undefined
   const session = await $fetch<{ user: SessionUser } | null>('/api/auth/get-session', { headers }).catch(() => null)
   user.value = session?.user ?? null

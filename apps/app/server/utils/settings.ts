@@ -38,9 +38,8 @@ interface AppSettingsShape {
   require_2fa: boolean
 }
 
-// Defaults from project.md section 5 — used whenever a key has no row yet in app_settings.
-// A row that DOES exist with value = null is a deliberate admin choice ("unlimited"), not a
-// missing setting, and must be returned as null rather than falling back to these defaults.
+// Used whenever a key has no row yet in app_settings.
+// A row holding null is a deliberate "unlimited", not a missing setting: return null, don't fall back here.
 const APP_SETTINGS_DEFAULTS: AppSettingsShape = {
   max_retention_days_anonymous: 7,
   max_retention_days_authenticated: 30,

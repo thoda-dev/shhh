@@ -19,8 +19,7 @@ const ALL = [
 
 describe('every template', () => {
   it.each(ALL)('%s produces a subject, HTML and a text fallback', (_name, mail) => {
-    // The plain text part is mandatory (project.md section 9); an empty one would ship a blank
-    // email to any client that prefers text.
+    // The text part is mandatory: an empty one ships a blank email to any client that prefers text.
     expect(mail.subject.trim()).not.toBe('')
     expect(mail.html).toContain('<!doctype html>')
     expect(mail.text.trim()).not.toBe('')

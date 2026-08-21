@@ -16,12 +16,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'This invitation link is not valid' })
   }
 
-  // The email comes from the invitation row, never from the request: otherwise a valid token would
-  // let its holder open an account under any address they like.
-  //
-  // The role is always 'user' (project.md section 10, no exception) — which needs no code here,
-  // since `role` is `input: false` on the Better Auth user model and defaults to 'user'. Promoting
-  // someone to admin stays a separate, deliberate action from the users dashboard.
+  // Email comes from the invitation row, never the request: a token must not open an account under any address.
+  // Role is always 'user'; `input: false` on the Better Auth model already guarantees it.
   const { headers, response } = await runAsInvitedSignup(invitation.id, () =>
     auth.api.signUpEmail({
       body: { name: body.name, email: invitation.email, password: body.password },
@@ -30,8 +26,7 @@ export default defineEventHandler(async (event) => {
     })
   )
 
-  // Single-use: scoped to 'pending' so two concurrent accepts can't both consume the same token —
-  // the second update matches no row and its account creation is rolled back below.
+  // Single-use: scoped to 'pending' so two concurrent accepts can't both consume the token — the second matches no row and its account is rolled back below.
   const [consumed] = await db
     .update(schema.invitations)
     .set({ status: 'accepted', acceptedAt: new Date() })

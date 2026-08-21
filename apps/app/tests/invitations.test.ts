@@ -37,8 +37,7 @@ describe('generateInvitationToken', () => {
   })
 
   it('carries 32 bytes of entropy', () => {
-    // 32 random bytes in base64url, unpadded. This token is the only thing between a stranger
-    // and an account on a closed instance, so its size is a security property.
+    // 32 random bytes in base64url, unpadded. The only thing between a stranger and an account on a closed instance, so its size is a security property.
     expect(generateInvitationToken()).toHaveLength(43)
   })
 
@@ -69,8 +68,7 @@ describe('invited signup context', () => {
   })
 
   it('does not leak into concurrent work outside it', async () => {
-    // If the flag leaked across async contexts, a single invited signup would open the
-    // registration bypass for every request running at the same time.
+    // If the flag leaked across async contexts, one invited signup would open the registration bypass for every concurrent request.
     let leaked: boolean | null = null
     const outside = (async () => {
       await new Promise(resolve => setTimeout(resolve, 5))

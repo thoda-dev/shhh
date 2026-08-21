@@ -32,9 +32,7 @@ export default defineEventHandler(async (event) => {
     returnHeaders: true
   })
 
-  // Not exposed as signup input (role is `input: false` in auth.ts) — set directly, and
-  // auto-verified since the operator just proved control of both the instance and this email
-  // by completing the wizard.
+  // Not a signup input (`input: false` in auth.ts), so it is set directly. Auto-verified: completing the wizard proves control of both the instance and this address.
   await db.update(schema.users).set({ role: 'super_admin', emailVerified: true }).where(eq(schema.users.id, response.user.id))
 
   await db.insert(schema.appSettings).values(

@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   if (!targetId) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid user id' })
   }
-  // project.md section 7: nobody can change their own role, super_admin included.
+  // Nobody changes their own role, super_admin included.
   if (targetId === session.user.id) {
     throw createError({ statusCode: 403, statusMessage: 'You can\'t change your own role' })
   }

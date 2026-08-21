@@ -3,8 +3,7 @@ import { fetchErrorMessages } from '../app/utils/errors'
 
 describe('fetchErrorMessages', () => {
   it('returns both fields so each call site can apply its own precedence', () => {
-    // Nitro routes set statusMessage, Better Auth sets message; call sites order them by
-    // whichever their endpoint actually populates.
+    // Nitro routes set statusMessage, Better Auth sets message; call sites order them by whichever their endpoint populates.
     expect(fetchErrorMessages({ data: { statusMessage: 'a', message: 'b' } })).toEqual({ statusMessage: 'a', message: 'b' })
   })
 

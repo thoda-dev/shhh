@@ -4,8 +4,7 @@ import { createInterface } from 'node:readline/promises'
 import { consola } from 'consola'
 
 /**
- * Cutting a release, by hand and only by hand: no secret must ever pass through a GitHub Action.
- * This replays the CI checks exactly, then pushes the image and the tag.
+ * Cutting a release by hand, so no secret ever passes through a GitHub Action. Replays the CI checks, then pushes the image and the tag.
  *
  * Usage: pnpm release <patch|minor|major|x.y.z> [options]
  *   --dry-run       runs nothing irreversible, prints the commands instead
@@ -52,8 +51,7 @@ function capture(command, cmdArgs) {
   return run(command, cmdArgs, { capture: true, allowFailure: true, readOnly: true }).stdout
 }
 
-// No `shell: true`: Node deprecates passing args to a shell (DEP0190), and a missing binary
-// reports itself through `error` (ENOENT) rather than through an exit code.
+// No `shell: true`: Node deprecates passing args to a shell (DEP0190), and a missing binary reports itself through `error`, not an exit code.
 function has(binary) {
   return spawnSync(binary, ['--version'], { stdio: 'ignore' }).error === undefined
 }
@@ -91,8 +89,7 @@ if (!/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$/.test(version)) {
 }
 
 const tag = `v${version}`
-// `latest` must never point at a prerelease: a self-hoster who doesn't pin would otherwise pull
-// a release candidate without asking for one.
+// `latest` must never point at a prerelease: a self-hoster who doesn't pin would pull a release candidate without asking.
 const isPrerelease = version.includes('-')
 
 // ---------------------------------------------------------------- preflight
@@ -137,8 +134,7 @@ if (!has('docker')) {
   problems.push('docker buildx introuvable')
 }
 
-// A `credsStore` entry in config.json proves nothing: Docker Desktop always writes it, logged in
-// or not. Only the keychain itself can say whether docker.io is actually in there.
+// A `credsStore` entry proves nothing — Docker Desktop always writes it. Only the keychain can say whether docker.io is actually in there.
 function isLoggedIntoDockerHub() {
   let config
   try {
@@ -169,9 +165,8 @@ if (problems.length) {
 
 // ---------------------------------------------------------------- confirmation
 
-// The tag ladder every official image publishes: an operator who writes `:1` keeps receiving
-// 1.x fixes but never crosses into a breaking 2.0, and `:1.2` narrows that to patches only.
-// A prerelease gets none of them — only its exact version — so no moving tag ever resolves to it.
+// The tag ladder every official image publishes: `:1` keeps receiving 1.x fixes without ever crossing into a breaking 2.0, and `:1.2` narrows that to patches.
+// A prerelease gets only its exact version, so no moving tag ever resolves to it.
 const [major, minor] = version.split('.')
 const imageTags = isPrerelease
   ? [`${IMAGE}:${version}`]
@@ -203,8 +198,7 @@ if (!flags.has('--skip-checks')) {
   run('pnpm', ['lint'])
   run('pnpm', ['typecheck'])
   run('pnpm', ['test'])
-  // This build only proves the code compiles. The Docker image rebuilds from scratch inside the
-  // container, so any NUXT_PUBLIC_* injected here never reaches production.
+  // Only proves the code compiles: the image rebuilds from scratch inside the container, so any NUXT_PUBLIC_* injected here never reaches production.
   run('pnpm', ['build'])
   run('pnpm', ['build:docs'])
 
@@ -243,8 +237,7 @@ const sha = capture('git', ['rev-parse', 'HEAD'])
 // ---------------------------------------------------------------- Docker image
 
 if (!flags.has('--skip-docker')) {
-  // The default `docker` driver cannot produce a multi-architecture manifest; that needs a
-  // `docker-container` builder. We create a dedicated one rather than touch the current builder.
+  // The default `docker` driver can't produce a multi-architecture manifest, so a dedicated `docker-container` builder is created rather than touching the current one.
   const builders = capture('docker', ['buildx', 'ls'])
   if (!builders.includes(BUILDER)) {
     consola.info(`Création du builder ${BUILDER} (multi-architecture)`)
@@ -270,8 +263,7 @@ if (!flags.has('--skip-docker')) {
 
 // ---------------------------------------------------------------- GitHub
 
-// Deliberately after Docker: the tag is the public announcement, and you don't announce a version
-// whose image doesn't exist. A Docker failure leaves only local state, cleanly undoable.
+// After Docker on purpose: the tag is the public announcement, and you don't announce a version whose image doesn't exist. A Docker failure leaves only local, undoable state.
 if (!flags.has('--skip-github')) {
   consola.start('Push du commit et du tag')
   run('git', ['push', 'origin', branch], { onFailure: undo })

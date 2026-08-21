@@ -9,10 +9,8 @@ interface RateLimitResult {
   resetAt: number
 }
 
-// Fixed-window counter backed by unstorage (memory driver for now — swappable later via
-// nitro.storage.ratelimit in nuxt.config.ts without touching this logic, e.g. for multi-instance
-// deployments). Not perfectly atomic under concurrent hits on the exact same key, which is an
-// acceptable tradeoff for abuse throttling (unlike the paste read-counter, not a security boundary).
+// Fixed-window counter on unstorage; swapping the memory driver for a shared one is a nuxt.config change, not a change here.
+// Not atomic under concurrent hits on the same key — acceptable for abuse throttling, which is not a security boundary.
 export async function checkRateLimit(params: {
   scope: 'ip' | 'user'
   identifier: string

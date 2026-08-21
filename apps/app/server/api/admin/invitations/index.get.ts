@@ -15,7 +15,6 @@ export default defineEventHandler(async (event) => {
     .leftJoin(schema.users, eq(schema.invitations.invitedBy, schema.users.id))
     .orderBy(desc(schema.invitations.createdAt))
 
-  // The token is never returned, not even to an admin: the invitation link is delivered by email
-  // and nowhere else, so a leaked admin response can't be replayed into an account.
+  // The token is never returned, not even to an admin: the link is delivered by email and nowhere else, so a leaked response can't be replayed into an account.
   return rows.map(row => ({ ...row, state: invitationState(row) }))
 })

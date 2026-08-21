@@ -1,9 +1,7 @@
 import { argon2id } from 'hash-wasm'
 
-// TypeScript 5.7+ made `Uint8Array` generic over its backing buffer, and WebCrypto's `BufferSource`
-// only accepts `ArrayBuffer`-backed views (a `SharedArrayBuffer` can't be passed to it). A bare
-// `Uint8Array` widens to `ArrayBufferLike` and no longer matches. Pinning the buffer type once here
-// keeps every signature below assignable without scattering `as BufferSource` casts around.
+// TypeScript 5.7+ made `Uint8Array` generic over its backing buffer, so a bare one widens to `ArrayBufferLike` and no longer matches WebCrypto's `BufferSource`.
+// Pinning the buffer type once here keeps every signature below assignable without scattering `as BufferSource` casts.
 export type Bytes = Uint8Array<ArrayBuffer>
 
 // OWASP 2023 minimum recommendation for Argon2id used interactively.
@@ -39,10 +37,8 @@ export function base64UrlToBytes(base64url: string): Bytes {
   return base64ToBytes(base64)
 }
 
-// Without a password, the fragment key IS the AES key — it's already a random 256-bit secret,
-// deriving further would add cost with no security benefit. With a password, the fragment key
-// doubles as the Argon2id salt: it's unique per paste and already high-entropy, so it also
-// prevents rainbow-table reuse across pastes that happen to share the same password.
+// Without a password the fragment key IS the AES key: it is already a random 256-bit secret, and deriving further would cost without buying anything.
+// With one, the fragment key doubles as the Argon2id salt — unique per paste, so two pastes sharing a password still derive different keys.
 export async function deriveAesKey(fragmentKeyBytes: Bytes, password?: string): Promise<CryptoKey> {
   const keyBytes = password
     ? await argon2id({

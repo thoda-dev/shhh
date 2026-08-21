@@ -1,10 +1,12 @@
 node_modules
 
-# Local env files. `.env` lives at the repo root because docker-compose reads it from there —
-# without this rule, following .env.example would stage real secrets.
+# Local env files
 .env
 .env.*
 !.env.example
+
+# Local Infisical project link — see scripts/infisical.mjs
+.infisical.json
 
 # Logs
 *.log

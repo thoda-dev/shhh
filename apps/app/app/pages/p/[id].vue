@@ -73,8 +73,7 @@ async function reveal() {
       decryptedFile.value = { url: URL.createObjectURL(blob), name: new TextDecoder().decode(nameBytes) }
     }
   } catch {
-    // Covers both a failed reveal request and a failed decrypt (wrong password / bad key) —
-    // either way the read may already be consumed server-side, there's nothing to roll back.
+    // Covers a failed request and a failed decrypt alike: either way the read may already be consumed server-side, and there is nothing to roll back.
     revealError.value = t('read.errors.decryptFailed')
   } finally {
     revealing.value = false

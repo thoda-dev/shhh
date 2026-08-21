@@ -5,8 +5,7 @@ export default defineEventHandler(async (event) => {
   if (!targetId) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid user id' })
   }
-  // project.md section 7: nobody can delete themselves, no exceptions — a simple id check, not a
-  // remaining-super_admin count (explicitly decided against that complexity).
+  // Nobody deletes themselves. A plain id check, not a remaining-super_admin count.
   if (targetId === session.user.id) {
     throw createError({ statusCode: 403, statusMessage: 'You can\'t delete your own account here' })
   }
@@ -16,8 +15,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'User not found' })
   }
 
-  // An admin can only act on plain users — never another admin or a super_admin. Only a
-  // super_admin can delete/demote admins or other super_admins (team rotation, allowed by design).
+  // An admin only acts on plain users. Deleting or demoting an admin takes a super_admin, which is how team rotation works.
   if (session.user.role === 'admin' && target.role !== 'user') {
     throw createError({ statusCode: 403, statusMessage: 'Admins can only remove user accounts' })
   }

@@ -10,9 +10,7 @@ const stepperItems = computed<StepperItem[]>(() => [
   { title: t('setup.steps.settings.title'), description: t('setup.steps.settings.description'), icon: 'i-lucide-sliders-horizontal' }
 ])
 
-// Tracked ourselves rather than relying on UStepper's exposed hasNext/hasPrev — those read as
-// permanently falsy through the template ref here, always falling through to the "Finish" button
-// even on the first step. Driving the stepper via v-model + our own index sidesteps that entirely.
+// Tracked here rather than through UStepper's hasNext/hasPrev, which read as permanently falsy via the template ref and fall through to "Finish" even on the first step.
 const activeStep = ref(0)
 const isLastStep = computed(() => activeStep.value === stepperItems.value.length - 1)
 
@@ -48,7 +46,7 @@ const settingsSchema = z.object({
   rate_limit_period_minutes: z.number().int().positive()
 })
 
-// Matches app_settings defaults, project.md section 5.
+// Matches app_settings defaults
 const settingsState = reactive({
   max_retention_days_anonymous: 7 as number | null,
   max_retention_days_authenticated: 30 as number | null,

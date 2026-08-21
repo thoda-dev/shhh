@@ -70,9 +70,15 @@ Independent layers, all active:
 - **The super admin account cannot be deleted**, including by itself. It is a system account and is
   deliberately outside the individual right to erasure. Transfer the role first if you need to
   remove that account.
-- Encryption at rest via Infisical KMS is defense-in-depth on already-encrypted blobs. It is never a
-  key-sharing mechanism and does not let the server read anything.
+- **Encryption at rest is the operator's job.** The database holds ciphertext rather than plaintext,
+  but shhh adds no layer of its own on top: use full-disk or volume encryption on the host running
+  PostgreSQL if your threat model needs it.
 
 ## Reporting a vulnerability
 
 Open a private security advisory on the repository rather than a public issue.
+
+Include a reproducible proof of concept — the affected endpoint, the request, and what you got back.
+A report that only describes a plausible-sounding weakness cannot be triaged and will be closed. If
+you used an AI tool to find or write up the issue, say so; it is not held against you, but an
+unverified model claim reviewed as though it were a confirmed finding wastes everyone's time.

@@ -10,8 +10,7 @@ async function logout() {
   // Better Auth's sign-out rejects with 415/400 unless given a real JSON body.
   await $fetch('/api/auth/sign-out', { method: 'POST', body: {} })
   await refreshAuthSession()
-  // Bounces off pages that require auth (e.g. /dashboard) — a no-op navigation elsewhere since
-  // most pages (/, /p/:id) work fine anonymous.
+  // Bounces off pages that require auth; a no-op elsewhere, since / and /p/:id work fine anonymous.
   await navigateTo(localePath('/'))
 }
 </script>

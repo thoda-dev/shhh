@@ -4,8 +4,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Invalid paste id' })
   }
 
-  // Atomic: the WHERE clause re-checks expiry/exhaustion at update time, so concurrent
-  // requests on a near-exhausted single-read paste can't both succeed (project.md section 3).
+  // Atomic: the WHERE re-checks expiry and exhaustion, so two concurrent reveals can't both win.
   const [paste] = await db
     .update(schema.pastes)
     .set({ readCount: sql`${schema.pastes.readCount} + 1`, lastReadAt: new Date() })

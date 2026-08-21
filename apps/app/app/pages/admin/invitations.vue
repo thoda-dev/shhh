@@ -49,8 +49,7 @@ async function invite(event: FormSubmitEvent<typeof state>) {
       method: 'POST',
       body: { email: event.data.email }
     })
-    // The row is created even when delivery fails — say so plainly rather than showing a success
-    // for an email nobody will ever receive.
+    // The row is created even when delivery fails: say so plainly rather than claim success for an email nobody will receive.
     deliveryFailed.value = !created.sent
     state.email = ''
     await refresh()

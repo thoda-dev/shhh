@@ -145,8 +145,15 @@ pnpm test
 
 `pnpm test` runs the unit suite (Vitest). Integration tests are on the [roadmap](ROADMAP.md).
 
-`pnpm dev` and `pnpm build` route through [scripts/nuxt.mjs](scripts/nuxt.mjs), which injects secrets
-via the Infisical CLI when it is installed and logged in, and runs Nuxt directly otherwise.
+`pnpm dev` and `pnpm build` route through [scripts/nuxt.mjs](scripts/nuxt.mjs), which wraps the
+command in `infisical run` when a `.infisical.json` is present, and runs Nuxt directly otherwise.
+
+That wrapper is entirely optional — the `.env` above is the default path and nothing in the project
+depends on it. It exists because keeping development secrets in a vault rather than in a plaintext
+file on disk is a habit worth having, and [Infisical](https://infisical.com)
+([source](https://github.com/Infisical/infisical)) is what this project uses for it: `infisical
+login` then `infisical init` writes the `.infisical.json` that turns the wrapper on. That file is
+per-developer and gitignored, so a fresh checkout never inherits somebody else's workspace.
 
 ```
 apps/app     Nuxt 4 application (frontend + Nitro server)
@@ -157,6 +164,9 @@ scripts      Dev tooling wrappers
 
 Health check for monitoring: `GET /api/health` returns database status, mail provider and storage
 usage — point Uptime Kuma at it.
+
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md), which covers the checks to run
+and how AI-assisted changes are handled.
 
 ## Security
 

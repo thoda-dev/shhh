@@ -1,5 +1,4 @@
-// Full recompute from `pastes` (source of truth) rather than incremental increment/decrement
-// on every create/read/purge — avoids drift, cheap enough at self-hosted scale.
+// Full recompute from `pastes` rather than incremental counters: no drift, and cheap enough at self-hosted scale.
 export async function refreshStats() {
   const bytesStoredExpr = sql<number>`coalesce(sum(coalesce(octet_length(${schema.pastes.ciphertext}), 0) + coalesce(octet_length(${schema.pastes.fileBlob}), 0)), 0)`
 
