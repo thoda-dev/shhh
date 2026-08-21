@@ -1,7 +1,10 @@
 import { spawnSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { tmpdir } from 'node:os'
 import { createInterface } from 'node:readline/promises'
 import { consola } from 'consola'
+import { generateNotes, prependToChangelog } from './changelog.mjs'
 
 /**
  * Cutting a release by hand, so no secret ever passes through a GitHub Action. Replays the CI checks, then pushes the image and the tag.
@@ -12,6 +15,7 @@ import { consola } from 'consola'
  *   --skip-checks   resumes after a failure, once the checks have already passed
  *   --skip-docker   does not publish the image (resume after a successful Docker push)
  *   --skip-github   pushes neither the tag nor the release
+ *   --no-open       does not open the drafted release in a browser
  *   --allow-branch  allows a branch other than master
  */
 
@@ -235,9 +239,22 @@ const undo = () => {
   consola.log('  git reset --hard HEAD~1')
 }
 
+consola.start('Génération du changelog')
+const lastTag = capture('git', ['describe', '--tags', '--abbrev=0']) || undefined
+const notes = await generateNotes({ fromTag: lastTag, version })
+if (!notes) {
+  consola.warn('Aucun commit à retenir depuis le dernier tag — changelog inchangé.')
+} else if (dryRun) {
+  consola.log('  [dry-run] CHANGELOG.md aurait reçu :')
+  consola.log(notes.split('\n').map(l => `    ${l}`).join('\n'))
+} else {
+  prependToChangelog(notes)
+  consola.success('CHANGELOG.md mis à jour')
+}
+
 consola.start(`Commit et tag ${tag}`)
 if (!dryRun) writeFileSync(pkgPath, pkgRaw.replace(`"version": "${current}"`, `"version": "${version}"`))
-run('git', ['add', 'package.json'])
+run('git', ['add', 'package.json', 'CHANGELOG.md'])
 run('git', ['commit', '-m', `chore(release): ${tag}`])
 run('git', ['tag', '-a', tag, '-m', tag], { onFailure: undo })
 
@@ -281,16 +298,33 @@ if (!flags.has('--skip-github')) {
   run('git', ['push', 'origin', tag])
 
   if (hasGh) {
-    consola.start('Création de la release GitHub')
+    // A draft, not a published release: the notes come from commit messages, which is a starting
+    // point rather than an announcement. Publishing stays a human click, after reading them.
+    consola.start('Brouillon de release GitHub')
+    const notesFile = join(tmpdir(), `shhh-${tag}-notes.md`)
+    if (!dryRun) writeFileSync(notesFile, notes || `Release ${tag}.`)
     run('gh', ['release', 'create', tag,
       '--title', tag,
-      '--generate-notes',
-      ...(isPrerelease ? ['--prerelease'] : [])])
+      '--draft',
+      '--notes-file', notesFile,
+      ...(isPrerelease ? ['--prerelease'] : [])], { allowFailure: true })
+
+    if (!flags.has('--no-open')) {
+      // `gh release view --web` resolves the draft's own URL, which is unguessable: an unpublished
+      // release does not live at /releases/tag/<tag>.
+      run('gh', ['release', 'view', tag, '--web'], { allowFailure: true })
+    }
+    consola.info('La release est un brouillon — relis les notes, puis publie-la.')
   } else {
     consola.log('')
     consola.info('Release GitHub à créer à la main :')
-    consola.log(`  gh release create ${tag} --title ${tag} --generate-notes`)
+    consola.log(`  gh release create ${tag} --title ${tag} --draft --notes-file <fichier>`)
     consola.log(`  ou ${REPO_URL}/releases/new?tag=${tag}`)
+    if (notes) {
+      consola.log('')
+      consola.log('Notes générées :')
+      consola.log(notes.split('\n').map(l => `  ${l}`).join('\n'))
+    }
   }
 }
 

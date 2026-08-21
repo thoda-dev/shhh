@@ -24,6 +24,21 @@ migrations and the schema disagree.
 
 By taking part, you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 
+## Commit messages
+
+[Conventional Commits](https://www.conventionalcommits.org): `type(scope): subject`, where type is
+one of `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `build`, `ci` or `chore`.
+
+```
+feat(pastes): allow a per-paste read limit
+fix(auth): stop require_2fa being bypassed by disabling 2FA
+docs: document the nginx reverse proxy setup
+```
+
+This is not style policing: the release script builds `CHANGELOG.md` from these messages with
+[changelogen](https://github.com/unjs/changelogen), and anything that does not match the format is
+dropped from the changelog entirely rather than listed badly.
+
 ## Scope
 
 [ROADMAP.md](ROADMAP.md) lists what is planned and, at the bottom, what was evaluated and rejected.

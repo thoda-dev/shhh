@@ -32,5 +32,8 @@
   },
   "dependencies": {
     "consola": "^3.4.2"
+  },
+  "devDependencies": {
+    "changelogen": "^0.6.2"
   }
 }
