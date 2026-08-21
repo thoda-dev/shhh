@@ -3,6 +3,18 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.1.3
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.2...v1.1.3)
+
+### 🩹 Fixes
+
+- **create:** Prefill the form from the instance limits ([#6](https://github.com/thoda-dev/shhh/pull/6))
+
+### ❤️ Contributors
+
+- Thomas
+
 ## v1.1.2
 
 [compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.1...v1.1.2)
