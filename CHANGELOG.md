@@ -32,22 +32,6 @@ described in [scripts/release.mjs](scripts/release.mjs).
 
 - Thomas
 
-## Unreleased
-
-### Added
-- `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, issue and pull request templates.
-- CI check requiring every pull request to close an issue.
-- `Disallow: /p/` in robots.txt — paste pages are useless to a crawler and a request still burns a read.
-
-### Changed
-- `scripts/infisical.mjs` wraps a command only when `.infisical.json` is present, instead of whenever
-  the CLI happens to be installed. The file is no longer committed.
-
-### Fixed
-- `@nuxt/devtools` updated past [GHSA-279x-mwfv-vcqv](https://github.com/advisories/GHSA-279x-mwfv-vcqv),
-  an unauthenticated RPC allowing command execution on the developer's host. Development only — it is
-  not part of the runtime image.
-
 ## 1.0.1
 
 Packaging fixes on top of 1.0.0: `install.sh` for one-command deployment, and Dockerfile corrections.
