@@ -39,20 +39,42 @@ export function base64UrlToBytes(base64url: string): Bytes {
 
 // Without a password the fragment key IS the AES key: it is already a random 256-bit secret, and deriving further would cost without buying anything.
 // With one, the fragment key doubles as the Argon2id salt — unique per paste, so two pastes sharing a password still derive different keys.
-export async function deriveAesKey(fragmentKeyBytes: Bytes, password?: string): Promise<CryptoKey> {
-  const keyBytes = password
-    ? await argon2id({
-        password,
-        salt: fragmentKeyBytes,
-        memorySize: ARGON2_MEMORY_KIB,
-        iterations: ARGON2_ITERATIONS,
-        parallelism: ARGON2_PARALLELISM,
-        hashLength: AES_KEY_LENGTH_BYTES,
-        outputType: 'binary'
-      })
-    : fragmentKeyBytes
+export async function deriveKeyMaterial(fragmentKeyBytes: Bytes, password?: string): Promise<Bytes> {
+  if (!password) return fragmentKeyBytes
 
-  return crypto.subtle.importKey('raw', keyBytes as Bytes, 'AES-GCM', false, ['encrypt', 'decrypt'])
+  return argon2id({
+    password,
+    salt: fragmentKeyBytes,
+    memorySize: ARGON2_MEMORY_KIB,
+    iterations: ARGON2_ITERATIONS,
+    parallelism: ARGON2_PARALLELISM,
+    hashLength: AES_KEY_LENGTH_BYTES,
+    outputType: 'binary'
+  }) as Promise<Bytes>
+}
+
+// Kept non-extractable: the raw material is hashed before it ever becomes a CryptoKey, so nothing
+// downstream needs to read it back out.
+export function importAesKey(keyMaterial: Bytes): Promise<CryptoKey> {
+  return crypto.subtle.importKey('raw', keyMaterial, 'AES-GCM', false, ['encrypt', 'decrypt'])
+}
+
+export async function deriveAesKey(fragmentKeyBytes: Bytes, password?: string): Promise<CryptoKey> {
+  return importAesKey(await deriveKeyMaterial(fragmentKeyBytes, password))
+}
+
+/**
+ * The proof a reader hands the server to spend a read, computed from the AES key it never sees.
+ *
+ * It answers both "do you hold the link" and "do you know the password" at once, because without a
+ * password the AES key is the fragment key and with one it is the Argon2id derivation. A wrong
+ * password therefore fails here, server-side, instead of consuming a read and failing at decryption.
+ *
+ * Handing this over costs no secrecy: SHA-256 of 256 uniformly random bits is not reversible, and
+ * anyone holding the ciphertext could already test passwords offline at the same Argon2id cost.
+ */
+export async function deriveUnlockHash(keyMaterial: Bytes): Promise<Bytes> {
+  return new Uint8Array(await crypto.subtle.digest('SHA-256', keyMaterial))
 }
 
 export async function encryptBytes(key: CryptoKey, plaintext: Bytes): Promise<{ ciphertext: Bytes, iv: Bytes }> {

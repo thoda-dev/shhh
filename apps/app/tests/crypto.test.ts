@@ -6,6 +6,8 @@ import {
   bytesToBase64Url,
   decryptBytes,
   deriveAesKey,
+  deriveKeyMaterial,
+  deriveUnlockHash,
   encryptBytes,
   generateFragmentKey
 } from '../app/utils/crypto'
@@ -142,5 +144,37 @@ describe('realistic payloads', () => {
     const name = await encryptBytes(key, encoder.encode('secret.txt'))
     expect(bytesToBase64(content.iv)).not.toBe(bytesToBase64(name.iv))
     expect(decoder.decode(await decryptBytes(key, name.ciphertext, name.iv))).toBe('secret.txt')
+  })
+})
+
+describe('deriveUnlockHash', () => {
+  it('is 32 bytes', async () => {
+    expect((await deriveUnlockHash(generateFragmentKey())).byteLength).toBe(32)
+  })
+
+  it('is stable for the same key, so a reader can recompute it', async () => {
+    const key = generateFragmentKey()
+    expect(await deriveUnlockHash(key)).toEqual(await deriveUnlockHash(key))
+  })
+
+  it('differs for two different keys', async () => {
+    expect(await deriveUnlockHash(generateFragmentKey()))
+      .not.toEqual(await deriveUnlockHash(generateFragmentKey()))
+  })
+
+  // The reason a mistyped password no longer costs a read: different material, different hash, and
+  // the server refuses the reveal before its counter moves.
+  it('differs when the password differs, for the same fragment key', async () => {
+    const fragment = generateFragmentKey()
+    const right = await deriveUnlockHash(await deriveKeyMaterial(fragment, 'correct horse'))
+    const wrong = await deriveUnlockHash(await deriveKeyMaterial(fragment, 'correct hors'))
+    expect(right).not.toEqual(wrong)
+  })
+
+  // Without a password the fragment key is the AES key, so holding the link is the whole proof.
+  it('is the hash of the fragment key itself when no password is set', async () => {
+    const fragment = generateFragmentKey()
+    expect(await deriveUnlockHash(await deriveKeyMaterial(fragment)))
+      .toEqual(await deriveUnlockHash(fragment))
   })
 })

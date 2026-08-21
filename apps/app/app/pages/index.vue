@@ -76,10 +76,14 @@ async function submit() {
   submitting.value = true
   try {
     const fragmentKeyBytes = generateFragmentKey()
-    const aesKey = await deriveAesKey(fragmentKeyBytes, passwordProtected.value ? password.value : undefined)
+    const keyMaterial = await deriveKeyMaterial(fragmentKeyBytes, passwordProtected.value ? password.value : undefined)
+    const aesKey = await importAesKey(keyMaterial)
 
     const payload: Record<string, unknown> = {
       passwordProtected: passwordProtected.value,
+      // Lets the server refuse a reveal from someone who has the id but not the key or the password,
+      // so neither can spend a read. It learns nothing from the hash itself.
+      unlockHash: bytesToBase64(await deriveUnlockHash(keyMaterial)),
       turnstileToken: turnstileToken.value,
       maxReads: unlimitedReads.value ? null : (maxReadsInput.value ?? undefined),
       expiresInDays: expiresInDaysInput.value ?? undefined

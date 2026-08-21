@@ -13,9 +13,13 @@ server never receives the password and only records that one is required.
 
 Filenames are encrypted alongside file contents. MIME types are stored in clear.
 
-**Consequence to be aware of:** a wrong password still consumes a read. The server cannot verify a
-password it never sees, so the failure only surfaces client-side when GCM authentication fails. This
-is inherent to the design, not a bug, and the UI warns before you reveal.
+Spending a read takes proof. The browser sends the server a SHA-256 of the AES key it derived, which
+the server compares against the value stored at creation — inside the same statement that increments
+the counter, so a failed match moves nothing. Holding a paste id is therefore not enough to destroy
+it, and a mistyped password costs nothing.
+
+Handing over that hash gives up no secrecy: SHA-256 of 256 uniformly random bits is not reversible,
+and anyone holding the ciphertext could already test passwords offline at the same Argon2id cost.
 
 ## The one exception: email sharing
 
@@ -49,7 +53,8 @@ Independent layers, all active:
 - Size validation server-side, never trusting client-declared sizes.
 - Automatic banning of IPs requesting known probe paths (`wp-admin`, `.git`, …) or identified as
   untrusted bots, with an admin-managed allowlist and blocklist.
-- Atomic decrement of the read counter, so concurrent requests cannot over-read a one-read link.
+- Atomic decrement of the read counter, so concurrent requests cannot over-read a one-read link, and
+  a caller who cannot prove possession of the key never moves it at all.
 - A Content-Security-Policy restricting outbound requests to the instance itself and Turnstile. It
   is the layer that matters most here: an XSS in a zero-knowledge app does not leak a session, it
   leaks the decryption key of every paste opened while it runs. The policy still allows inline

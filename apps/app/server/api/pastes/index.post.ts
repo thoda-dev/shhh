@@ -12,6 +12,9 @@ const shareSchema = z.object({
 
 const baseFields = {
   passwordProtected: z.boolean().default(false),
+  // sha256 of the AES key. Optional so a client that predates it still works, but without one the
+  // paste can be spent by anyone who learns its id.
+  unlockHash: z.string().base64().optional(),
   maxReads: z.number().int().positive().nullable().optional(),
   expiresInDays: z.number().int().positive().optional(),
   turnstileToken: z.string(),
@@ -150,6 +153,7 @@ export default defineEventHandler(async (event) => {
     ownerId: session?.user.id ?? null,
     kind: body.kind,
     passwordProtected: body.passwordProtected,
+    unlockHash: body.unlockHash ? Buffer.from(body.unlockHash, 'base64') : null,
     maxReads,
     expiresAt: new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000)
   }

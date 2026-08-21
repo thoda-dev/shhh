@@ -1,0 +1,1 @@
+ALTER TABLE "pastes" ADD COLUMN "unlock_hash" "bytea";

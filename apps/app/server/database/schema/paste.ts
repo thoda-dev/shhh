@@ -43,6 +43,11 @@ export const pastes = pgTable(
     fileSize: integer('file_size'),
 
     passwordProtected: boolean('password_protected').notNull().default(false),
+
+    // sha256 of the AES key, which the reader recomputes to spend a read. Nullable only because
+    // pastes created before this existed have none; those keep the old behaviour until they expire,
+    // which the retention cap bounds. See `deriveUnlockHash` in app/utils/crypto.ts.
+    unlockHash: bytea('unlock_hash'),
     maxReads: integer('max_reads'),
     readCount: integer('read_count').notNull().default(0),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),

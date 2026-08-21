@@ -60,8 +60,17 @@ async function reveal() {
   revealError.value = ''
   revealing.value = true
   try {
-    const data = await $fetch<RevealTextResponse | RevealFileResponse>(`/api/pastes/${pasteId}/reveal`, { method: 'POST' })
-    const aesKey = await deriveAesKey(fragmentKey.value!, data.passwordProtected ? password.value : undefined)
+    // Derived before the request, not after: the server checks the resulting hash inside the same
+    // statement that increments the counter, so a wrong password is refused without spending a read.
+    // Argon2id runs here, which is why revealing a protected paste pauses for a moment.
+    const keyMaterial = await deriveKeyMaterial(fragmentKey.value!, meta.value?.passwordProtected ? password.value : undefined)
+    const unlockHash = bytesToBase64(await deriveUnlockHash(keyMaterial))
+
+    const data = await $fetch<RevealTextResponse | RevealFileResponse>(`/api/pastes/${pasteId}/reveal`, {
+      method: 'POST',
+      body: { unlockHash }
+    })
+    const aesKey = await importAesKey(keyMaterial)
 
     if (data.kind === 'text') {
       const plaintext = await decryptBytes(aesKey, base64ToBytes(data.ciphertext), base64ToBytes(data.iv))
@@ -73,7 +82,8 @@ async function reveal() {
       decryptedFile.value = { url: URL.createObjectURL(blob), name: new TextDecoder().decode(nameBytes) }
     }
   } catch {
-    // Covers a failed request and a failed decrypt alike: either way the read may already be consumed server-side, and there is nothing to roll back.
+    // A rejected reveal and a failed decrypt look the same here on purpose: both mean the key or the
+    // password is wrong, and neither consumed a read — the server refused before incrementing.
     revealError.value = t('read.errors.decryptFailed')
   } finally {
     revealing.value = false

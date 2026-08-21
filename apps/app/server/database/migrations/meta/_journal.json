@@ -15,6 +15,13 @@
       "when": 1783524507908,
       "tag": "0001_fair_gressill",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787318867404,
+      "tag": "0002_stormy_blue_marvel",
+      "breakpoints": true
     }
   ]
 }
