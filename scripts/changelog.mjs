@@ -9,7 +9,14 @@ const CHANGELOG = 'CHANGELOG.md'
  * not follow the convention gets one flat list rather than a bad grouping.
  */
 export async function generateNotes({ fromTag, version, cwd = process.cwd() }) {
-  const config = await loadChangelogConfig(cwd, { newVersion: version })
+  const config = await loadChangelogConfig(cwd, {
+    newVersion: version,
+    // changelogen prefers a GitHub handle and falls back to the commit email when it cannot resolve
+    // one — which happens for anyone whose commit address is not attached to their GitHub account.
+    // Publishing a contributor's address because a lookup failed is not an acceptable default, so
+    // the fallback is turned off: unresolved authors appear by name alone.
+    hideAuthorEmail: true
+  })
   const commits = parseCommits(await getGitDiff(fromTag, 'HEAD', cwd), config)
 
   // Release commits describe the release machinery, not the release.

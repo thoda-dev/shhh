@@ -18,7 +18,7 @@ described in [scripts/release.mjs](scripts/release.mjs).
 
 ### ❤️ Contributors
 
-- Thomas <github.passage306@passmail.net>
+- Thomas
 
 ## Unreleased
 
