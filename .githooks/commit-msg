@@ -1,0 +1,32 @@
+#!/bin/sh
+#
+# Rejects a commit message that is not a Conventional Commit.
+#
+# Enabled by `pnpm install`, which points core.hooksPath here — no husky, no dependency. Bypass a
+# single commit with `git commit --no-verify` when you have a good reason; the CI check on pull
+# request titles is the one that actually gates what lands.
+
+set -eu
+
+TYPES='feat|fix|docs|refactor|perf|test|build|ci|chore'
+subject=$(head -n1 "$1")
+
+# Git writes these itself, or they disappear in a rebase before anyone sees them.
+case "$subject" in
+  'Merge '* | 'Revert '* | 'fixup!'* | 'squash!'* | 'amend!'* | '#'*) exit 0 ;;
+esac
+
+if printf '%s' "$subject" | grep -qE "^($TYPES)(\([a-z0-9,/.-]+\))?!?: .+"; then
+  exit 0
+fi
+
+printf '\033[31merror\033[0m the commit message is not a Conventional Commit.\n\n' >&2
+printf '  got:      %s\n\n' "$subject" >&2
+printf '  expected: type(scope): subject\n' >&2
+printf '            type is one of: %s\n\n' "$(printf '%s' "$TYPES" | tr '|' ' ')" >&2
+printf '  examples: feat(pastes): allow a per-paste read limit\n' >&2
+printf '            fix(auth): stop require_2fa being bypassed by disabling 2FA\n' >&2
+printf '            docs: document the nginx reverse proxy setup\n\n' >&2
+printf 'The release script builds CHANGELOG.md from these messages: anything that does not\n' >&2
+printf 'match is dropped from the changelog entirely rather than listed badly.\n' >&2
+exit 1

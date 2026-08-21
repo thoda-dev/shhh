@@ -39,6 +39,11 @@ This is not style policing: the release script builds `CHANGELOG.md` from these 
 [changelogen](https://github.com/unjs/changelogen), and anything that does not match the format is
 dropped from the changelog entirely rather than listed badly.
 
+`pnpm install` points `core.hooksPath` at `.githooks`, so a commit that does not match is refused
+locally before it exists. `git commit --no-verify` skips it when you need to. What actually gates a
+contribution is the **pull request title**, which CI checks: with squash merging that title becomes
+the commit on master, and therefore the changelog entry.
+
 ## Scope
 
 [ROADMAP.md](ROADMAP.md) lists what is planned and, at the bottom, what was evaluated and rejected.

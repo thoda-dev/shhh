@@ -16,6 +16,7 @@
     "node": ">=24"
   },
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
     "dev": "pnpm --filter app dev",
     "dev:docs": "pnpm --filter docs dev",
     "build": "pnpm --filter app build",
