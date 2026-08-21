@@ -5,8 +5,8 @@
     "build": "nuxt build"
   },
   "dependencies": {
-    "docus": "latest",
     "better-sqlite3": "^12.11.1",
-    "nuxt": "^4.4.8"
+    "docus": "latest",
+    "nuxt": "^4.5.2"
   }
 }
