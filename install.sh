@@ -12,6 +12,7 @@
 #   BETTER_AUTH_URL         public HTTPS address of the instance, no trailing slash
 #   SHHH_BUNDLED_DB         1 to use the PostgreSQL from the compose file, 0 for your own
 #   DATABASE_URL            connection string, required only when SHHH_BUNDLED_DB=0
+#   SHHH_PROXY_DEPTH        proxies you control in front of the app (default: 1 for https, else 0)
 #   TURNSTILE_SITE_KEY      Cloudflare Turnstile site key
 #   TURNSTILE_SECRET_KEY    Cloudflare Turnstile secret key
 #   SHHH_START              1 to start the stack, 0 to only write the files
@@ -77,6 +78,23 @@ printf '\n'
 
 PUBLIC_URL="${BETTER_AUTH_URL:-$(ask 'Public URL of the instance, no trailing slash' 'https://shhh.example.com')}"
 
+printf '\n'
+note 'Rate limiting, the IP allow/blocklist and automatic bans all key on the address a request'
+note 'really came from. Count the proxies you control in front of this app: 0 if it is exposed'
+note 'directly, 1 behind a single nginx/Caddy/Traefik, 2 behind Cloudflare plus your own proxy.'
+note 'Too low and one proxy IP absorbs everyone rate limit; too high and a caller picks their own.'
+printf '\n'
+
+# An https URL means something terminates TLS in front, since the app itself only speaks plain HTTP.
+case "$PUBLIC_URL" in
+  https://*) PROXY_DEFAULT=1 ;;
+  *) PROXY_DEFAULT=0 ;;
+esac
+PROXY_DEPTH="${SHHH_PROXY_DEPTH:-$(ask 'Trusted proxies in front of the app' "$PROXY_DEFAULT")}"
+case "$PROXY_DEPTH" in
+  '' | *[!0-9]*) die "the number of trusted proxies must be a whole number, got '$PROXY_DEPTH'." ;;
+esac
+
 # The bundled database is the point of the compose file, so it is the default. Answering no is for a cluster you already back up and monitor.
 if [ -n "${SHHH_BUNDLED_DB:-}" ]; then
   BUNDLED="$SHHH_BUNDLED_DB"
@@ -127,6 +145,10 @@ set_env() { # set_env <key> <value>
 say 'Generating secrets'
 set_env BETTER_AUTH_SECRET "$(rand_b64)"
 set_env BETTER_AUTH_URL "$PUBLIC_URL"
+set_env TRUSTED_PROXY_DEPTH "$PROXY_DEPTH"
+# Unlocks two read-only fields on /api/health. Generated rather than left blank so the operator can
+# point a dashboard at it later without regenerating anything; leaving it empty is equally valid.
+set_env HEALTH_TOKEN "$(rand_hex)"
 set_env NUXT_PUBLIC_TURNSTILE_SITE_KEY "$TS_SITE"
 set_env NUXT_TURNSTILE_SECRET_KEY "$TS_SECRET"
 
@@ -157,6 +179,11 @@ if [ "$USE_BUNDLED" -eq 1 ]; then
   note 'Database    bundled, password generated'
 else
   note "Database    external, $(redact "$DB_URL")"
+fi
+if [ "$PROXY_DEPTH" -eq 0 ]; then
+  note 'Proxies     none trusted, using the connection address'
+else
+  note "Proxies     $PROXY_DEPTH trusted in front"
 fi
 if [ -n "$TS_SITE" ] && [ -n "$TS_SECRET" ]; then
   note 'Turnstile   configured'

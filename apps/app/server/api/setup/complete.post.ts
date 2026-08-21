@@ -19,12 +19,27 @@ const setupSchema = z.object({
   settings: settingsSchema
 })
 
+// Distinct from the migrator's key: this one serialises the wizard, not the schema.
+const SETUP_LOCK_KEY = 4_827_302
+
 export default defineEventHandler(async (event) => {
+  const body = await readValidatedBody(event, setupSchema.parse)
+
+  // The check and the write have to be one critical section. Without it two requests arriving
+  // together both see an empty instance and both create a super_admin — the account that owns
+  // everything, so "unlikely" is not a good enough guarantee.
+  await db.execute(sql`select pg_advisory_lock(${SETUP_LOCK_KEY})`)
+  try {
+    return await completeSetup(event, body)
+  } finally {
+    await db.execute(sql`select pg_advisory_unlock(${SETUP_LOCK_KEY})`)
+  }
+})
+
+async function completeSetup(event: Parameters<typeof appendResponseHeader>[0], body: z.infer<typeof setupSchema>) {
   if (await isSetupComplete()) {
     throw createError({ statusCode: 409, statusMessage: 'Setup already completed' })
   }
-
-  const body = await readValidatedBody(event, setupSchema.parse)
 
   const { headers, response } = await auth.api.signUpEmail({
     body: { name: body.name, email: body.email, password: body.password },
@@ -35,9 +50,12 @@ export default defineEventHandler(async (event) => {
   // Not a signup input (`input: false` in auth.ts), so it is set directly. Auto-verified: completing the wizard proves control of both the instance and this address.
   await db.update(schema.users).set({ role: 'super_admin', emailVerified: true }).where(eq(schema.users.id, response.user.id))
 
-  await db.insert(schema.appSettings).values(
-    Object.entries(body.settings).map(([key, value]) => ({ key, value, updatedBy: response.user.id }))
-  )
+  // A retry after a partially failed setup would otherwise hit the primary key and surface as a
+  // 500 rather than finishing the job.
+  await db
+    .insert(schema.appSettings)
+    .values(Object.entries(body.settings).map(([key, value]) => ({ key, value, updatedBy: response.user.id })))
+    .onConflictDoNothing({ target: schema.appSettings.key })
 
   for (const cookie of headers.getSetCookie()) {
     appendResponseHeader(event, 'set-cookie', cookie)
@@ -45,4 +63,4 @@ export default defineEventHandler(async (event) => {
 
   setResponseStatus(event, 201)
   return { id: response.user.id, name: response.user.name, email: response.user.email }
-})
+}

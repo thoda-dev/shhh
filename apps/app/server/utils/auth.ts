@@ -29,8 +29,13 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   advanced: {
     ipAddress: {
-      // Without this, Better Auth falls back to one shared rate-limit bucket for every caller behind a proxy, so a single attacker throttles everyone's sign-in attempts.
-      // Same X-Forwarded-For trust as the rest of the app, and the same requirement: the proxy must overwrite the header, not append to a client-supplied value.
+      // Without this, Better Auth can't resolve a caller behind a proxy and falls back to one shared
+      // rate-limit bucket, so a single attacker throttles everyone's sign-in attempts.
+      // Better Auth resolves the header itself and fails closed: with more than one entry and no
+      // `trustedProxies` configured it returns no address rather than guessing, so a forged entry
+      // cannot be mistaken for the client. That also means the shared-bucket fallback comes back
+      // when two proxies are chained — the warning in the container logs is the symptom.
+      // Our own abuse controls don't go through this; they use `getClientIp` and TRUSTED_PROXY_DEPTH.
       ipAddressHeaders: ['x-forwarded-for']
     }
   },

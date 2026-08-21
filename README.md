@@ -94,9 +94,13 @@ Nothing else changes — the app only ever reaches the database through that one
 
 ### Behind a reverse proxy
 
-Terminate TLS at your proxy and set `BETTER_AUTH_URL` to the public HTTPS address. The proxy must
-**overwrite** `X-Forwarded-For` rather than append to a client-supplied value — rate limiting and IP
-banning both trust that header.
+Terminate TLS at your proxy and set `BETTER_AUTH_URL` to the public HTTPS address. Set
+`TRUSTED_PROXY_DEPTH` to the number of proxies you control in front of the app — `1` behind a single
+nginx or Caddy, `2` with Cloudflare in front of that. It defaults to `0`, which ignores
+`X-Forwarded-For` and uses the connection address.
+
+A worked nginx config, including the `client_max_body_size` that file uploads need, is in the
+[deployment docs](apps/docs/content/2.self-hosting/1.installation.md).
 
 ### Turnstile
 
@@ -166,8 +170,8 @@ docker       Dockerfile and docker-compose
 scripts      Dev tooling wrappers
 ```
 
-Health check for monitoring: `GET /api/health` returns database status, mail provider and storage
-usage — point Uptime Kuma at it.
+Health check for monitoring: `GET /api/health` reports whether the instance and its database are up
+— point Uptime Kuma at it. Storage usage and the mail provider sit behind `HEALTH_TOKEN`.
 
 Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md), which covers the checks to run
 and how AI-assisted changes are handled.

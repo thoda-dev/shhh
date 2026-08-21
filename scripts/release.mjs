@@ -16,6 +16,7 @@ import { consola } from 'consola'
  */
 
 const IMAGE = 'thodadev/shhh'
+const DOCS_IMAGE = 'thodadev/shhh-docs'
 const PLATFORMS = 'linux/amd64,linux/arm64'
 const BUILDER = 'shhh-release'
 const BRANCH = 'master'
@@ -168,9 +169,17 @@ if (problems.length) {
 // The tag ladder every official image publishes: `:1` keeps receiving 1.x fixes without ever crossing into a breaking 2.0, and `:1.2` narrows that to patches.
 // A prerelease gets only its exact version, so no moving tag ever resolves to it.
 const [major, minor] = version.split('.')
-const imageTags = isPrerelease
-  ? [`${IMAGE}:${version}`]
-  : [`${IMAGE}:${version}`, `${IMAGE}:${major}.${minor}`, `${IMAGE}:${major}`, `${IMAGE}:latest`]
+const tagsFor = image => isPrerelease
+  ? [`${image}:${version}`]
+  : [`${image}:${version}`, `${image}:${major}.${minor}`, `${image}:${major}`, `${image}:latest`]
+
+// The docs ride the app's version rather than carrying their own: they document that exact release,
+// so a reader can pin both to the same tag and know they match.
+const images = [
+  { name: 'app', dockerfile: 'docker/Dockerfile', tags: tagsFor(IMAGE) },
+  { name: 'docs', dockerfile: 'docker/docs.Dockerfile', tags: tagsFor(DOCS_IMAGE) }
+]
+const imageTags = images.flatMap(i => i.tags)
 
 consola.box([
   `Version    ${current} → ${version}`,
@@ -244,21 +253,23 @@ if (!flags.has('--skip-docker')) {
     run('docker', ['buildx', 'create', '--name', BUILDER, '--driver', 'docker-container'], { onFailure: undo })
   }
 
-  consola.start(`Build et push de l'image (${PLATFORMS}) — c'est l'étape longue`)
-  run('docker', [
-    'buildx', 'build',
-    '--builder', BUILDER,
-    '--platform', PLATFORMS,
-    '-f', 'docker/Dockerfile',
-    ...imageTags.flatMap(t => ['-t', t]),
-    '--label', `org.opencontainers.image.version=${version}`,
-    '--label', `org.opencontainers.image.revision=${sha}`,
-    '--label', `org.opencontainers.image.source=${REPO_URL}`,
-    '--label', 'org.opencontainers.image.licenses=MIT',
-    '--push',
-    '.'
-  ], { onFailure: undo })
-  consola.success(`Image publiée : ${imageTags.join(', ')}`)
+  for (const image of images) {
+    consola.start(`Build et push de l'image ${image.name} (${PLATFORMS}) — c'est l'étape longue`)
+    run('docker', [
+      'buildx', 'build',
+      '--builder', BUILDER,
+      '--platform', PLATFORMS,
+      '-f', image.dockerfile,
+      ...image.tags.flatMap(t => ['-t', t]),
+      '--label', `org.opencontainers.image.version=${version}`,
+      '--label', `org.opencontainers.image.revision=${sha}`,
+      '--label', `org.opencontainers.image.source=${REPO_URL}`,
+      '--label', 'org.opencontainers.image.licenses=MIT',
+      '--push',
+      '.'
+    ], { onFailure: undo })
+    consola.success(`Image publiée : ${image.tags.join(', ')}`)
+  }
 }
 
 // ---------------------------------------------------------------- GitHub

@@ -11,6 +11,40 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   css: ['~/assets/css/main.css'],
+
+  // Defence in depth for a design where the browser holds the only decryption key: an XSS here does
+  // not leak a session, it leaks every key that passes through the page.
+  routeRules: {
+    '/**': {
+      headers: {
+        'Content-Security-Policy': [
+          'default-src \'self\'',
+          'base-uri \'none\'',
+          'object-src \'none\'',
+          'frame-ancestors \'none\'',
+          'form-action \'self\'',
+          // 'wasm-unsafe-eval' is not optional: Argon2id runs through hash-wasm, so without it every
+          // password-protected paste stops opening. 'unsafe-inline' covers Nuxt's SSR bootstrap.
+          'script-src \'self\' \'unsafe-inline\' \'wasm-unsafe-eval\' https://challenges.cloudflare.com',
+          'style-src \'self\' \'unsafe-inline\'',
+          'img-src \'self\' data: blob:',
+          'font-src \'self\' data:',
+          // The directive that carries the most weight here: Turnstile is the only third party the
+          // page may reach, so injected script has nowhere to post a key it managed to read.
+          'connect-src \'self\' https://challenges.cloudflare.com',
+          'frame-src https://challenges.cloudflare.com',
+          // A decrypted file is handed to the user as a blob: URL.
+          'worker-src \'self\' blob:'
+        ].join('; '),
+        // The paste id lives in the path, so it must never travel in a Referer to a third party.
+        'Referrer-Policy': 'no-referrer',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'Cross-Origin-Opener-Policy': 'same-origin',
+        'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
+      }
+    }
+  },
   compatibilityDate: '2025-07-15',
 
   nitro: {
@@ -41,5 +75,13 @@ export default defineNuxtConfig({
     ],
     defaultLocale: 'en',
     strategy: 'no_prefix'
+  },
+
+  // Without this, icons are fetched at runtime from /api/_nuxt_icon and log `[Icon] failed to load
+  // icon` when that misses. Scanning bundles every icon written literally in the source instead.
+  icon: {
+    clientBundle: {
+      scan: true
+    }
   }
 })

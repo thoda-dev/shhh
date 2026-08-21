@@ -58,13 +58,48 @@ jobs:
         run: ./node_modules/.bin/drizzle-kit check
 
   docker:
-    name: Docker image
+    name: Docker image (${{ matrix.name }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: app
+            dockerfile: docker/Dockerfile
+          - name: docs
+            dockerfile: docker/docs.Dockerfile
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Build image
-        run: docker build -f docker/Dockerfile -t shhh:ci .
+        run: docker build -f ${{ matrix.dockerfile }} -t shhh-${{ matrix.name }}:ci .
+
+      # Building only proves it compiles. The docs image built cleanly for a long time while being
+      # unable to boot at all, because nothing ever started it.
+      #
+      # Any HTTP response passes: this asks whether the server came up, not whether it is healthy.
+      # The app has no database here, so /api/health legitimately answers 503 — hence SKIP_MIGRATIONS,
+      # without which the migrate plugin exits before Nitro ever listens.
+      - name: Boot it
+        run: |
+          docker run -d --name probe -p 3000:3000 \
+            -e SKIP_MIGRATIONS=true \
+            -e DATABASE_URL=postgres://unused \
+            -e BETTER_AUTH_SECRET=ci-secret-not-used-for-anything-000 \
+            -e BETTER_AUTH_URL=http://localhost:3000 \
+            shhh-${{ matrix.name }}:ci
+
+          for _ in $(seq 1 30); do
+            if curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/ | grep -qE '^[2345]'; then
+              echo "the ${{ matrix.name }} image answers"
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "::error::the ${{ matrix.name }} image never answered"
+          docker logs probe
+          exit 1

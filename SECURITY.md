@@ -50,11 +50,18 @@ Independent layers, all active:
 - Automatic banning of IPs requesting known probe paths (`wp-admin`, `.git`, …) or identified as
   untrusted bots, with an admin-managed allowlist and blocklist.
 - Atomic decrement of the read counter, so concurrent requests cannot over-read a one-read link.
+- A Content-Security-Policy restricting outbound requests to the instance itself and Turnstile. It
+  is the layer that matters most here: an XSS in a zero-knowledge app does not leak a session, it
+  leaks the decryption key of every paste opened while it runs. The policy still allows inline
+  script, so it contains exfiltration rather than preventing injection.
+- `Referrer-Policy: no-referrer`, so the paste id in the path never travels to a third party, plus
+  `X-Frame-Options`, `X-Content-Type-Options`, `Cross-Origin-Opener-Policy` and `Permissions-Policy`.
 
 ## Deployment requirements
 
-- **Put it behind a reverse proxy that overwrites `X-Forwarded-For`.** Rate limiting and IP banning
-  trust that header; a proxy that appends to a client-supplied value lets callers forge their address.
+- **Set `TRUSTED_PROXY_DEPTH` to the number of proxies you control.** It defaults to `0`, which
+  ignores `X-Forwarded-For` and uses the connection address. Setting it higher than your real chain
+  lets a caller write their own address into the header, and with it get another address banned.
 - **Serve over HTTPS.** The fragment key is in the URL. Without TLS it is exposed in transit.
 - **Set a strong `BETTER_AUTH_SECRET`** and keep it stable — changing it invalidates all sessions.
 - Secrets are only ever read from the environment. Nothing sensitive is stored in the database, so

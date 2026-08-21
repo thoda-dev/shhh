@@ -92,7 +92,7 @@ export default defineEventHandler(async (event) => {
     await assertTwoFactorCompliance(session.user, settings.require_2fa)
   }
 
-  const identifier = session ? session.user.id : (getRequestIP(event, { xForwardedFor: true }) ?? 'unknown')
+  const identifier = session ? session.user.id : (getClientIp(event) ?? 'unknown')
 
   const rateLimit = await checkRateLimit({
     scope: tier === 'anonymous' ? 'ip' : 'user',

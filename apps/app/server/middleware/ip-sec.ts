@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  const ip = getRequestIP(event, { xForwardedFor: true })
+  const ip = getClientIp(event)
   if (!ip || IGNORED_IPS.has(ip)) {
     return
   }
