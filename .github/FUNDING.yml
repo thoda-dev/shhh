@@ -1,0 +1,3 @@
+# Renders a "Sponsor" button on the repository page and in the sidebar of every issue and pull
+# request. GitHub reads this file from .github/ on the default branch only.
+github: thoda-dev
