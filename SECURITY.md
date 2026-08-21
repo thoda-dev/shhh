@@ -74,6 +74,21 @@ Independent layers, all active:
   but shhh adds no layer of its own on top: use full-disk or volume encryption on the host running
   PostgreSQL if your threat model needs it.
 
+## Dependency audit
+
+`pnpm audit` reports findings against this repository that do not reach a running instance. They come
+from the Nuxt build toolchain — Vite, PostCSS, esbuild and friends — which is a production dependency
+of the workspace but never ships: Nitro bundles only what the server imports, and the Docker image
+copies `.output` alone. The runtime image carries no package manager either, which is why it scans
+clean.
+
+The distinction that matters when triaging one of these: a finding in the build chain affects the
+machine doing the build, a finding in the server output affects deployed instances. The second kind
+is treated as a vulnerability in shhh and gets a release; the first is fixed on the normal upgrade
+cycle.
+
+Dependabot is set to alert only. There are deliberately no automated dependency pull requests.
+
 ## Reporting a vulnerability
 
 Open a private security advisory on the repository rather than a public issue.

@@ -1,5 +1,9 @@
 # shhh
 
+[![CI](https://github.com/thoda-dev/shhh/actions/workflows/ci.yml/badge.svg)](https://github.com/thoda-dev/shhh/actions/workflows/ci.yml)
+[![Docker Hub](https://img.shields.io/docker/v/thodadev/shhh?sort=semver&logo=docker&label=docker)](https://hub.docker.com/r/thodadev/shhh)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 > Say it once. We'll forget.
 
 A self-hostable, zero-knowledge pastebin for sharing secrets — text and files — that expire on their

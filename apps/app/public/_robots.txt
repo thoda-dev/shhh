@@ -1,2 +1,4 @@
 User-Agent: *
-Disallow:
+# Paste pages need the fragment key to be readable at all, so they are useless to a crawler —
+# and requesting one still burns a read. Keep them out.
+Disallow: /p/
