@@ -21,6 +21,9 @@ import { generateNotes, prependToChangelog } from './changelog.mjs'
 
 const IMAGE = 'thodadev/shhh'
 const DOCS_IMAGE = 'thodadev/shhh-docs'
+// Mirrored on GHCR: Docker Hub caps anonymous pulls per IP, and a CGNAT shares that IP between subscribers.
+const GHCR_IMAGE = 'ghcr.io/thoda-dev/shhh'
+const GHCR_DOCS_IMAGE = 'ghcr.io/thoda-dev/shhh-docs'
 const PLATFORMS = 'linux/amd64,linux/arm64'
 const BUILDER = 'shhh-release'
 const BRANCH = 'master'
@@ -139,22 +142,26 @@ if (!has('docker')) {
   problems.push('docker buildx introuvable')
 }
 
-// A `credsStore` entry proves nothing — Docker Desktop always writes it. Only the keychain can say whether docker.io is actually in there.
-function isLoggedIntoDockerHub() {
+// A `credsStore` entry proves nothing — Docker Desktop always writes it. Only the keychain can say which registries are actually in there.
+function loggedInRegistries() {
   let config
   try {
     config = JSON.parse(readFileSync(`${process.env.HOME}/.docker/config.json`, 'utf8'))
   } catch {
-    return false
+    return []
   }
-  const registries = config.credsStore
+  return config.credsStore
     ? Object.keys(JSON.parse(capture(`docker-credential-${config.credsStore}`, ['list']) || '{}'))
     : Object.keys(config.auths ?? {})
-  return registries.some(r => r.includes('docker.io'))
 }
 
-if (!isLoggedIntoDockerHub()) {
+// Both checked before the build: `--skip-docker` is all or nothing, so a push landing on one registry only cannot be replayed by halves.
+const registries = loggedInRegistries()
+if (!registries.some(r => r.includes('docker.io'))) {
   problems.push('pas de session Docker Hub — lance `docker login`')
+}
+if (!registries.some(r => r.includes('ghcr.io'))) {
+  problems.push('pas de session GHCR — lance `gh auth token | docker login ghcr.io -u <utilisateur> --password-stdin` (le jeton a besoin du scope write:packages)')
 }
 
 const hasGh = has('gh') && spawnSync('gh', ['auth', 'status'], { stdio: 'ignore' }).status === 0
@@ -173,15 +180,15 @@ if (problems.length) {
 // The tag ladder every official image publishes: `:1` keeps receiving 1.x fixes without ever crossing into a breaking 2.0, and `:1.2` narrows that to patches.
 // A prerelease gets only its exact version, so no moving tag ever resolves to it.
 const [major, minor] = version.split('.')
-const tagsFor = image => isPrerelease
-  ? [`${image}:${version}`]
-  : [`${image}:${version}`, `${image}:${major}.${minor}`, `${image}:${major}`, `${image}:latest`]
+const tagsFor = (...repos) => repos.flatMap(repo => isPrerelease
+  ? [`${repo}:${version}`]
+  : [`${repo}:${version}`, `${repo}:${major}.${minor}`, `${repo}:${major}`, `${repo}:latest`])
 
 // The docs ride the app's version rather than carrying their own: they document that exact release,
 // so a reader can pin both to the same tag and know they match.
 const images = [
-  { name: 'app', dockerfile: 'docker/Dockerfile', tags: tagsFor(IMAGE) },
-  { name: 'docs', dockerfile: 'docker/docs.Dockerfile', tags: tagsFor(DOCS_IMAGE) }
+  { name: 'app', dockerfile: 'docker/Dockerfile', tags: tagsFor(IMAGE, GHCR_IMAGE) },
+  { name: 'docs', dockerfile: 'docker/docs.Dockerfile', tags: tagsFor(DOCS_IMAGE, GHCR_DOCS_IMAGE) }
 ]
 const imageTags = images.flatMap(i => i.tags)
 
