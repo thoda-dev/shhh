@@ -3,6 +3,18 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.1.5
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.4...v1.1.5)
+
+### 🩹 Fixes
+
+- **docker:** Patch the openssl CVEs inherited from node:24-alpine ([#11](https://github.com/thoda-dev/shhh/pull/11))
+
+### ❤️ Contributors
+
+- Thomas
+
 ## v1.1.4
 
 [compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.3...v1.1.4)
