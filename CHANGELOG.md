@@ -3,6 +3,18 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.1.6
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.5...v1.1.6)
+
+### 🚀 Enhancements
+
+- **docker:** Publish the images on ghcr.io alongside Docker Hub ([#12](https://github.com/thoda-dev/shhh/pull/12))
+
+### ❤️ Contributors
+
+- Thomas
+
 ## v1.1.5
 
 [compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.4...v1.1.5)
