@@ -49,7 +49,8 @@ without trusting the server with the contents.
 
 ## Deploy
 
-No checkout — the image is published on [Docker Hub](https://hub.docker.com/r/thodadev/shhh).
+No checkout — the image is published on [GHCR](https://github.com/thoda-dev/shhh/pkgs/container/shhh)
+and mirrored on [Docker Hub](https://hub.docker.com/r/thodadev/shhh).
 The installer fetches the compose file, generates the database password and the auth secret, writes
 a `.env` with mode 600, and starts the stack.
 
