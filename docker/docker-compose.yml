@@ -13,7 +13,8 @@ name: shhh
 services:
   app:
     # `latest` never points at a pre-release. Swap the tag for a version to stay on it.
-    image: thodadev/shhh:latest
+    # Also on Docker Hub as `thodadev/shhh` — the same image, if you prefer that registry.
+    image: ghcr.io/thoda-dev/shhh:latest
     restart: unless-stopped
     ports:
       - "${PORT:-3000}:3000"

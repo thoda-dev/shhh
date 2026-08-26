@@ -7,7 +7,7 @@ body:
     attributes:
       label: Version
       description: The image tag you run, or the commit if you build from source.
-      placeholder: "thodadev/shhh:1.0.1"
+      placeholder: "ghcr.io/thoda-dev/shhh:1.1.5"
     validations:
       required: true
 

@@ -1,4 +1,4 @@
-# Override that builds the image from this checkout instead of pulling it from Docker Hub.
+# Override that builds the image from this checkout instead of pulling the published one.
 # Must run from the repo root — the build context is the whole tree:
 #   docker compose -f docker/docker-compose.yml -f docker/docker-compose.build.yml up -d --build
 #
