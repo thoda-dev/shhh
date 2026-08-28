@@ -6,12 +6,7 @@ export default defineTask({
   async run() {
     const deleted = await db
       .delete(schema.pastes)
-      .where(
-        or(
-          lte(schema.pastes.expiresAt, new Date()),
-          and(isNotNull(schema.pastes.maxReads), gte(schema.pastes.readCount, schema.pastes.maxReads))
-        )
-      )
+      .where(isPasteReclaimable())
       .returning({ id: schema.pastes.id })
 
     await refreshStats()

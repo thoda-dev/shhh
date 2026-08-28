@@ -1,4 +1,7 @@
 {
+  "common": {
+    "cancel": "Cancel"
+  },
   "setup": {
     "title": "Welcome to shhh",
     "subtitle": "Let's set up your instance before anything else.",
@@ -194,9 +197,9 @@
       "anonymousPastes": "Anonymous",
       "authenticatedPastes": "Authenticated",
       "pastesCount": "{count} pastes",
-      "reclaimableSection": "Reclaimable",
-      "reclaimable": "Expired or exhausted",
-      "reclaimableHint": "Already unreadable, still on disk. The hourly purge task deletes them and frees this space.",
+      "reclaimableSection": "Expired or fully read",
+      "reclaimable": "Still stored",
+      "reclaimableHint": "Unreadable already — expired, or read as many times as allowed. The hourly purge deletes them and frees this space.",
       "ceilingsSection": "Largest paste against the per-paste limits",
       "ceilingsHint": "How much of the per-paste ceiling the biggest stored payload actually uses. A near-empty bar means the limit is set far above what people send.",
       "largestText": "Largest text paste",
@@ -209,8 +212,13 @@
       "databasePastesTable": "Pastes table",
       "databaseUnavailable": "The database did not report its size — some managed PostgreSQL providers deny this.",
       "errors": {
-        "generic": "Something went wrong while loading the storage report."
-      }
+        "generic": "Something went wrong while loading the storage report.",
+        "purge": "Something went wrong while purging."
+      },
+      "purge": "Purge now",
+      "purged": "Purged {count} pastes.",
+      "purgeConfirmTitle": "Delete expired and fully read pastes?",
+      "purgeConfirmDescription": "This deletes {count} pastes that are already unreadable — expired, or read as many times as allowed — freeing {size}. Nothing readable is lost. This cannot be undone."
     },
     "allowedIps": {
       "title": "IP allowlist",
@@ -253,6 +261,26 @@
       "confirmDelete": "Permanently delete the account for {email}?",
       "errors": {
         "generic": "Something went wrong."
+      },
+      "pastesSummary": "{count} pastes, {reclaimable} expired or fully read",
+      "menu": {
+        "label": "Actions for {email}",
+        "purgeReclaimable": "Delete expired and fully read pastes ({count})",
+        "deleteAllPastes": "Delete all pastes ({count})",
+        "deleteAccount": "Delete account"
+      },
+      "confirm": {
+        "action": "Delete",
+        "reclaimableTitle": "Delete expired and fully read pastes?",
+        "reclaimableDescription": "This deletes {count} pastes belonging to {email} that are already unreadable — expired, or read as many times as allowed. This cannot be undone.",
+        "allPastesTitle": "Delete every paste of this account?",
+        "allPastesDescription": "This deletes all {count} pastes belonging to {email}, including those still readable. The account itself is kept. This cannot be undone.",
+        "accountTitle": "Delete this account?",
+        "accountDescription": "This deletes the account {email} and its {count} pastes. This cannot be undone."
+      },
+      "result": {
+        "pastesDeleted": "Deleted {count} pastes belonging to {email}.",
+        "accountDeleted": "Deleted the account {email}."
       }
     },
     "invitations": {
