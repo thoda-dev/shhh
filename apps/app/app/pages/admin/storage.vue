@@ -149,6 +149,28 @@ const ownerBars = computed<Bar[]>(() => {
   ))
 })
 
+const purgeOpen = ref(false)
+const purging = ref(false)
+const purgedCount = ref<number | null>(null)
+const purgeError = ref('')
+
+async function purge() {
+  purging.value = true
+  purgeError.value = ''
+  try {
+    const { deletedCount } = await $fetch<{ deletedCount: number }>('/api/admin/pastes/purge', { method: 'POST' })
+    purgedCount.value = deletedCount
+    await refresh()
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    purgeError.value = statusMessage || message || t('admin.storage.errors.purge')
+  } finally {
+    purging.value = false
+    // Closed on failure too: the alert renders in the card, which the overlay would hide.
+    purgeOpen.value = false
+  }
+}
+
 function formatDate(value: string) {
   return new Date(value).toLocaleString(locale.value)
 }
@@ -264,12 +286,37 @@ function formatDate(value: string) {
       </UCard>
 
       <UCard v-if="reclaimableBar">
-        <h2 class="mb-1 text-sm font-medium">
-          {{ t('admin.storage.reclaimableSection') }}
-        </h2>
+        <div class="mb-1 flex items-center justify-between gap-4">
+          <h2 class="text-sm font-medium">
+            {{ t('admin.storage.reclaimableSection') }}
+          </h2>
+          <UButton
+            color="error"
+            variant="subtle"
+            size="xs"
+            icon="i-lucide-trash-2"
+            :label="t('admin.storage.purge')"
+            :disabled="report.pastes.reclaimable === 0"
+            @click="purgeOpen = true"
+          />
+        </div>
         <p class="mb-4 text-xs text-muted">
           {{ t('admin.storage.reclaimableHint') }}
         </p>
+        <UAlert
+          v-if="purgeError"
+          color="error"
+          variant="subtle"
+          :title="purgeError"
+          class="mb-4"
+        />
+        <UAlert
+          v-else-if="purgedCount !== null"
+          color="success"
+          variant="subtle"
+          :title="t('admin.storage.purged', { count: purgedCount })"
+          class="mb-4"
+        />
         <div class="space-y-1.5">
           <div class="flex items-baseline justify-between gap-4 text-sm">
             <span>{{ reclaimableBar.label }} <span class="text-xs text-muted">· {{ reclaimableBar.hint }}</span></span>
@@ -391,6 +438,15 @@ function formatDate(value: string) {
       color="error"
       variant="subtle"
       :title="errorMessage || t('admin.storage.errors.generic')"
+    />
+
+    <ConfirmDialog
+      v-model:open="purgeOpen"
+      :title="t('admin.storage.purgeConfirmTitle')"
+      :description="t('admin.storage.purgeConfirmDescription', { count: report?.pastes.reclaimable ?? 0, size: formatBytes(report?.bytes.reclaimable ?? 0) })"
+      :confirm-label="t('admin.storage.purge')"
+      :loading="purging"
+      @confirm="purge"
     />
   </div>
 </template>

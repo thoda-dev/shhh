@@ -5,8 +5,7 @@ export default defineEventHandler(async (event) => {
 
   const bytes = sql`coalesce(octet_length(${schema.pastes.ciphertext}), 0) + coalesce(octet_length(${schema.pastes.fileBlob}), 0)`
 
-  // Same predicate as the hourly purge task, so "reclaimable" means exactly what that task will delete.
-  const reclaimable = sql`${schema.pastes.expiresAt} <= now() or (${schema.pastes.maxReads} is not null and ${schema.pastes.readCount} >= ${schema.pastes.maxReads})`
+  const reclaimable = isPasteReclaimable()
 
   const isText = sql`${schema.pastes.kind} = 'text'`
   const isFile = sql`${schema.pastes.kind} = 'file'`

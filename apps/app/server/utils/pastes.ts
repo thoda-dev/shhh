@@ -7,3 +7,12 @@ export function isPasteAccessible(paste: { expiresAt: Date, maxReads: number | n
   if (paste.maxReads !== null && paste.readCount >= paste.maxReads) return false
   return true
 }
+
+// The SQL counterpart of `isPasteAccessible`, negated: what the hourly purge deletes, and what the
+// admin tools count and delete on demand. One definition, so no caller can drift from the others.
+export function isPasteReclaimable() {
+  return or(
+    lte(schema.pastes.expiresAt, new Date()),
+    and(isNotNull(schema.pastes.maxReads), gte(schema.pastes.readCount, schema.pastes.maxReads))
+  )
+}

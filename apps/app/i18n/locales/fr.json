@@ -1,4 +1,7 @@
 {
+  "common": {
+    "cancel": "Annuler"
+  },
   "setup": {
     "title": "Bienvenue sur shhh",
     "subtitle": "Configurons votre instance avant toute chose.",
@@ -194,9 +197,9 @@
       "anonymousPastes": "Anonymes",
       "authenticatedPastes": "Authentifiés",
       "pastesCount": "{count} pastes",
-      "reclaimableSection": "Récupérable",
-      "reclaimable": "Expirés ou épuisés",
-      "reclaimableHint": "Déjà illisibles, encore sur le disque. La tâche de purge horaire les supprime et libère cet espace.",
+      "reclaimableSection": "Expirés ou épuisés",
+      "reclaimable": "Encore stockés",
+      "reclaimableHint": "Déjà illisibles — expirés, ou lus autant de fois qu’autorisé. La purge horaire les supprime et libère cet espace.",
       "ceilingsSection": "Plus gros paste face aux limites unitaires",
       "ceilingsHint": "Ce que le plus gros contenu stocké consomme réellement de la limite par paste. Une barre presque vide signifie que la limite est fixée bien au-delà de ce qui est envoyé.",
       "largestText": "Plus gros paste texte",
@@ -209,8 +212,13 @@
       "databasePastesTable": "Table pastes",
       "databaseUnavailable": "La base n'a pas communiqué sa taille — certains hébergeurs PostgreSQL gérés l'interdisent.",
       "errors": {
-        "generic": "Une erreur est survenue lors du chargement du rapport de stockage."
-      }
+        "generic": "Une erreur est survenue lors du chargement du rapport de stockage.",
+        "purge": "Une erreur est survenue lors de la purge."
+      },
+      "purge": "Purger",
+      "purged": "{count} pastes purgés.",
+      "purgeConfirmTitle": "Supprimer les pastes expirés et épuisés ?",
+      "purgeConfirmDescription": "Supprime {count} pastes déjà illisibles — expirés, ou lus autant de fois qu’autorisé — libérant {size}. Rien de lisible n’est perdu. Cette action est irréversible."
     },
     "allowedIps": {
       "title": "Liste blanche IP",
@@ -253,6 +261,26 @@
       "confirmDelete": "Supprimer définitivement le compte de {email} ?",
       "errors": {
         "generic": "Une erreur est survenue."
+      },
+      "pastesSummary": "{count} pastes, dont {reclaimable} expirés ou épuisés",
+      "menu": {
+        "label": "Actions pour {email}",
+        "purgeReclaimable": "Supprimer les pastes expirés et épuisés ({count})",
+        "deleteAllPastes": "Supprimer tous les pastes ({count})",
+        "deleteAccount": "Supprimer le compte"
+      },
+      "confirm": {
+        "action": "Supprimer",
+        "reclaimableTitle": "Supprimer les pastes expirés et épuisés ?",
+        "reclaimableDescription": "Supprime {count} pastes de {email} déjà illisibles — expirés, ou lus autant de fois qu’autorisé. Cette action est irréversible.",
+        "allPastesTitle": "Supprimer tous les pastes de ce compte ?",
+        "allPastesDescription": "Supprime les {count} pastes de {email}, y compris ceux encore lisibles. Le compte lui-même est conservé. Cette action est irréversible.",
+        "accountTitle": "Supprimer ce compte ?",
+        "accountDescription": "Supprime le compte {email} et ses {count} pastes. Cette action est irréversible."
+      },
+      "result": {
+        "pastesDeleted": "{count} pastes de {email} supprimés.",
+        "accountDeleted": "Compte {email} supprimé."
       }
     },
     "invitations": {
