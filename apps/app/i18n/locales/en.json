@@ -177,6 +177,41 @@
         "generic": "Something went wrong while saving settings."
       }
     },
+    "storage": {
+      "title": "Storage",
+      "description": "What this instance is holding, measured live against the quotas set in the instance settings.",
+      "refresh": "Refresh",
+      "generatedAt": "Measured {date}",
+      "noQuota": "No quota set",
+      "percentUsed": "{percent}% of the quota",
+      "quotasSection": "Instance quotas",
+      "storageUsed": "Storage used",
+      "pastesStored": "Pastes stored",
+      "compositionSection": "What is using it",
+      "compositionHint": "Share of the {total} currently stored.",
+      "textPastes": "Text pastes",
+      "filePastes": "File pastes",
+      "anonymousPastes": "Anonymous",
+      "authenticatedPastes": "Authenticated",
+      "pastesCount": "{count} pastes",
+      "reclaimableSection": "Reclaimable",
+      "reclaimable": "Expired or exhausted",
+      "reclaimableHint": "Already unreadable, still on disk. The hourly purge task deletes them and frees this space.",
+      "ceilingsSection": "Largest paste against the per-paste limits",
+      "ceilingsHint": "How much of the per-paste ceiling the biggest stored payload actually uses. A near-empty bar means the limit is set far above what people send.",
+      "largestText": "Largest text paste",
+      "largestFile": "Largest file",
+      "topOwnersSection": "Top accounts by storage",
+      "topOwnersEmpty": "No authenticated paste stored.",
+      "databaseSection": "On disk",
+      "databaseHint": "What PostgreSQL actually occupies, indexes and compression included — always more than the sum of the payloads above, and the figure the volume runs out of.",
+      "databaseTotal": "Database",
+      "databasePastesTable": "Pastes table",
+      "databaseUnavailable": "The database did not report its size — some managed PostgreSQL providers deny this.",
+      "errors": {
+        "generic": "Something went wrong while loading the storage report."
+      }
+    },
     "allowedIps": {
       "title": "IP allowlist",
       "description": "IPs in this list bypass the anti-bot/anti-probe middleware entirely — useful for offices or admins behind a shared IP that would otherwise trip bot detection.",

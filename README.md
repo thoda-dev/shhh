@@ -40,7 +40,7 @@ without trusting the server with the contents.
 - Anonymous pastes (text) and authenticated pastes (text + file uploads)
 - Optional password protection on top of the fragment key
 - Two-factor authentication (TOTP) with backup codes, optionally enforced instance-wide
-- Admin dashboard: settings, accounts and roles, invitations, IP allowlist and blocklist
+- Admin dashboard: settings, storage usage against the quotas, accounts and roles, invitations, IP allowlist and blocklist
 - Invitations, so a closed instance can still onboard people
 - Email sharing at creation time, one message with recipients in blind copy
 - Cloudflare Turnstile, per-IP and per-account rate limiting, automatic probe banning

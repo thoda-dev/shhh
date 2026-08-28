@@ -89,44 +89,7 @@ async function save() {
         :to="localePath('/')"
       />
     </div>
-    <div class="mb-6 flex flex-wrap gap-2">
-      <UButton
-        variant="ghost"
-        size="sm"
-        icon="i-lucide-settings"
-        :label="t('admin.settings.title')"
-        :to="localePath('/admin/settings')"
-        disabled
-      />
-      <UButton
-        variant="ghost"
-        size="sm"
-        icon="i-lucide-shield"
-        :label="t('admin.allowedIps.title')"
-        :to="localePath('/admin/allowed-ips')"
-      />
-      <UButton
-        variant="ghost"
-        size="sm"
-        icon="i-lucide-ban"
-        :label="t('admin.bannedIps.title')"
-        :to="localePath('/admin/banned-ips')"
-      />
-      <UButton
-        variant="ghost"
-        size="sm"
-        icon="i-lucide-users"
-        :label="t('admin.users.title')"
-        :to="localePath('/admin/users')"
-      />
-      <UButton
-        variant="ghost"
-        size="sm"
-        icon="i-lucide-mail-plus"
-        :label="t('admin.invitations.title')"
-        :to="localePath('/admin/invitations')"
-      />
-    </div>
+    <AdminNav />
 
     <div class="space-y-8">
       <fieldset class="space-y-4">
