@@ -84,9 +84,15 @@ consola.info('Synchronisation avec origin…')
 run('git', ['fetch', '--quiet', 'origin'], { readOnly: true, allowFailure: true })
 
 const local = capture('git', ['rev-parse', 'HEAD'])
-const remote = capture('git', ['rev-parse', `origin/${branch}`])
-// Same reason: a `sha-` tag pointing at an unpushed commit is a dead reference for everyone else.
-if (remote && local !== remote) {
+// `--verify --quiet` because a bare `rev-parse` echoes an unknown ref back on stdout: without it a
+// never-pushed branch compares a sha against the string `origin/<branch>` and reports itself as
+// desynchronised, with empty ahead/behind counts.
+const remote = capture('git', ['rev-parse', '--verify', '--quiet', `origin/${branch}`])
+// Same reason as the dirty tree: a `sha-` tag naming a commit nobody can fetch is a dead reference,
+// and a branch missing from origin is the worst case of that.
+if (!remote) {
+  problems.push(`branche ${branch} jamais poussée sur origin — pousse-la avant de publier`)
+} else if (local !== remote) {
   const ahead = capture('git', ['rev-list', '--count', `origin/${branch}..HEAD`])
   const behind = capture('git', ['rev-list', '--count', `HEAD..origin/${branch}`])
   problems.push(`branche désynchronisée avec origin (${ahead} devant, ${behind} derrière) — pousse avant de publier`)
@@ -166,8 +172,9 @@ if (!flags.has('--skip-checks')) {
 // ---------------------------------------------------------------- Docker image
 
 // The default `docker` driver can't produce a multi-architecture manifest, so a dedicated `docker-container` builder is created rather than touching the current one.
-const builders = capture('docker', ['buildx', 'ls'])
-if (!builders.includes(BUILDER)) {
+// `buildx ls` prints a table, and a substring search on it would match a builder named
+// `shhh-release2`; `inspect` resolves the name exactly and stays silent when there is none.
+if (!capture('docker', ['buildx', 'inspect', BUILDER])) {
   consola.info(`Création du builder ${BUILDER} (multi-architecture)`)
   run('docker', ['buildx', 'create', '--name', BUILDER, '--driver', 'docker-container'])
 }
