@@ -35,6 +35,13 @@ const metaError = ref('')
 const meta = ref<MetaResponse | null>(null)
 const fragmentKey = ref<Bytes | null>(null)
 
+// Only where there is a password, and only for pastes carrying an unlock hash: `reveal.post.ts`
+// spends nothing on a wrong one, but its `isNull` legacy branch still burns a read.
+const burnWarning = computed(() => [
+  t('read.burnWarningDescription'),
+  ...(meta.value?.passwordProtected ? [t('read.burnWarningPassword')] : [])
+].join(' '))
+
 onMounted(async () => {
   const keyParam = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('key')
   if (!keyParam) {
@@ -174,7 +181,7 @@ async function copyText() {
           color="warning"
           variant="subtle"
           :title="t('read.burnWarningTitle')"
-          :description="t('read.burnWarningDescription')"
+          :description="burnWarning"
         />
         <UAlert
           v-if="revealError"
