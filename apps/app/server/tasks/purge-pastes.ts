@@ -4,13 +4,12 @@ export default defineTask({
     description: 'Delete expired or exhausted pastes and refresh app_stats/user_stats'
   },
   async run() {
-    const deleted = await db
+    const { count } = await db
       .delete(schema.pastes)
       .where(isPasteReclaimable())
-      .returning({ id: schema.pastes.id })
 
     await refreshStats()
 
-    return { result: { deletedCount: deleted.length } }
+    return { result: { deletedCount: count } }
   }
 })

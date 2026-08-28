@@ -24,10 +24,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const owned = eq(schema.pastes.ownerId, targetId)
-  const deleted = await db
+  const { count } = await db
     .delete(schema.pastes)
     .where(scope === 'all' ? owned : and(owned, isPasteReclaimable()))
-    .returning({ id: schema.pastes.id })
 
   await refreshStats()
 
@@ -35,8 +34,8 @@ export default defineEventHandler(async (event) => {
     actorId: session.user.id,
     action: 'pastes.delete',
     targetId: target.id,
-    details: { email: target.email, scope, deletedCount: deleted.length }
+    details: { email: target.email, scope, deletedCount: count }
   })
 
-  return { deletedCount: deleted.length }
+  return { deletedCount: count }
 })

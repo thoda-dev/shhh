@@ -160,13 +160,14 @@ async function purge() {
   try {
     const { deletedCount } = await $fetch<{ deletedCount: number }>('/api/admin/pastes/purge', { method: 'POST' })
     purgedCount.value = deletedCount
-    purgeOpen.value = false
     await refresh()
   } catch (error) {
     const { statusMessage, message } = fetchErrorMessages(error)
     purgeError.value = statusMessage || message || t('admin.storage.errors.purge')
   } finally {
     purging.value = false
+    // Closed on failure too: the alert renders in the card, which the overlay would hide.
+    purgeOpen.value = false
   }
 }
 
