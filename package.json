@@ -26,6 +26,7 @@
     "lint": "pnpm --filter app lint",
     "lint:fix": "pnpm --filter app lint:fix",
     "release": "node scripts/release.mjs",
+    "release:docs": "node scripts/release-docs.mjs",
     "update:all": "pnpm -r --include-workspace-root update",
     "db:generate": "pnpm --filter app db:generate",
     "db:migrate": "pnpm --filter app db:migrate",
