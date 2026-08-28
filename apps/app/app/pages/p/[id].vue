@@ -35,6 +35,13 @@ const metaError = ref('')
 const meta = ref<MetaResponse | null>(null)
 const fragmentKey = ref<Bytes | null>(null)
 
+// The password clause only holds where there is a password: `reveal.post.ts` folds the unlock hash
+// into the atomic UPDATE, so a wrong one matches no row and spends nothing.
+const burnWarning = computed(() => [
+  t('read.burnWarningDescription'),
+  ...(meta.value?.passwordProtected ? [t('read.burnWarningPassword')] : [])
+].join(' '))
+
 onMounted(async () => {
   const keyParam = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('key')
   if (!keyParam) {
@@ -174,7 +181,7 @@ async function copyText() {
           color="warning"
           variant="subtle"
           :title="t('read.burnWarningTitle')"
-          :description="t('read.burnWarningDescription')"
+          :description="burnWarning"
         />
         <UAlert
           v-if="revealError"
