@@ -35,8 +35,8 @@ const metaError = ref('')
 const meta = ref<MetaResponse | null>(null)
 const fragmentKey = ref<Bytes | null>(null)
 
-// The password clause only holds where there is a password: `reveal.post.ts` folds the unlock hash
-// into the atomic UPDATE, so a wrong one matches no row and spends nothing.
+// Only where there is a password, and only for pastes carrying an unlock hash: `reveal.post.ts`
+// spends nothing on a wrong one, but its `isNull` legacy branch still burns a read.
 const burnWarning = computed(() => [
   t('read.burnWarningDescription'),
   ...(meta.value?.passwordProtected ? [t('read.burnWarningPassword')] : [])
