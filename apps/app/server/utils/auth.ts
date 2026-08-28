@@ -8,6 +8,7 @@ import { getSetting } from './settings'
 import { isSetupComplete } from './setup'
 import { isInvitedSignup } from './invitations'
 import { isMailEnabled, sendMail } from './mail'
+import { resolveMailLocale } from './mail-locale'
 import { resetPasswordTemplate, verifyEmailTemplate } from './mail-templates'
 
 if (!process.env.BETTER_AUTH_SECRET) {
@@ -45,8 +46,8 @@ export const auth = betterAuth({
     requireEmailVerification: isMailEnabled(),
     // Without a provider there is no way to deliver a reset link, so resetting becomes a manual admin action.
     sendResetPassword: isMailEnabled()
-      ? async ({ user, url }) => {
-        const mail = resetPasswordTemplate({ url })
+      ? async ({ user, url }, request) => {
+        const mail = resetPasswordTemplate({ url, locale: resolveMailLocale(request?.headers) })
         await sendMail({ to: user.email, ...mail })
       }
       : undefined
@@ -58,8 +59,8 @@ export const auth = betterAuth({
     sendOnSignIn: isMailEnabled(),
     autoSignInAfterVerification: true,
     sendVerificationEmail: isMailEnabled()
-      ? async ({ user, url }) => {
-        const mail = verifyEmailTemplate({ url })
+      ? async ({ user, url }, request) => {
+        const mail = verifyEmailTemplate({ url, locale: resolveMailLocale(request?.headers) })
         await sendMail({ to: user.email, ...mail })
       }
       : undefined
@@ -72,8 +73,8 @@ export const auth = betterAuth({
       // False even for unverified accounts: skipping confirmation would make the check avoidable by simply never verifying.
       updateEmailWithoutVerification: false,
       sendChangeEmailConfirmation: isMailEnabled()
-        ? async ({ user, newEmail, url }) => {
-          const mail = changeEmailTemplate({ url, newEmail })
+        ? async ({ user, newEmail, url }, request) => {
+          const mail = changeEmailTemplate({ url, newEmail, locale: resolveMailLocale(request?.headers) })
           await sendMail({ to: user.email, ...mail })
         }
         : undefined

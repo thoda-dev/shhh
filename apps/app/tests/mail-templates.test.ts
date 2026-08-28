@@ -116,3 +116,71 @@ describe('change email', () => {
     expect(mail.text).toMatch(/if this was not you/i)
   })
 })
+
+describe('locales', () => {
+  const FR = [
+    ['verifyEmail', verifyEmailTemplate({ url: URL_, locale: 'fr' })],
+    ['resetPassword', resetPasswordTemplate({ url: URL_, locale: 'fr' })],
+    ['changeEmail', changeEmailTemplate({ url: URL_, newEmail: 'new@example.com', locale: 'fr' })],
+    ['invitation', invitationTemplate({ url: URL_, expiresInDays: 7, locale: 'fr' })],
+    ['sharedPaste', sharedPasteTemplate({ url: URL_, senderName: 'Alice', remainingReads: 2, expiresAt: new Date('2030-01-01T00:00:00Z'), locale: 'fr' })]
+  ] as const
+
+  it.each(FR)('%s is rendered in French', (_name, mail) => {
+    expect(mail.subject.trim()).not.toBe('')
+    expect(mail.html).toContain('lang="fr"')
+    expect(mail.text.trim()).not.toBe('')
+  })
+
+  it.each(FR)('%s still carries the link in both parts', (_name, mail) => {
+    expect(mail.html).toContain(URL_)
+    expect(mail.text).toContain(URL_)
+  })
+
+  it.each(FR)('%s differs from its English counterpart', (name, mail) => {
+    const english = ALL.find(([other]) => other === name)![1]
+    expect(mail.subject).not.toBe(english.subject)
+    expect(mail.text).not.toBe(english.text)
+  })
+
+  it('defaults to English when no locale is given', () => {
+    expect(resetPasswordTemplate({ url: URL_ }).subject).toBe(resetPasswordTemplate({ url: URL_, locale: 'en' }).subject)
+    expect(verifyEmailTemplate({ url: URL_ }).html).toContain('lang="en"')
+  })
+
+  it('translates the invitation expiry, including the never-expires case', () => {
+    expect(invitationTemplate({ url: URL_, expiresInDays: 7, locale: 'fr' }).text).toContain('7 jours.')
+    expect(invitationTemplate({ url: URL_, expiresInDays: 1, locale: 'fr' }).text).toContain('1 jour.')
+    expect(invitationTemplate({ url: URL_, expiresInDays: null, locale: 'fr' }).text).toMatch(/n'expire pas/)
+  })
+
+  it('translates the shared-paste read counter', () => {
+    const base = { url: URL_, senderName: 'Alice', expiresAt: new Date('2030-01-01T00:00:00Z'), locale: 'fr' } as const
+    expect(sharedPasteTemplate({ ...base, remainingReads: null }).text).toMatch(/illimité/)
+    expect(sharedPasteTemplate({ ...base, remainingReads: 3 }).text).toMatch(/compteur est partagé/)
+  })
+
+  it('renders the expiry date in the mail locale, always in UTC', () => {
+    const base = { url: URL_, senderName: 'Alice', remainingReads: null, expiresAt: new Date('2030-03-01T14:30:00Z') } as const
+    expect(sharedPasteTemplate({ ...base, locale: 'en' }).text).toContain('UTC')
+    expect(sharedPasteTemplate({ ...base, locale: 'fr' }).text).toContain('UTC')
+    expect(sharedPasteTemplate({ ...base, locale: 'fr' }).text).toContain('mars')
+    expect(sharedPasteTemplate({ ...base, locale: 'en' }).text).toContain('March')
+  })
+
+  it('still escapes a hostile sender name in French', () => {
+    const mail = sharedPasteTemplate({
+      url: URL_,
+      senderName: '<script>alert(1)</script>',
+      remainingReads: null,
+      expiresAt: new Date('2030-01-01T00:00:00Z'),
+      locale: 'fr'
+    })
+    expect(mail.html).not.toContain('<script>')
+    expect(mail.html).toContain('&lt;script&gt;')
+  })
+
+  it('keeps the French text part free of markup', () => {
+    for (const [, mail] of FR) expect(mail.text).not.toMatch(/<[a-z]/i)
+  })
+})
