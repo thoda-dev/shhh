@@ -41,18 +41,6 @@ function isExhausted(paste: PasteListItem) {
   return paste.maxReads !== null && paste.readCount >= paste.maxReads
 }
 
-function formatBytes(bytes: number | null) {
-  if (bytes === null) return ''
-  const units = ['B', 'KB', 'MB', 'GB']
-  let value = bytes
-  let unitIndex = 0
-  while (value >= 1024 && unitIndex < units.length - 1) {
-    value /= 1024
-    unitIndex++
-  }
-  return `${value.toFixed(1)} ${units[unitIndex]}`
-}
-
 function formatDate(value: string) {
   return new Date(value).toLocaleString(locale.value)
 }
