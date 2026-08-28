@@ -218,7 +218,9 @@ export default defineEventHandler(async (event) => {
       senderName: session.user.name || session.user.email,
       senderEmail: session.user.email,
       remainingReads: paste!.maxReads,
-      expiresAt: paste!.expiresAt
+      expiresAt: paste!.expiresAt,
+      // The recipients' own language is unknown; the sender's is the closest signal there is.
+      locale: mailLocaleFromEvent(event)
     })
     shared = result.sent
   }

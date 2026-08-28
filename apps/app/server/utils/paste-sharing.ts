@@ -1,3 +1,5 @@
+import type { MailLocale } from './mail-locale'
+
 /**
  * ⚠️ The one place the decryption key reaches the server: a usable link carries it, so composing the mail needs it.
  * Only at creation, only for authenticated users, never for an existing paste — that is what bounds the exposure.
@@ -12,6 +14,7 @@ export async function sharePasteByEmail(params: {
   senderEmail: string
   remainingReads: number | null
   expiresAt: Date
+  locale: MailLocale
 }): Promise<{ sent: boolean }> {
   // From BETTER_AUTH_URL, not the request's Host header: that header is attacker-controllable, and this URL goes out in an email.
   const origin = process.env.BETTER_AUTH_URL!.replace(/\/+$/, '')
@@ -21,7 +24,8 @@ export async function sharePasteByEmail(params: {
     url,
     senderName: params.senderName,
     remainingReads: params.remainingReads,
-    expiresAt: params.expiresAt
+    expiresAt: params.expiresAt,
+    locale: params.locale
   })
 
   // `to` is the sender, Bcc everyone else: recipients see who shared the link but never one another, and no third-party mailbox gets a copy.

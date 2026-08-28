@@ -59,9 +59,11 @@ export default defineEventHandler(async (event) => {
 
   // Same reasoning as paste sharing: from BETTER_AUTH_URL, not the attacker-controllable Host header, since it lands in an email.
   const origin = process.env.BETTER_AUTH_URL!.replace(/\/+$/, '')
+  // The invitee has no account yet, so the inviting admin's UI language is the only signal available.
   const mail = invitationTemplate({
     url: `${origin}/register?token=${token}`,
-    expiresInDays: expiryDays
+    expiresInDays: expiryDays,
+    locale: mailLocaleFromEvent(event)
   })
   const sent = await sendMail({ to: email, ...mail })
 

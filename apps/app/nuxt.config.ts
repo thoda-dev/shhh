@@ -20,6 +20,10 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  colorMode: {
+    storageKey: 'shhh_color_mode'
+  },
+
   // Defence in depth for a design where the browser holds the only decryption key: an XSS here does
   // not leak a session, it leaks every key that passes through the page.
   routeRules: {
@@ -82,7 +86,12 @@ export default defineNuxtConfig({
       { code: 'fr', language: 'fr-FR', name: 'Français', file: 'fr.json' }
     ],
     defaultLocale: 'en',
-    strategy: 'no_prefix'
+    strategy: 'no_prefix',
+    detectBrowserLanguage: {
+      // Named rather than left on the module default: a cookie scoped to a parent domain by another
+      // Nuxt app would otherwise decide the language here. `server/utils/mail-locale.ts` reads it too.
+      cookieKey: 'shhh_i18n_locale'
+    }
   },
 
   // Without this, icons are fetched at runtime from /api/_nuxt_icon and log `[Icon] failed to load
