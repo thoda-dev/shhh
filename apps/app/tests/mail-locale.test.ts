@@ -51,4 +51,18 @@ describe('resolveMailLocale', () => {
     expect(resolveMailLocale(headers({ cookie: 'shhh_i18n_locale=de' }))).toBe('en')
     expect(resolveMailLocale(headers({ cookie: 'shhh_i18n_locale=' }))).toBe('en')
   })
+
+  it('survives broken percent-encoding rather than throwing on the send path', () => {
+    // The cookie is attacker-controlled and decodeURIComponent throws on these; a 500 on paste
+    // creation is not an acceptable answer to a corrupted cookie.
+    for (const value of ['%', '%zz', '%E0%A4%A']) {
+      expect(() => resolveMailLocale(headers({ cookie: `shhh_i18n_locale=${value}` }))).not.toThrow()
+      expect(resolveMailLocale(headers({ cookie: `shhh_i18n_locale=${value}` }))).toBe('en')
+    }
+  })
+
+  it('still falls back to Accept-Language when the cookie is unusable', () => {
+    const source = headers({ 'cookie': 'shhh_i18n_locale=%zz', 'accept-language': 'fr-FR,fr;q=0.9' })
+    expect(resolveMailLocale(source)).toBe('fr')
+  })
 })

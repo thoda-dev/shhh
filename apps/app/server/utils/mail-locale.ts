@@ -19,7 +19,15 @@ function fromCookie(header: string | null): MailLocale | null {
     if (separator === -1) continue
     if (part.slice(0, separator).trim() !== LOCALE_COOKIE) continue
 
-    const value = decodeURIComponent(part.slice(separator + 1).trim()).toLowerCase()
+    // The header is attacker-controlled and `decodeURIComponent` throws on malformed escapes:
+    // an unusable cookie has to read as no cookie, never as a 500 on the request that sends mail.
+    let value: string
+    try {
+      value = decodeURIComponent(part.slice(separator + 1).trim()).toLowerCase()
+    } catch {
+      return null
+    }
+
     return isMailLocale(value) ? value : null
   }
 
