@@ -14,7 +14,19 @@ const copied = ref(false)
 const claudeUrl = `https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=${encodeURIComponent(serverName)}&connectorUrl=${encodeURIComponent(serverUrl)}`
 
 async function copyUrl() {
-  await navigator.clipboard.writeText(serverUrl)
+  try {
+    await navigator.clipboard.writeText(serverUrl)
+  } catch {
+    // There is no clipboard outside a secure context, which a docs instance on plain HTTP is not.
+    toast.add({
+      title: 'Could not copy',
+      description: 'Select the URL above and copy it by hand.',
+      icon: 'i-lucide-triangle-alert',
+      color: 'warning',
+    })
+    return
+  }
+
   copied.value = true
   setTimeout(() => copied.value = false, 2000)
   toast.add({ title: 'Server URL copied', icon: 'i-lucide-check-circle', color: 'success' })
