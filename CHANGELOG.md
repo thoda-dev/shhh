@@ -3,6 +3,23 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.1.8
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.7...v1.1.8)
+
+### 🚀 Enhancements
+
+- **admin:** Add a super-admin storage page with usage against the quotas ([#14](https://github.com/thoda-dev/shhh/pull/14))
+- **admin:** Add manual purge and per-account paste deletion ([#18](https://github.com/thoda-dev/shhh/pull/18))
+
+### 🏡 Chore
+
+- **deps:** Move @nuxt/cli to the 4.0 alpha and bump pnpm to 11.24 ([#16](https://github.com/thoda-dev/shhh/pull/16))
+
+### ❤️ Contributors
+
+- Thomas ([@thoda-dev](https://github.com/thoda-dev))
+
 ## v1.1.7
 
 [compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.5...v1.1.7)
