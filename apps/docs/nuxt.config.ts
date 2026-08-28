@@ -20,6 +20,22 @@ export default defineNuxtConfig({
     },
   },
 
+  // The docs double as an MCP server on /mcp — see content/1.getting-started/2.mcp.md. Without a
+  // name the handshake advertises an empty one, which is what MCP clients list the server under.
+  mcp: {
+    name: 'shhh docs',
+    description: 'Documentation for shhh, a self-hosted zero-knowledge pastebin.',
+  },
+
+  // Two pages have to be rendered per request rather than baked at build time. /releases reads the
+  // GitHub API, and prerendering would freeze the list; its handler caches, so this costs one call to
+  // GitHub every half hour, not one per hit. The MCP page builds absolute URLs from the request
+  // origin, and the prerenderer only knows `http://localhost`.
+  routeRules: {
+    '/getting-started/mcp': { prerender: false },
+    '/releases': { prerender: false },
+  },
+
   // Same reason as the app: bundle icons at build time rather than fetching them at runtime.
   icon: {
     clientBundle: {
@@ -35,16 +51,19 @@ export default defineNuxtConfig({
         'lucide:file-lock',
         'lucide:info',
         'lucide:lock-keyhole',
+        'lucide:plug',
         'lucide:rocket',
         'lucide:server',
         'lucide:shield',
         'lucide:shield-check',
         'lucide:sliders-horizontal',
+        'lucide:tag',
         'lucide:timer',
         'lucide:user',
         'lucide:users',
         'simple-icons:github',
         'vscode-icons:file-type-dotenv',
+        'vscode-icons:file-type-json',
       ],
     },
   },
