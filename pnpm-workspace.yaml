@@ -12,3 +12,6 @@ allowBuilds:
   vue-demi: true
 
 minimumReleaseAge: 1440
+
+overrides:
+  '@nuxt/cli': alpha
