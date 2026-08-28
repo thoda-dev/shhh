@@ -182,7 +182,6 @@
       "description": "Ce que cette instance conserve, mesuré en direct face aux quotas définis dans les réglages de l'instance.",
       "refresh": "Actualiser",
       "generatedAt": "Mesuré le {date}",
-      "unlimited": "Illimité",
       "noQuota": "Aucun quota défini",
       "percentUsed": "{percent} % du quota",
       "quotasSection": "Quotas de l'instance",
@@ -208,7 +207,10 @@
       "databaseHint": "Ce que PostgreSQL occupe réellement, index et compression compris — toujours plus que la somme des contenus ci-dessus, et le chiffre qui remplit le volume.",
       "databaseTotal": "Base de données",
       "databasePastesTable": "Table pastes",
-      "databaseUnavailable": "La base n'a pas communiqué sa taille — certains hébergeurs PostgreSQL gérés l'interdisent."
+      "databaseUnavailable": "La base n'a pas communiqué sa taille — certains hébergeurs PostgreSQL gérés l'interdisent.",
+      "errors": {
+        "generic": "Une erreur est survenue lors du chargement du rapport de stockage."
+      }
     },
     "allowedIps": {
       "title": "Liste blanche IP",

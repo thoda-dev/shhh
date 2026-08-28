@@ -47,7 +47,13 @@ if (user.value?.role !== 'super_admin') {
   await navigateTo(localePath('/'))
 }
 
-const { data: report, refresh, status } = await useFetch<StorageReport>('/api/admin/storage')
+const { data: report, refresh, status, error } = await useFetch<StorageReport>('/api/admin/storage')
+
+const errorMessage = computed(() => {
+  if (!error.value) return ''
+  const { statusMessage, message } = fetchErrorMessages(error.value)
+  return statusMessage || message || t('admin.storage.errors.generic')
+})
 
 // `status` flips back to 'pending' on every refresh, which would swap the whole report for a spinner.
 const refreshing = ref(false)
@@ -79,7 +85,7 @@ function quotaBar(key: string, label: string, used: number, limit: number | null
     key,
     label,
     value: format(used),
-    limit: limit === null ? t('admin.storage.unlimited') : format(limit),
+    limit: limit === null ? null : format(limit),
     percent,
     color: quotaColor(percent)
   }
@@ -203,7 +209,7 @@ function formatDate(value: string) {
           >
             <div class="flex items-baseline justify-between gap-4 text-sm">
               <span>{{ bar.label }}</span>
-              <span class="tabular-nums text-muted">{{ bar.value }} / {{ bar.limit }}</span>
+              <span class="tabular-nums text-muted">{{ bar.value }}<span v-if="bar.limit"> / {{ bar.limit }}</span></span>
             </div>
             <UProgress
               v-if="bar.percent !== null"
@@ -293,7 +299,7 @@ function formatDate(value: string) {
           >
             <div class="flex items-baseline justify-between gap-4 text-sm">
               <span>{{ bar.label }}</span>
-              <span class="tabular-nums text-muted">{{ bar.value }} / {{ bar.limit }}</span>
+              <span class="tabular-nums text-muted">{{ bar.value }}<span v-if="bar.limit"> / {{ bar.limit }}</span></span>
             </div>
             <UProgress
               v-if="bar.percent !== null"
@@ -379,5 +385,12 @@ function formatDate(value: string) {
         {{ t('admin.storage.generatedAt', { date: formatDate(report.generatedAt) }) }}
       </p>
     </div>
+
+    <UAlert
+      v-else
+      color="error"
+      variant="subtle"
+      :title="errorMessage || t('admin.storage.errors.generic')"
+    />
   </div>
 </template>
