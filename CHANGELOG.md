@@ -3,6 +3,22 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.1.9
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.8...v1.1.9)
+
+### 🚀 Enhancements
+
+- **mail:** Send transactional emails in the UI language ([#20](https://github.com/thoda-dev/shhh/pull/20))
+
+### 🩹 Fixes
+
+- **read:** Stop claiming a wrong password burns a read ([#22](https://github.com/thoda-dev/shhh/pull/22))
+
+### ❤️ Contributors
+
+- Thomas ([@thoda-dev](https://github.com/thoda-dev))
+
 ## v1.1.8
 
 [compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.7...v1.1.8)
