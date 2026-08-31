@@ -3,7 +3,7 @@ import breaks from 'comark/plugins/breaks'
 import security from 'comark/plugins/security'
 import type { MarkdownDocument } from 'comark'
 
-// Everything plain markdown can produce. No `img`: an instance has nowhere to host one.
+// Everything plain markdown can produce. `img` is out: nothing lets an operator upload one.
 const ALLOWED_TAGS = [
   'p', 'br', 'hr',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
