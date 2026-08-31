@@ -16,12 +16,8 @@ useSeoMeta({
   ogType: 'website',
   ogSiteName: 'shhh',
   ogUrl: () => url.href,
-  // Absolute, not `/og-image.png`: every unfurler resolves it against nothing and needs the origin.
-  ogImage: () => `${url.origin}/og-image.png`,
-  ogImageWidth: 1200,
-  ogImageHeight: 630,
-  twitterCard: 'summary_large_image',
-  twitterImage: () => `${url.origin}/og-image.png`,
+  // No card image here: `pages/index.vue` adds one for the home page alone, so a shared paste link unfurls small instead of eating the conversation it lands in.
+  twitterCard: 'summary',
   twitterTitle: t('seo.title'),
   twitterDescription: t('seo.description')
 })
