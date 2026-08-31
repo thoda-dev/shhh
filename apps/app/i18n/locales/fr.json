@@ -308,6 +308,82 @@
         "revoked": "Révoquée",
         "expired": "Expirée"
       }
+    },
+    "legal": {
+      "title": "Pages légales",
+      "description": "Publiez une politique de confidentialité, des conditions d'utilisation ou des mentions légales. Un document est lié en pied de page dès qu'il existe dans une langue ; rien n'est affiché tant qu'aucun n'existe.",
+      "locales": {
+        "en": "Anglais",
+        "fr": "Français"
+      },
+      "insertTemplate": "Insérer le modèle",
+      "confirmTemplate": "Remplacer ce que vous avez écrit par le modèle fourni ?",
+      "preview": "Aperçu",
+      "placeholder": "Markdown. Titres, listes, liens et tableaux — pas de HTML, pas de composants.",
+      "publishedAt": "Publié le {date}",
+      "unpublished": "Non publié",
+      "save": "Enregistrer",
+      "saved": "Enregistré",
+      "unpublish": "Dépublier",
+      "confirmDelete": "Supprimer ce document ? La page et son lien en pied de page disparaissent.",
+      "hint": "Le modèle est un point de départ, pas un conseil juridique : relisez chaque paragraphe et remplissez les valeurs entre accolades avant de publier.",
+      "errors": {
+        "generic": "Impossible d'enregistrer le document"
+      },
+      "template": {
+        "title": "Compléter le modèle",
+        "description": "Un seul formulaire pour toutes les langues. Laissez un champ vide pour conserver sa variable et y revenir plus tard.",
+        "languages": "Langues à compléter",
+        "languagesHint": "Les valeurs sont communes à toutes les langues. Les durées et les phrases sont rédigées par langue ; le reste est inséré tel quel. Chaque langue reste à enregistrer depuis son onglet.",
+        "includeHint": "Désactivez pour ne pas inclure cette information",
+        "apply": "Compléter",
+        "hint": "Rien n'est encore enregistré.",
+        "units": {
+          "hours": {
+            "one": "heure",
+            "other": "heures"
+          },
+          "days": {
+            "one": "jour",
+            "other": "jours"
+          },
+          "months": {
+            "one": "mois",
+            "other": "mois"
+          },
+          "years": {
+            "one": "an",
+            "other": "ans"
+          }
+        }
+      },
+      "placeholders": {
+        "DATE": "Date de mise à jour",
+        "OPERATOR": "Exploitant",
+        "CONTACT_EMAIL": "Email de contact",
+        "PHONE": "Téléphone",
+        "POSTAL_ADDRESS": "Adresse postale",
+        "LEGAL_FORM_AND_REGISTRATION": "Forme juridique et immatriculation",
+        "PUBLICATION_DIRECTOR": "Directeur de la publication",
+        "HOSTING_PROVIDER": "Hébergeur",
+        "HOSTING_ADDRESS": "Adresse de l’hébergeur",
+        "HOSTING_CONTACT": "Contact de l’hébergeur",
+        "MAIL_PROVIDER": "Fournisseur d’email",
+        "JURISDICTION": "Zone géographique",
+        "SUPERVISORY_AUTHORITY": "Autorité de contrôle",
+        "RETENTION_MAX": "Durée de vie maximale d’un paste",
+        "SESSION_RETENTION": "Conservation des sessions",
+        "BAN_DURATION": "Durée des bannissements automatiques",
+        "AUDIT_RETENTION": "Conservation du journal d’administration",
+        "CHANGE_NOTICE": "Comment les modifications sont annoncées",
+        "INSTANCE_URL": "Adresse de cette instance",
+        "MINIMUM_AGE": "Âge minimum pour un compte",
+        "GOVERNING_LAW": "Droit applicable",
+        "COURTS": "Juridiction compétente"
+      },
+      "unsavedIn": "Non enregistré en {languages}.",
+      "saveAll": "Enregistrer les {count} langues",
+      "source": "Markdown"
     }
   },
   "account": {
@@ -400,5 +476,16 @@
   "seo": {
     "title": "shhh — partagez un secret qui expire",
     "description": "Un pastebin zero-knowledge auto-hébergeable. Le serveur ne stocke que du chiffré : la clé vit dans le fragment de l'URL et ne lui parvient jamais."
+  },
+  "legal": {
+    "documents": {
+      "privacy": "Politique de confidentialité",
+      "terms": "Conditions d'utilisation",
+      "notice": "Mentions légales"
+    },
+    "updatedAt": "Dernière mise à jour le {date}",
+    "otherLanguage": "Cette instance ne publie ce document que dans une autre langue.",
+    "notFound": "Cette instance ne publie pas ce document.",
+    "seoDescription": "Comment cette instance traite vos données."
   }
 }

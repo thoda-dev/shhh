@@ -178,7 +178,7 @@ function reset() {
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center p-4">
+  <div class="flex flex-1 items-center justify-center p-4">
     <UCard class="w-full max-w-2xl">
       <template #header>
         <div class="flex items-center justify-between">

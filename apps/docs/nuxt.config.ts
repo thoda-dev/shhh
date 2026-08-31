@@ -53,6 +53,7 @@ export default defineNuxtConfig({
         'lucide:lock-keyhole',
         'lucide:plug',
         'lucide:rocket',
+        'lucide:scale',
         'lucide:server',
         'lucide:shield',
         'lucide:shield-check',

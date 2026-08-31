@@ -18,9 +18,9 @@ export default defineEventHandler(async () => {
     // Not an app_setting — derived from MAIL_PROVIDER. The form needs the flag; the provider's identity stays server-side.
     mailEnabled: isMailEnabled(),
     maxEmailRecipients: settings.max_email_recipients_per_paste,
-    // The creation form needs the caps to prefill its fields and to stop offering "unlimited" where
-    // the instance refuses it. No secret either: a caller discovers the same numbers by tripping the
-    // 400 they produce. `null` means unlimited.
+    // Drives the footer links; locale-independent, since a read falls back across languages.
+    legalDocuments: await listPublishedLegalSlugs(),
+    // The creation form needs the caps to prefill its fields and to stop offering "unlimited" where the instance refuses it. No secret either: a caller discovers the same numbers by tripping the 400 they produce. `null` means unlimited.
     limits: {
       anonymous: {
         maxRetentionDays: settings.max_retention_days_anonymous,

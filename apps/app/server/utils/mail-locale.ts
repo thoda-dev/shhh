@@ -1,15 +1,12 @@
 import type { H3Event } from 'h3'
+import { APP_LOCALES, DEFAULT_APP_LOCALE, isAppLocale, type AppLocale } from './locales'
 
-export const MAIL_LOCALES = ['en', 'fr'] as const
-export type MailLocale = typeof MAIL_LOCALES[number]
-export const DEFAULT_MAIL_LOCALE: MailLocale = 'en'
+export const MAIL_LOCALES = APP_LOCALES
+export type MailLocale = AppLocale
+export const DEFAULT_MAIL_LOCALE: MailLocale = DEFAULT_APP_LOCALE
 
 // Must stay in step with `i18n.detectBrowserLanguage.cookieKey` in nuxt.config, where the switcher writes.
 const LOCALE_COOKIE = 'shhh_i18n_locale'
-
-function isMailLocale(value: string): value is MailLocale {
-  return (MAIL_LOCALES as readonly string[]).includes(value)
-}
 
 function fromCookie(header: string | null): MailLocale | null {
   if (!header) return null
@@ -28,7 +25,7 @@ function fromCookie(header: string | null): MailLocale | null {
       return null
     }
 
-    return isMailLocale(value) ? value : null
+    return isAppLocale(value) ? value : null
   }
 
   return null
@@ -50,7 +47,7 @@ function fromAcceptLanguage(header: string | null): MailLocale | null {
   for (const { tag } of ranked) {
     // 'fr-CA' and 'fr' both mean the French mail; only the primary subtag is ours to match.
     const base = tag.split('-')[0]!
-    if (isMailLocale(base)) return base
+    if (isAppLocale(base)) return base
   }
 
   return null

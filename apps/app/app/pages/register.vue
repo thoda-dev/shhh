@@ -73,7 +73,7 @@ async function submit(event: FormSubmitEvent<typeof state>) {
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center p-4">
+  <div class="flex flex-1 items-center justify-center p-4">
     <UCard class="w-full max-w-sm">
       <template #header>
         <h1 class="text-xl font-semibold">

@@ -45,6 +45,7 @@ without trusting the server with the contents.
 - Email sharing at creation time, one message with recipients in blind copy
 - Cloudflare Turnstile, per-IP and per-account rate limiting, automatic probe banning
 - Account deletion with full cascade (GDPR right to erasure)
+- Legal pages — privacy policy, terms, legal notice — written in Markdown from the admin dashboard, with templates included
 - English and French
 
 ## Deploy

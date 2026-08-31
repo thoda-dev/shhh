@@ -1,9 +1,12 @@
+export type LegalSlug = 'privacy' | 'terms' | 'notice'
+
 export interface PublicSettings {
   publicPasteEnabled: boolean
   registrationEnabled: boolean
   require2fa: boolean
   mailEnabled: boolean
   maxEmailRecipients: number | null
+  legalDocuments: LegalSlug[]
   limits: {
     anonymous: TierLimits
     authenticated: TierLimits
