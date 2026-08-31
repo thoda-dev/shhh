@@ -152,9 +152,4 @@ defineProps<{ value: MarkdownDocumentType }>()
   border-top: 1px solid var(--ui-border);
   margin: 2rem 0;
 }
-
-.legal-document :deep(img) {
-  max-width: 100%;
-  border-radius: var(--ui-radius);
-}
 </style>
