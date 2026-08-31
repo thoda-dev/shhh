@@ -109,9 +109,13 @@ async function copyText() {
   <div class="flex flex-1 items-center justify-center p-4">
     <UCard class="w-full max-w-2xl">
       <template #header>
-        <h1 class="text-xl font-semibold">
-          shhh
-        </h1>
+        <div class="flex items-center justify-between gap-3">
+          <h1 class="text-xl font-semibold">
+            shhh
+          </h1>
+          <!-- The one page a reader may reach without ever having used the instance, so it also offers the way in. -->
+          <BackButton size="sm" />
+        </div>
       </template>
 
       <div v-if="missingKey">
