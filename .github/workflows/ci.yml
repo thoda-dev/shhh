@@ -57,6 +57,46 @@ jobs:
           DATABASE_URL: postgres://unused
         run: ./node_modules/.bin/drizzle-kit check
 
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # A real PostgreSQL, because what these cover is the routes against the schema, not pure logic.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: shhh_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # Turnstile runs for real, on Cloudflare's always-passes test keys, so this step needs egress.
+      - name: Integration tests
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/shhh_test
+        run: pnpm test:integration
+
   docker-app:
     name: Docker image (app)
     runs-on: ubuntu-latest

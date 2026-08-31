@@ -23,6 +23,7 @@
     "build:docs": "pnpm --filter docs build",
     "typecheck": "pnpm --filter app typecheck",
     "test": "pnpm --filter app test",
+    "test:integration": "pnpm --filter app test:integration",
     "lint": "pnpm --filter app lint",
     "lint:fix": "pnpm --filter app lint:fix",
     "release": "node scripts/release.mjs",

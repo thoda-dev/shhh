@@ -25,15 +25,12 @@ const SETUP_LOCK_KEY = 4_827_302
 export default defineEventHandler(async (event) => {
   const body = await readValidatedBody(event, setupSchema.parse)
 
-  // The check and the write have to be one critical section. Without it two requests arriving
-  // together both see an empty instance and both create a super_admin — the account that owns
-  // everything, so "unlikely" is not a good enough guarantee.
-  await db.execute(sql`select pg_advisory_lock(${SETUP_LOCK_KEY})`)
-  try {
-    return await completeSetup(event, body)
-  } finally {
-    await db.execute(sql`select pg_advisory_unlock(${SETUP_LOCK_KEY})`)
-  }
+  // The check and the write have to be one critical section, or two requests both create a super_admin.
+  // Transaction-scoped: a session lock and its unlock are two pool checkouts, and land on different connections.
+  return await db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(${SETUP_LOCK_KEY})`)
+    return completeSetup(event, body)
+  })
 })
 
 async function completeSetup(event: Parameters<typeof appendResponseHeader>[0], body: z.infer<typeof setupSchema>) {

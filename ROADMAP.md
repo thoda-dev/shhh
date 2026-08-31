@@ -15,30 +15,28 @@ Anything not listed here is either done or deliberately out of scope (see the bo
   The mail templates have no header image, which is deliberate: an image in an email means either an
   external URL that tells the sender the message was opened, or a base64 payload in every message.
 
-- **Integration tests.** Unit tests cover the pure logic (see below), but nothing exercises the
-  routes — and that gap has already shipped a broken release. v1.1.0 and v1.1.1 could not complete
-  their setup wizard at all: bumping Better Auth to 1.7 needed a new `issuer` column on `accounts`,
-  and nothing noticed, because lint, types, 86 unit tests, both builds and both Docker images all
-  pass without a single request ever reaching `signUpEmail`. The paths where a silent regression
-  would cost most, in order:
-  1. **Sign-up and the setup wizard** — the one that was actually broken. A fresh database, the
-     wizard completed, a super admin created. It would have caught the schema drift on the commit
-     that introduced it rather than on a self-hoster's first boot.
+- **Integration tests.** The harness exists — `pnpm test:integration`, see
+  [CONTRIBUTING.md](CONTRIBUTING.md) — and two of the seven suites are written. What it cost to get
+  here: v1.1.0 and v1.1.1 could not complete their setup wizard at all, because bumping Better Auth
+  to 1.7 needed a new `issuer` column on `accounts` and nothing noticed. Lint, types, 86 unit tests,
+  both builds and both Docker images all pass without a single request ever reaching `signUpEmail`.
+  The remaining paths, in the order a silent regression would cost most:
+  1. ~~**Sign-up and the setup wizard**~~ — done, `tests/integration/setup-wizard.test.ts`.
   2. **The read counter under concurrency** — fire many simultaneous reveals at a one-read paste and
      assert exactly one succeeds. This is the test that guards the atomic
      `UPDATE … WHERE read_count < max_reads RETURNING`, and now also that a caller without the
      unlock hash moves nothing.
-  3. **The permission matrix** — the table in the security docs, case by case.
+  3. ~~**The permission matrix**~~ — done, `tests/integration/permissions.test.ts`.
   4. **Invitations** — single use including two concurrent accepts, address fixed by the invitation
      rather than the request body, role always `user`, registration bypass.
   5. **Anonymous restrictions** — no uploads, no server-side sharing, `public_paste_enabled` off.
   6. **Settings semantics** — an absent row means the default, a row holding `null` means unlimited.
   7. **Account deletion** — full cascade, audit log anonymised rather than deleted.
 
-  Needs Vitest with `@nuxt/test-utils` and a real PostgreSQL (a service container in CI), with
-  tables truncated between tests. Turnstile is bypassed with Cloudflare's always-valid test keys.
-  Assert on `paste_email_recipients` rows rather than on delivered mail, to avoid depending on a
-  mail server in CI.
+  Invitations and account deletion need a mail provider, which the harness deliberately runs without:
+  sign-up would then wait on a verification click. They need a second server configuration, or a
+  provider stub. Assert on `paste_email_recipients` rows rather than on delivered mail, to avoid
+  depending on a mail server in CI.
 
 ## Waiting on upstream
 
