@@ -61,6 +61,12 @@ describe('parseLegalMarkdown', () => {
     expect(json(tree.nodes)).toContain('mailto:a@example.com')
   })
 
+  it('drops an image, relative or remote', async () => {
+    const tree = await parseLegalMarkdown('![logo](/logo.png) and ![remote](https://example.com/logo.png)')
+
+    expect(tags(tree.nodes)).not.toContain('img')
+  })
+
   it('ignores component syntax instead of resolving a component', async () => {
     const tree = await parseLegalMarkdown('::alert{type="info"}\nHello\n::')
 

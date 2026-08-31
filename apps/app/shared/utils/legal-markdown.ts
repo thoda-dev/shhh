@@ -3,14 +3,14 @@ import breaks from 'comark/plugins/breaks'
 import security from 'comark/plugins/security'
 import type { MarkdownDocument } from 'comark'
 
-// Everything plain markdown can produce, and nothing else.
+// Everything plain markdown can produce. `img` is out: nothing lets an operator upload one.
 const ALLOWED_TAGS = [
   'p', 'br', 'hr',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
   'strong', 'em', 's', 'del', 'code', 'pre', 'blockquote',
   'ul', 'ol', 'li',
   'table', 'thead', 'tbody', 'tr', 'th', 'td',
-  'a', 'img'
+  'a'
 ]
 
 // `registerDefaultPlugins: false` is the load-bearing line: it turns off raw HTML, component syntax and free-form attributes, any of which would put script on a page that holds decryption keys.
@@ -21,8 +21,7 @@ const parseMarkdown = createMarkdownParser({
     breaks(),
     security({
       allowedTags: ALLOWED_TAGS,
-      allowedProtocols: ['http', 'https', 'mailto'],
-      allowDataImages: false
+      allowedProtocols: ['http', 'https', 'mailto']
     })
   ]
 })
