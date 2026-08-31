@@ -3,6 +3,30 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.1.10
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.9...v1.1.10)
+
+### 🚀 Enhancements
+
+- **docs:** Document the MCP server and list GitHub releases ([#24](https://github.com/thoda-dev/shhh/pull/24))
+- **release:** Publish the docs image without cutting a release ([#26](https://github.com/thoda-dev/shhh/pull/26))
+- **legal:** Publish privacy, terms and legal notice pages ([#28](https://github.com/thoda-dev/shhh/pull/28))
+- **ui:** Make every page hold up on a phone ([#32](https://github.com/thoda-dev/shhh/pull/32))
+
+### 🩹 Fixes
+
+- **legal:** Drop img from the allowed markdown tags ([#30](https://github.com/thoda-dev/shhh/pull/30))
+- **seo:** Keep the preview image on the home page only ([#36](https://github.com/thoda-dev/shhh/pull/36))
+
+### ✅ Tests
+
+- **integration:** Cover the setup wizard and the permission matrix ([#34](https://github.com/thoda-dev/shhh/pull/34))
+
+### ❤️ Contributors
+
+- Thomas ([@thoda-dev](https://github.com/thoda-dev))
+
 ## v1.1.9
 
 [compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.8...v1.1.9)
