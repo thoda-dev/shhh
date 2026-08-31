@@ -1,2 +1,11 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+/* Safari on iOS zooms the whole page whenever a focused field sits under 16px, and every Nuxt UI
+   control is 14px. Only on touch pointers, and only `!important` because the size comes from a class. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea {
+    font-size: 1rem !important;
+  }
+}

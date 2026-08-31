@@ -136,7 +136,8 @@ async function copyText() {
         class="space-y-4"
       >
         <template v-if="decryptedText">
-          <pre class="max-h-96 overflow-auto rounded-lg bg-elevated p-4 text-sm whitespace-pre-wrap">{{ decryptedText }}</pre>
+          <!-- `break-words` as well as the wrap: a secret is often one long unbroken token. -->
+          <pre class="max-h-96 overflow-auto rounded-lg bg-elevated p-4 text-sm break-words whitespace-pre-wrap">{{ decryptedText }}</pre>
           <UButton
             :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
             :label="copied ? t('create.result.copied') : t('read.copyText')"
@@ -150,6 +151,8 @@ async function copyText() {
             :to="decryptedFile.url"
             :download="decryptedFile.name"
             external
+            class="max-w-full"
+            :ui="{ label: 'truncate' }"
           />
         </template>
       </div>

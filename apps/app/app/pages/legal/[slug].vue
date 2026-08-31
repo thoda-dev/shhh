@@ -9,7 +9,6 @@ interface LegalDocumentResponse {
 }
 
 const { t, locale } = useI18n()
-const localePath = useLocalePath()
 const route = useRoute()
 
 const slug = computed(() => String(route.params.slug))
@@ -35,12 +34,8 @@ const updatedAt = computed(() =>
 
 <template>
   <div class="mx-auto max-w-2xl p-4 pb-16">
-    <UButton
-      variant="ghost"
+    <BackButton
       size="sm"
-      icon="i-lucide-arrow-left"
-      :label="t('dashboard.backToCreate')"
-      :to="localePath('/')"
       class="mb-6"
     />
 

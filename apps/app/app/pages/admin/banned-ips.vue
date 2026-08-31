@@ -76,16 +76,11 @@ function isExpired(ip: BannedIp) {
 
 <template>
   <div class="mx-auto max-w-5xl p-4">
-    <div class="mb-2 flex items-center justify-between">
+    <div class="mb-2 flex items-center justify-between gap-3">
       <h1 class="text-xl font-semibold">
         {{ t('admin.bannedIps.title') }}
       </h1>
-      <UButton
-        variant="ghost"
-        icon="i-lucide-arrow-left"
-        :label="t('dashboard.backToCreate')"
-        :to="localePath('/')"
-      />
+      <BackButton />
     </div>
     <AdminNav />
 
@@ -169,10 +164,10 @@ function isExpired(ip: BannedIp) {
         v-for="entry in bannedIps"
         :key="entry.id"
       >
-        <div class="flex items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center gap-2">
-              <p class="font-mono text-sm">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <p class="font-mono text-sm break-all">
                 {{ entry.ip }}
               </p>
               <UBadge
@@ -200,7 +195,7 @@ function isExpired(ip: BannedIp) {
                 {{ t('admin.bannedIps.expiresAt', { date: formatDate(entry.expiresAt) }) }}
               </UBadge>
             </div>
-            <p class="text-xs text-muted">
+            <p class="text-xs break-words text-muted">
               {{ entry.reason }} · {{ t('admin.bannedIps.bannedAt', { date: formatDate(entry.bannedAt) }) }}
             </p>
           </div>
@@ -208,6 +203,7 @@ function isExpired(ip: BannedIp) {
             color="error"
             variant="ghost"
             icon="i-lucide-trash-2"
+            class="shrink-0"
             :loading="removingId === entry.id"
             @click="remove(entry.id)"
           />

@@ -80,16 +80,11 @@ function formatDate(value: string) {
 
 <template>
   <div class="mx-auto max-w-5xl p-4">
-    <div class="mb-2 flex items-center justify-between">
+    <div class="mb-2 flex items-center justify-between gap-3">
       <h1 class="text-xl font-semibold">
         {{ t('admin.invitations.title') }}
       </h1>
-      <UButton
-        variant="ghost"
-        icon="i-lucide-arrow-left"
-        :label="t('dashboard.backToCreate')"
-        :to="localePath('/')"
-      />
+      <BackButton />
     </div>
     <AdminNav />
 
@@ -173,9 +168,9 @@ function formatDate(value: string) {
         v-for="entry in invitations"
         :key="entry.id"
       >
-        <div class="flex items-center justify-between gap-4">
+        <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
               <p class="truncate text-sm">
                 {{ entry.email }}
               </p>
@@ -187,7 +182,7 @@ function formatDate(value: string) {
                 {{ t(`admin.invitations.states.${entry.state}`) }}
               </UBadge>
             </div>
-            <p class="text-xs text-muted">
+            <p class="text-xs break-words text-muted">
               <span v-if="entry.invitedByEmail">{{ t('admin.invitations.invitedBy', { email: entry.invitedByEmail }) }} · </span>
               <span v-if="entry.state === 'pending'">{{ t('admin.invitations.expiresAt', { date: formatDate(entry.expiresAt) }) }}</span>
               <span v-else-if="entry.acceptedAt">{{ t('admin.invitations.acceptedAt', { date: formatDate(entry.acceptedAt) }) }}</span>
@@ -199,6 +194,7 @@ function formatDate(value: string) {
             color="error"
             variant="ghost"
             icon="i-lucide-x"
+            class="shrink-0"
             :loading="revokingId === entry.id"
             @click="revoke(entry.id)"
           />

@@ -165,13 +165,13 @@ function apply() {
               min="1"
               :disabled="!included[key]"
               placeholder="30"
-              class="w-28"
+              class="w-24 shrink-0 sm:w-28"
             />
             <USelect
               v-model="durations[key]!.unit"
               :items="unitItems"
               :disabled="!included[key]"
-              class="w-40"
+              class="min-w-0 flex-1 sm:w-40 sm:flex-none"
             />
           </div>
 
@@ -213,11 +213,11 @@ function apply() {
     </template>
 
     <template #footer>
-      <div class="flex w-full items-center justify-between gap-4">
+      <div class="flex w-full flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p class="text-xs text-muted">
           {{ t('admin.legal.template.hint') }}
         </p>
-        <div class="flex shrink-0 gap-2">
+        <div class="flex shrink-0 justify-end gap-2">
           <UButton
             color="neutral"
             variant="ghost"

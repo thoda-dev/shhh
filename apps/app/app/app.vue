@@ -36,8 +36,9 @@ useHead({
     <NuxtRouteAnnouncer />
     <div class="flex min-h-screen flex-col">
       <!-- Part of the flow rather than fixed over it: on a screen shorter than the content, a floating bar has scrolled text passing behind it. Upstream project and its documentation, not the running instance — a fork is free to repoint both, but the links are attribution. "GitHub" stays out of i18n, a brand name reads the same in every locale, while "Documentation" does not. -->
-      <header class="flex items-center justify-between gap-2 p-4">
-        <div class="flex items-center gap-1">
+      <!-- A phone header holds either these two or a labelled way to sign up, and signing up wins; what stays drops its own label below `sm`. -->
+      <header class="flex items-center justify-end gap-2 p-4 sm:justify-between">
+        <div class="hidden items-center gap-1 sm:flex">
           <UButton
             variant="ghost"
             size="sm"

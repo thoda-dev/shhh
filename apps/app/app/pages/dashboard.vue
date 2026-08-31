@@ -48,25 +48,11 @@ function formatDate(value: string) {
 
 <template>
   <div class="mx-auto max-w-3xl p-4">
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-6 flex items-center justify-between gap-3">
       <h1 class="text-xl font-semibold">
         {{ t('dashboard.title') }}
       </h1>
-      <div class="flex items-center gap-2">
-        <UButton
-          v-if="user && ['admin', 'super_admin'].includes(user.role)"
-          variant="ghost"
-          icon="i-lucide-settings"
-          :label="t('admin.settings.title')"
-          :to="localePath('/admin/settings')"
-        />
-        <UButton
-          variant="ghost"
-          icon="i-lucide-arrow-left"
-          :label="t('dashboard.backToCreate')"
-          :to="localePath('/')"
-        />
-      </div>
+      <BackButton />
     </div>
 
     <div
@@ -94,14 +80,15 @@ function formatDate(value: string) {
         v-for="paste in pastes"
         :key="paste.id"
       >
-        <div class="flex items-center justify-between gap-4">
-          <div class="flex items-center gap-3">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex min-w-0 items-start gap-3">
             <UIcon
               :name="paste.kind === 'file' ? 'i-lucide-paperclip' : 'i-lucide-file-text'"
-              class="size-5 text-muted"
+              class="mt-0.5 size-5 shrink-0 text-muted"
             />
-            <div>
-              <div class="flex items-center gap-2 text-sm">
+            <div class="min-w-0">
+              <!-- Four badges never fit one phone line, so they wrap under the kind instead of pushing the delete button off. -->
+              <div class="flex flex-wrap items-center gap-2 text-sm">
                 <span>{{ paste.kind === 'file' ? t('create.kindFile') : t('create.kindText') }}</span>
                 <UBadge
                   v-if="paste.fileSize !== null"
@@ -156,6 +143,7 @@ function formatDate(value: string) {
             color="error"
             variant="ghost"
             icon="i-lucide-trash-2"
+            class="shrink-0"
             :loading="deletingId === paste.id"
             @click="remove(paste.id)"
           />
