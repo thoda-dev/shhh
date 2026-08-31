@@ -22,6 +22,20 @@ pnpm test
 Schema changes need a migration committed alongside them: `pnpm db:generate`. CI fails if the
 migrations and the schema disagree.
 
+## Integration tests
+
+`pnpm test:integration` builds the app, boots it and drives the routes over HTTP.
+It needs a database of its own: the schema is dropped on every run, which is why it reads `TEST_DATABASE_URL` rather than `DATABASE_URL`.
+
+```bash
+createdb shhh_test
+TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/shhh_test pnpm test:integration
+```
+
+Turnstile is exercised for real, on Cloudflare's always-passes test keys, so the run needs network access.
+`TEST_SKIP_BUILD=true` reuses the last `.output` while you iterate on the tests themselves.
+[ROADMAP.md](ROADMAP.md) lists the suites still to write.
+
 By taking part, you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Commit messages
