@@ -3,6 +3,17 @@ import type { TabsItem } from '@nuxt/ui'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
+const url = useRequestURL()
+
+// The large preview card is the home page's alone — every other route, a paste above all, keeps the compact one set in `app.vue`.
+useSeoMeta({
+  // Absolute, not `/og-image.png`: every unfurler resolves it against nothing and needs the origin.
+  ogImage: () => `${url.origin}/og-image.png`,
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
+  twitterCard: 'summary_large_image',
+  twitterImage: () => `${url.origin}/og-image.png`
+})
 
 await ensureAuthSessionLoaded()
 const user = useAuthUser()
