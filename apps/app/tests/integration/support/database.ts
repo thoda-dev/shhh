@@ -19,3 +19,7 @@ export async function resetDatabase() {
   const list = tables.map(row => `"${row.tablename}"`).join(', ')
   await client.unsafe(`truncate table ${list} restart identity cascade`)
 }
+
+export function closeDatabase() {
+  return client.end()
+}

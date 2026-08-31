@@ -19,6 +19,7 @@ export default defineNitroPlugin(async () => {
     // Transaction-scoped: a session lock and its unlock are two pool checkouts, and land on different connections.
     await db.transaction(async (tx) => {
       await tx.execute(sql`select pg_advisory_xact_lock(${LOCK_KEY})`)
+      // `db`, not `tx`: the migrator opens a transaction of its own on whatever session it is handed.
       await migrate(db, { migrationsFolder })
       console.log('[migrate] database is up to date')
     })

@@ -94,6 +94,12 @@ export default async function globalSetup(project: TestProject) {
   project.provide('baseUrl', baseUrl)
 
   return async () => {
+    if (server.exitCode !== null) return
+    const exited = new Promise<void>(done => server.once('exit', () => done()))
     server.kill('SIGTERM')
+    // Waited on, and escalated: an orphaned server holds the port and the database for the next run.
+    const forced = setTimeout(() => server.kill('SIGKILL'), 5_000)
+    await exited
+    clearTimeout(forced)
   }
 }
