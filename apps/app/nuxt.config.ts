@@ -6,7 +6,8 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
     '@nuxtjs/turnstile',
     '@nuxtjs/robots',
-    '@nuxt/eslint'
+    '@nuxt/eslint',
+    '@comark/nuxt'
   ],
   devtools: { enabled: true },
   app: {

@@ -308,6 +308,82 @@
         "revoked": "Revoked",
         "expired": "Expired"
       }
+    },
+    "legal": {
+      "title": "Legal pages",
+      "description": "Publish a privacy policy, terms of use or legal notice. A document is linked in the footer as soon as it exists in one language; nothing is shown while none does.",
+      "locales": {
+        "en": "English",
+        "fr": "French"
+      },
+      "insertTemplate": "Insert the template",
+      "confirmTemplate": "Replace what you have written with the shipped template?",
+      "preview": "Preview",
+      "placeholder": "Markdown. Headings, lists, links and tables — no HTML, no components.",
+      "publishedAt": "Published {date}",
+      "unpublished": "Not published",
+      "save": "Save",
+      "saved": "Saved",
+      "unpublish": "Unpublish",
+      "confirmDelete": "Remove this document? The page and its footer link disappear.",
+      "hint": "The template is a starting point, not legal advice: read every paragraph and fill in the placeholders before publishing.",
+      "errors": {
+        "generic": "Could not save the document"
+      },
+      "template": {
+        "title": "Fill in the template",
+        "description": "One form for every language. Leave a field empty to keep its placeholder and come back to it later.",
+        "languages": "Languages to fill in",
+        "languagesHint": "The values are the same in every language. Durations and sentences are written per language; everything else is inserted as you typed it. Each language is still saved on its own tab.",
+        "includeHint": "Turn off to leave this information out",
+        "apply": "Fill in",
+        "hint": "Nothing is saved yet.",
+        "units": {
+          "hours": {
+            "one": "hour",
+            "other": "hours"
+          },
+          "days": {
+            "one": "day",
+            "other": "days"
+          },
+          "months": {
+            "one": "month",
+            "other": "months"
+          },
+          "years": {
+            "one": "year",
+            "other": "years"
+          }
+        }
+      },
+      "placeholders": {
+        "DATE": "Last updated",
+        "OPERATOR": "Operator",
+        "CONTACT_EMAIL": "Contact email",
+        "PHONE": "Phone",
+        "POSTAL_ADDRESS": "Postal address",
+        "LEGAL_FORM_AND_REGISTRATION": "Legal form and registration",
+        "PUBLICATION_DIRECTOR": "Publication director",
+        "HOSTING_PROVIDER": "Hosting provider",
+        "HOSTING_ADDRESS": "Hosting provider address",
+        "HOSTING_CONTACT": "Hosting provider contact",
+        "MAIL_PROVIDER": "Mail provider",
+        "JURISDICTION": "Jurisdiction",
+        "SUPERVISORY_AUTHORITY": "Supervisory authority",
+        "RETENTION_MAX": "Longest a paste can live",
+        "SESSION_RETENTION": "Session retention",
+        "BAN_DURATION": "Automatic ban duration",
+        "AUDIT_RETENTION": "Audit log retention",
+        "CHANGE_NOTICE": "How changes are announced",
+        "INSTANCE_URL": "Address of this instance",
+        "MINIMUM_AGE": "Minimum age for an account",
+        "GOVERNING_LAW": "Governing law",
+        "COURTS": "Competent courts"
+      },
+      "unsavedIn": "Not saved yet in {languages}.",
+      "saveAll": "Save {count} languages",
+      "source": "Markdown"
     }
   },
   "account": {
@@ -400,5 +476,16 @@
   "seo": {
     "title": "shhh — share a secret that expires",
     "description": "A self-hostable, zero-knowledge pastebin. The server stores ciphertext and nothing else: the key lives in the URL fragment and never reaches it."
+  },
+  "legal": {
+    "documents": {
+      "privacy": "Privacy policy",
+      "terms": "Terms of use",
+      "notice": "Legal notice"
+    },
+    "updatedAt": "Last updated {date}",
+    "otherLanguage": "This instance publishes this document in another language only.",
+    "notFound": "This instance publishes no such document.",
+    "seoDescription": "How this instance handles your data."
   }
 }

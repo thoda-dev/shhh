@@ -77,7 +77,7 @@ async function save() {
 </script>
 
 <template>
-  <div class="mx-auto max-w-2xl p-4 pt-12">
+  <div class="mx-auto max-w-5xl p-4">
     <div class="mb-2 flex items-center justify-between">
       <h1 class="text-xl font-semibold">
         {{ t('admin.settings.title') }}

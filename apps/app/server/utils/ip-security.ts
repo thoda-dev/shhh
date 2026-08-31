@@ -4,12 +4,17 @@
 // Set AUTO_BAN_DURATION_HOURS=0 to keep the old behaviour and ban permanently.
 const DEFAULT_AUTO_BAN_HOURS = 72
 
-function autoBanExpiry(): Date | null {
+/** `null` means a ban never expires. */
+export function autoBanDurationHours(): number | null {
   const raw = process.env.AUTO_BAN_DURATION_HOURS
   const hours = raw === undefined || raw.trim() === '' ? DEFAULT_AUTO_BAN_HOURS : Number(raw)
-  if (!Number.isInteger(hours) || hours < 0) return new Date(Date.now() + DEFAULT_AUTO_BAN_HOURS * 3_600_000)
-  if (hours === 0) return null
-  return new Date(Date.now() + hours * 3_600_000)
+  if (!Number.isInteger(hours) || hours < 0) return DEFAULT_AUTO_BAN_HOURS
+  return hours === 0 ? null : hours
+}
+
+function autoBanExpiry(): Date | null {
+  const hours = autoBanDurationHours()
+  return hours === null ? null : new Date(Date.now() + hours * 3_600_000)
 }
 
 export async function isIpAllowlisted(ip: string) {

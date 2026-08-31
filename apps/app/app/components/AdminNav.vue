@@ -18,7 +18,8 @@ const links = computed(() => {
     { to: '/admin/allowed-ips', icon: 'i-lucide-shield', label: t('admin.allowedIps.title') },
     { to: '/admin/banned-ips', icon: 'i-lucide-ban', label: t('admin.bannedIps.title') },
     { to: '/admin/users', icon: 'i-lucide-users', label: t('admin.users.title') },
-    { to: '/admin/invitations', icon: 'i-lucide-mail-plus', label: t('admin.invitations.title') }
+    { to: '/admin/invitations', icon: 'i-lucide-mail-plus', label: t('admin.invitations.title') },
+    { to: '/admin/legal', icon: 'i-lucide-scale', label: t('admin.legal.title'), superAdminOnly: true }
   ]
   return all.filter(link => !link.superAdminOnly || user.value?.role === 'super_admin')
 })
