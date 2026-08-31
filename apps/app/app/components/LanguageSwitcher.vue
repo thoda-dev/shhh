@@ -1,23 +1,31 @@
 <script setup lang="ts">
-const { locale, locales, setLocale } = useI18n()
+import type { DropdownMenuItem } from '@nuxt/ui'
 
-const items = computed(() => locales.value.map(l => ({ label: l.name ?? l.code, value: l.code })))
+const { t, locale, locales, setLocale } = useI18n()
 
 // `setLocale` is typed against the configured codes, not plain string: the value comes from `locales`, but the type has to say so.
 type LocaleCode = typeof locale.value
 
-const selected = computed({
-  get: () => locale.value,
-  set: (value: LocaleCode) => setLocale(value)
-})
+const current = computed(() => locales.value.find(entry => entry.code === locale.value))
+
+const items = computed<DropdownMenuItem[]>(() => locales.value.map(entry => ({
+  label: entry.name ?? entry.code,
+  type: 'checkbox' as const,
+  checked: entry.code === locale.value,
+  onSelect: () => setLocale(entry.code as LocaleCode)
+})))
 </script>
 
 <template>
-  <USelect
-    v-model="selected"
-    :items="items"
-    value-key="value"
-    size="sm"
-    class="w-28"
-  />
+  <!-- A menu rather than a select: the trigger collapses to its icon on a phone, where a select has to keep room for its longest language name. -->
+  <UDropdownMenu :items="items">
+    <UButton
+      variant="ghost"
+      size="sm"
+      icon="i-lucide-languages"
+      :aria-label="t('nav.language')"
+    >
+      <span class="hidden sm:inline">{{ current?.name ?? locale }}</span>
+    </UButton>
+  </UDropdownMenu>
 </template>

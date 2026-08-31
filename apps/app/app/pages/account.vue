@@ -232,16 +232,11 @@ async function deleteAccount() {
 
 <template>
   <div class="mx-auto max-w-xl p-4">
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-6 flex items-center justify-between gap-3">
       <h1 class="text-xl font-semibold">
         {{ t('account.title') }}
       </h1>
-      <UButton
-        variant="ghost"
-        icon="i-lucide-arrow-left"
-        :label="t('dashboard.backToCreate')"
-        :to="localePath('/')"
-      />
+      <BackButton />
     </div>
 
     <UAlert
@@ -441,7 +436,7 @@ async function deleteAccount() {
         <!-- Enrollment: step 1, ask for password -->
         <div
           v-if="!user?.twoFactorEnabled && twoFactorStep === 'idle'"
-          class="flex items-end gap-2"
+          class="flex flex-col gap-2 sm:flex-row sm:items-end"
         >
           <UFormField
             :label="t('account.twoFactor.passwordToEnable')"
@@ -455,6 +450,8 @@ async function deleteAccount() {
             />
           </UFormField>
           <UButton
+            block
+            class="sm:w-auto"
             :loading="twoFactorLoading"
             :disabled="!enrollPassword"
             :label="t('account.twoFactor.enable')"
@@ -473,9 +470,9 @@ async function deleteAccount() {
           <img
             :src="totpQrDataUrl"
             :alt="t('account.twoFactor.title')"
-            class="size-48 rounded-lg border border-default p-2"
+            class="size-48 max-w-full rounded-lg border border-default p-2"
           >
-          <p class="font-mono text-xs text-muted">
+          <p class="font-mono text-xs break-all text-muted">
             {{ t('account.twoFactor.manualEntry') }}: {{ totpSecret }}
           </p>
 
@@ -551,7 +548,7 @@ async function deleteAccount() {
             />
           </div>
 
-          <div class="flex items-end gap-2">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-end">
             <UFormField
               :label="t('account.twoFactor.passwordToRegenerate')"
               class="flex-1"
@@ -564,7 +561,9 @@ async function deleteAccount() {
               />
             </UFormField>
             <UButton
+              block
               variant="subtle"
+              class="sm:w-auto"
               :loading="regenerating"
               :disabled="!regeneratePassword"
               :label="t('account.twoFactor.regenerate')"
@@ -580,7 +579,7 @@ async function deleteAccount() {
           </p>
           <div
             v-else
-            class="flex items-end gap-2 border-t border-default pt-4"
+            class="flex flex-col gap-2 border-t border-default pt-4 sm:flex-row sm:items-end"
           >
             <UFormField
               :label="t('account.twoFactor.passwordToDisable')"
@@ -594,8 +593,10 @@ async function deleteAccount() {
               />
             </UFormField>
             <UButton
+              block
               color="error"
               variant="subtle"
+              class="sm:w-auto"
               :loading="disabling"
               :disabled="!disablePassword"
               :label="t('account.twoFactor.disable')"

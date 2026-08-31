@@ -109,9 +109,13 @@ async function copyText() {
   <div class="flex flex-1 items-center justify-center p-4">
     <UCard class="w-full max-w-2xl">
       <template #header>
-        <h1 class="text-xl font-semibold">
-          shhh
-        </h1>
+        <div class="flex items-center justify-between gap-3">
+          <h1 class="text-xl font-semibold">
+            shhh
+          </h1>
+          <!-- The one page a reader may reach without ever having used the instance, so it also offers the way in. -->
+          <BackButton size="sm" />
+        </div>
       </template>
 
       <div v-if="missingKey">
@@ -136,7 +140,8 @@ async function copyText() {
         class="space-y-4"
       >
         <template v-if="decryptedText">
-          <pre class="max-h-96 overflow-auto rounded-lg bg-elevated p-4 text-sm whitespace-pre-wrap">{{ decryptedText }}</pre>
+          <!-- `break-words` as well as the wrap: a secret is often one long unbroken token. -->
+          <pre class="max-h-96 overflow-auto rounded-lg bg-elevated p-4 text-sm break-words whitespace-pre-wrap">{{ decryptedText }}</pre>
           <UButton
             :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
             :label="copied ? t('create.result.copied') : t('read.copyText')"
@@ -150,6 +155,8 @@ async function copyText() {
             :to="decryptedFile.url"
             :download="decryptedFile.name"
             external
+            class="max-w-full"
+            :ui="{ label: 'truncate' }"
           />
         </template>
       </div>

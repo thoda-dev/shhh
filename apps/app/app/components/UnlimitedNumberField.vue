@@ -22,13 +22,13 @@ watch(numberValue, (value) => {
 
 <template>
   <UFormField :label="label">
-    <div class="flex items-center gap-3">
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
       <UInput
         v-model.number="numberValue"
         type="number"
         :min="min ?? 0"
         :disabled="unlimited"
-        class="w-full"
+        class="min-w-40 flex-1"
       />
       <div class="flex shrink-0 items-center gap-1.5">
         <USwitch v-model="unlimited" />

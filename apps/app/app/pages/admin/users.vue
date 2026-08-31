@@ -157,16 +157,11 @@ const roleColor = { user: 'neutral', admin: 'info', super_admin: 'warning' } as 
 
 <template>
   <div class="mx-auto max-w-5xl p-4">
-    <div class="mb-2 flex items-center justify-between">
+    <div class="mb-2 flex items-center justify-between gap-3">
       <h1 class="text-xl font-semibold">
         {{ t('admin.users.title') }}
       </h1>
-      <UButton
-        variant="ghost"
-        icon="i-lucide-arrow-left"
-        :label="t('dashboard.backToCreate')"
-        :to="localePath('/')"
-      />
+      <BackButton />
     </div>
     <AdminNav />
 
@@ -210,9 +205,10 @@ const roleColor = { user: 'neutral', admin: 'info', super_admin: 'warning' } as 
         v-for="target in users"
         :key="target.id"
       >
-        <div class="flex items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center gap-2">
+        <!-- The menu keeps its corner at every width; only the role select, as wide as a phone on its own, drops to a row of its own. -->
+        <div class="flex flex-wrap items-start gap-x-3 gap-y-3 sm:items-center">
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-2">
               <p class="text-sm font-medium">
                 {{ target.name }}
               </p>
@@ -233,33 +229,32 @@ const roleColor = { user: 'neutral', admin: 'info', super_admin: 'warning' } as 
                 2FA
               </UBadge>
             </div>
-            <p class="text-xs text-muted">
+            <p class="text-xs break-words text-muted">
               {{ target.email }} · {{ t('admin.users.joined', { date: formatDate(target.createdAt) }) }} ·
               {{ t('admin.users.pastesSummary', { count: target.pastesCount, reclaimable: target.reclaimablePastesCount }) }}
             </p>
           </div>
-          <div class="flex items-center gap-2">
-            <USelect
-              v-if="canChangeRole(target)"
-              :model-value="target.role"
-              :items="ROLE_OPTIONS"
-              size="sm"
-              class="w-36"
-              :loading="updatingId === target.id"
-              @update:model-value="(role) => changeRole(target, role as AdminUser['role'])"
+          <USelect
+            v-if="canChangeRole(target)"
+            :model-value="target.role"
+            :items="ROLE_OPTIONS"
+            size="sm"
+            class="order-last w-full sm:order-none sm:w-36"
+            :loading="updatingId === target.id"
+            @update:model-value="(role) => changeRole(target, role as AdminUser['role'])"
+          />
+          <UDropdownMenu
+            v-if="menuItems(target).length"
+            :items="menuItems(target)"
+          >
+            <UButton
+              color="neutral"
+              variant="ghost"
+              icon="i-lucide-ellipsis-vertical"
+              class="shrink-0"
+              :aria-label="t('admin.users.menu.label', { email: target.email })"
             />
-            <UDropdownMenu
-              v-if="menuItems(target).length"
-              :items="menuItems(target)"
-            >
-              <UButton
-                color="neutral"
-                variant="ghost"
-                icon="i-lucide-ellipsis-vertical"
-                :aria-label="t('admin.users.menu.label', { email: target.email })"
-              />
-            </UDropdownMenu>
-          </div>
+          </UDropdownMenu>
         </div>
       </UCard>
     </div>

@@ -188,16 +188,11 @@ function formatDate(value: string) {
 
 <template>
   <div class="mx-auto max-w-5xl p-4">
-    <div class="mb-2 flex items-center justify-between">
+    <div class="mb-2 flex items-center justify-between gap-3">
       <h1 class="text-xl font-semibold">
         {{ t('admin.legal.title') }}
       </h1>
-      <UButton
-        variant="ghost"
-        icon="i-lucide-arrow-left"
-        :label="t('dashboard.backToCreate')"
-        :to="localePath('/')"
-      />
+      <BackButton />
     </div>
     <AdminNav />
 
@@ -205,18 +200,20 @@ function formatDate(value: string) {
       {{ t('admin.legal.description') }}
     </p>
 
-    <div class="mb-4 flex flex-wrap items-center gap-3">
+    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
       <UTabs
         v-model="slug"
         :items="slugItems"
         :content="false"
         size="sm"
+        class="w-full sm:w-auto"
       />
       <UTabs
         v-model="editedLocale"
         :items="localeItems"
         :content="false"
         size="sm"
+        class="w-full sm:w-auto"
       />
     </div>
 
@@ -244,7 +241,7 @@ function formatDate(value: string) {
       </span>
     </div>
 
-    <!-- Both panes carry the same height, sized so the page fits the viewport: the header controls are fixed, and a page that scrolls slides its content under them. -->
+    <!-- Both panes carry the same height, sized so the page fits the viewport: the header controls are fixed, and a page that scrolls slides its content under them. Stacked below `lg`, each takes half the viewport instead. -->
     <div class="grid gap-4 lg:grid-cols-2">
       <div>
         <p class="mb-1.5 text-xs font-medium text-muted">
@@ -255,14 +252,14 @@ function formatDate(value: string) {
           v-model="content"
           :placeholder="t('admin.legal.placeholder')"
           class="w-full font-mono"
-          :ui="{ base: 'text-xs h-[calc(100vh-28rem)] min-h-80 resize-none' }"
+          :ui="{ base: 'text-xs h-[50vh] min-h-64 resize-none lg:h-[calc(100vh-28rem)] lg:min-h-80' }"
         />
       </div>
       <div>
         <p class="mb-1.5 text-xs font-medium text-muted">
           {{ t('admin.legal.preview') }}
         </p>
-        <div class="h-[calc(100vh-28rem)] min-h-80 overflow-y-auto rounded-md border border-default p-4">
+        <div class="h-[50vh] min-h-64 overflow-y-auto rounded-md border border-default p-4 lg:h-[calc(100vh-28rem)] lg:min-h-80">
           <LegalDocument
             v-if="previewDocument"
             :value="previewDocument"
@@ -286,7 +283,7 @@ function formatDate(value: string) {
       class="mt-4"
     />
 
-    <div class="mt-4 flex items-center gap-2">
+    <div class="mt-4 flex flex-wrap items-center gap-2">
       <UButton
         icon="i-lucide-save"
         :loading="saving"

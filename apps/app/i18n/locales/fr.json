@@ -471,7 +471,8 @@
     }
   },
   "nav": {
-    "documentation": "Documentation"
+    "documentation": "Documentation",
+    "language": "Langue"
   },
   "seo": {
     "title": "shhh — partagez un secret qui expire",

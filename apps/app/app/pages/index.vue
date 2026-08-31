@@ -181,23 +181,13 @@ function reset() {
   <div class="flex flex-1 items-center justify-center p-4">
     <UCard class="w-full max-w-2xl">
       <template #header>
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-xl font-semibold">
-              shhh
-            </h1>
-            <p class="text-sm text-muted">
-              {{ t('create.subtitle') }}
-            </p>
-          </div>
-          <UButton
-            v-if="isAuthenticated"
-            variant="ghost"
-            size="sm"
-            icon="i-lucide-list"
-            :label="t('dashboard.title')"
-            :to="localePath('/dashboard')"
-          />
+        <div>
+          <h1 class="text-xl font-semibold">
+            shhh
+          </h1>
+          <p class="text-sm text-muted">
+            {{ t('create.subtitle') }}
+          </p>
         </div>
       </template>
 
@@ -230,13 +220,15 @@ function reset() {
           :title="t('create.result.title')"
           :description="t('create.result.warning')"
         />
-        <div class="flex items-center gap-2">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
           <UInput
             :model-value="resultUrl"
             readonly
             class="w-full font-mono text-xs"
           />
           <UButton
+            block
+            class="sm:w-auto"
             :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
             :label="copied ? t('create.result.copied') : t('create.result.copy')"
             @click="copyLink"
@@ -259,7 +251,7 @@ function reset() {
           :description="t('create.result.emailFailedHint')"
         />
 
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <UButton
             variant="subtle"
             icon="i-lucide-mail"
@@ -320,7 +312,7 @@ function reset() {
           autocomplete="new-password"
         />
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid gap-4 sm:grid-cols-2">
           <UFormField :label="t('create.expiresInDays')">
             <UInput
               v-model.number="expiresInDaysInput"

@@ -178,16 +178,11 @@ function formatDate(value: string) {
 
 <template>
   <div class="mx-auto max-w-5xl p-4">
-    <div class="mb-2 flex items-center justify-between">
+    <div class="mb-2 flex items-center justify-between gap-3">
       <h1 class="text-xl font-semibold">
         {{ t('admin.storage.title') }}
       </h1>
-      <UButton
-        variant="ghost"
-        icon="i-lucide-arrow-left"
-        :label="t('dashboard.backToCreate')"
-        :to="localePath('/')"
-      />
+      <BackButton />
     </div>
     <AdminNav />
 
@@ -210,7 +205,7 @@ function formatDate(value: string) {
       class="space-y-6"
     >
       <UCard>
-        <div class="mb-4 flex items-center justify-between gap-4">
+        <div class="mb-4 flex items-center justify-between gap-3">
           <h2 class="text-sm font-medium">
             {{ t('admin.storage.quotasSection') }}
           </h2>
@@ -229,9 +224,9 @@ function formatDate(value: string) {
             :key="bar.key"
             class="space-y-1.5"
           >
-            <div class="flex items-baseline justify-between gap-4 text-sm">
-              <span>{{ bar.label }}</span>
-              <span class="tabular-nums text-muted">{{ bar.value }}<span v-if="bar.limit"> / {{ bar.limit }}</span></span>
+            <div class="flex items-baseline justify-between gap-3 text-sm">
+              <span class="min-w-0">{{ bar.label }}</span>
+              <span class="shrink-0 tabular-nums text-muted">{{ bar.value }}<span v-if="bar.limit"> / {{ bar.limit }}</span></span>
             </div>
             <UProgress
               v-if="bar.percent !== null"
@@ -271,9 +266,9 @@ function formatDate(value: string) {
             :key="bar.key"
             class="space-y-1.5"
           >
-            <div class="flex items-baseline justify-between gap-4 text-sm">
-              <span>{{ bar.label }} <span class="text-xs text-muted">· {{ bar.hint }}</span></span>
-              <span class="tabular-nums text-muted">{{ bar.value }}</span>
+            <div class="flex items-baseline justify-between gap-3 text-sm">
+              <span class="min-w-0">{{ bar.label }} <span class="text-xs text-muted">· {{ bar.hint }}</span></span>
+              <span class="shrink-0 tabular-nums text-muted">{{ bar.value }}</span>
             </div>
             <UProgress
               :model-value="bar.percent ?? 0"
@@ -286,7 +281,7 @@ function formatDate(value: string) {
       </UCard>
 
       <UCard v-if="reclaimableBar">
-        <div class="mb-1 flex items-center justify-between gap-4">
+        <div class="mb-1 flex items-center justify-between gap-3">
           <h2 class="text-sm font-medium">
             {{ t('admin.storage.reclaimableSection') }}
           </h2>
@@ -318,9 +313,9 @@ function formatDate(value: string) {
           class="mb-4"
         />
         <div class="space-y-1.5">
-          <div class="flex items-baseline justify-between gap-4 text-sm">
-            <span>{{ reclaimableBar.label }} <span class="text-xs text-muted">· {{ reclaimableBar.hint }}</span></span>
-            <span class="tabular-nums text-muted">{{ reclaimableBar.value }}</span>
+          <div class="flex items-baseline justify-between gap-3 text-sm">
+            <span class="min-w-0">{{ reclaimableBar.label }} <span class="text-xs text-muted">· {{ reclaimableBar.hint }}</span></span>
+            <span class="shrink-0 tabular-nums text-muted">{{ reclaimableBar.value }}</span>
           </div>
           <UProgress
             :model-value="reclaimableBar.percent ?? 0"
@@ -344,9 +339,9 @@ function formatDate(value: string) {
             :key="bar.key"
             class="space-y-1.5"
           >
-            <div class="flex items-baseline justify-between gap-4 text-sm">
-              <span>{{ bar.label }}</span>
-              <span class="tabular-nums text-muted">{{ bar.value }}<span v-if="bar.limit"> / {{ bar.limit }}</span></span>
+            <div class="flex items-baseline justify-between gap-3 text-sm">
+              <span class="min-w-0">{{ bar.label }}</span>
+              <span class="shrink-0 tabular-nums text-muted">{{ bar.value }}<span v-if="bar.limit"> / {{ bar.limit }}</span></span>
             </div>
             <UProgress
               v-if="bar.percent !== null"
@@ -386,7 +381,7 @@ function formatDate(value: string) {
             :key="bar.key"
             class="space-y-1.5"
           >
-            <div class="flex items-baseline justify-between gap-4 text-sm">
+            <div class="flex items-baseline justify-between gap-3 text-sm">
               <span class="truncate">{{ bar.label }} <span class="text-xs text-muted">· {{ bar.hint }}</span></span>
               <span class="shrink-0 tabular-nums text-muted">{{ bar.value }}</span>
             </div>
@@ -411,13 +406,13 @@ function formatDate(value: string) {
           v-if="report.database"
           class="space-y-2 text-sm"
         >
-          <div class="flex items-baseline justify-between gap-4">
-            <span>{{ t('admin.storage.databaseTotal') }}</span>
-            <span class="tabular-nums text-muted">{{ formatBytes(report.database.totalBytes) }}</span>
+          <div class="flex items-baseline justify-between gap-3">
+            <span class="min-w-0">{{ t('admin.storage.databaseTotal') }}</span>
+            <span class="shrink-0 tabular-nums text-muted">{{ formatBytes(report.database.totalBytes) }}</span>
           </div>
-          <div class="flex items-baseline justify-between gap-4">
-            <span>{{ t('admin.storage.databasePastesTable') }}</span>
-            <span class="tabular-nums text-muted">{{ formatBytes(report.database.pastesTableBytes) }}</span>
+          <div class="flex items-baseline justify-between gap-3">
+            <span class="min-w-0">{{ t('admin.storage.databasePastesTable') }}</span>
+            <span class="shrink-0 tabular-nums text-muted">{{ formatBytes(report.database.pastesTableBytes) }}</span>
           </div>
         </div>
         <p

@@ -72,9 +72,12 @@ async function submitCode() {
   <div class="flex flex-1 items-center justify-center p-4">
     <UCard class="w-full max-w-sm">
       <template #header>
-        <h1 class="text-xl font-semibold">
-          {{ needsTwoFactor ? t('login.twoFactor.title') : t('login.title') }}
-        </h1>
+        <div class="flex items-center justify-between gap-3">
+          <h1 class="text-xl font-semibold">
+            {{ needsTwoFactor ? t('login.twoFactor.title') : t('login.title') }}
+          </h1>
+          <BackButton size="sm" />
+        </div>
       </template>
 
       <UForm

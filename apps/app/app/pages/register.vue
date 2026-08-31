@@ -76,9 +76,12 @@ async function submit(event: FormSubmitEvent<typeof state>) {
   <div class="flex flex-1 items-center justify-center p-4">
     <UCard class="w-full max-w-sm">
       <template #header>
-        <h1 class="text-xl font-semibold">
-          {{ t('register.title') }}
-        </h1>
+        <div class="flex items-center justify-between gap-3">
+          <h1 class="text-xl font-semibold">
+            {{ t('register.title') }}
+          </h1>
+          <BackButton size="sm" />
+        </div>
       </template>
 
       <UAlert

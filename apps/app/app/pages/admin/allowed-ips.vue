@@ -69,16 +69,11 @@ function formatDate(value: string) {
 
 <template>
   <div class="mx-auto max-w-5xl p-4">
-    <div class="mb-2 flex items-center justify-between">
+    <div class="mb-2 flex items-center justify-between gap-3">
       <h1 class="text-xl font-semibold">
         {{ t('admin.allowedIps.title') }}
       </h1>
-      <UButton
-        variant="ghost"
-        icon="i-lucide-arrow-left"
-        :label="t('dashboard.backToCreate')"
-        :to="localePath('/')"
-      />
+      <BackButton />
     </div>
     <AdminNav />
 
@@ -153,12 +148,12 @@ function formatDate(value: string) {
         v-for="entry in allowedIps"
         :key="entry.id"
       >
-        <div class="flex items-center justify-between gap-4">
-          <div>
-            <p class="font-mono text-sm">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="font-mono text-sm break-all">
               {{ entry.ip }}
             </p>
-            <p class="text-xs text-muted">
+            <p class="text-xs break-words text-muted">
               <span v-if="entry.label">{{ entry.label }} · </span>{{ t('admin.allowedIps.addedAt', { date: formatDate(entry.createdAt) }) }}
             </p>
           </div>
@@ -166,6 +161,7 @@ function formatDate(value: string) {
             color="error"
             variant="ghost"
             icon="i-lucide-trash-2"
+            class="shrink-0"
             :loading="removingId === entry.id"
             @click="remove(entry.id)"
           />

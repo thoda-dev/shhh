@@ -78,16 +78,11 @@ async function save() {
 
 <template>
   <div class="mx-auto max-w-5xl p-4">
-    <div class="mb-2 flex items-center justify-between">
+    <div class="mb-2 flex items-center justify-between gap-3">
       <h1 class="text-xl font-semibold">
         {{ t('admin.settings.title') }}
       </h1>
-      <UButton
-        variant="ghost"
-        icon="i-lucide-arrow-left"
-        :label="t('dashboard.backToCreate')"
-        :to="localePath('/')"
-      />
+      <BackButton />
     </div>
     <AdminNav />
 
