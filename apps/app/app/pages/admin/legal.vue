@@ -51,6 +51,9 @@ const content = computed({
   set: value => (drafts.value[draftKey.value] = value)
 })
 
+// The parser drops images and the CSP would refuse a remote one anyway, so an operator who writes one sees it vanish with nothing said. Same warning as the paste form.
+const hasImage = computed(() => containsMarkdownImage(content.value))
+
 const localeLabels = computed(() =>
   Object.fromEntries(LOCALES.map(code => [code, t(`admin.legal.locales.${code}`)]))
 )
@@ -250,6 +253,16 @@ function formatDate(value: string) {
         class="h-full"
       />
     </div>
+
+    <UAlert
+      v-if="hasImage"
+      color="warning"
+      variant="subtle"
+      icon="i-lucide-image-off"
+      :title="t('editor.imageWarningTitle')"
+      :description="t('editor.imageWarningDescription')"
+      class="mt-3"
+    />
 
     <p
       v-if="unsavedLocales.length"

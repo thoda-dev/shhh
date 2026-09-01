@@ -97,7 +97,7 @@
   line-height: inherit;
 }
 
-/* Tables scroll rather than squeezing their columns on a phone. The frame lives on the wrapper because that is the box that scrolls; Tiptap draws one around every table and LegalTable.vue matches it on the published page. */
+/* Tables scroll rather than squeezing their columns on a phone. The frame lives on the wrapper because that is the box that scrolls; Tiptap draws one around every table and RichTextTable.vue matches it on the published page. */
 .rich-text.rich-text .tableWrapper {
   margin-top: 0;
   margin-bottom: 1.25rem;

@@ -38,13 +38,6 @@ Anything not listed here is either done or deliberately out of scope (see the bo
   provider stub. Assert on `paste_email_recipients` rows rather than on delivered mail, to avoid
   depending on a mail server in CI.
 
-## Waiting on upstream
-
-- **Rich text editing and markdown rendering.** Pastes are plain text today. Nuxt UI's `UEditor`
-  handles both editing and read-only rendering, so the two arrive together rather than shipping a
-  separate renderer first — waiting on the component to stabilise (open bugs in v4.x around external
-  `modelValue` breaking markdown rendering, plugin conflicts, no table support).
-
 ## Later
 
 1. **Outgoing webhooks** — notify on key events (paste created, paste read), disabled by default.

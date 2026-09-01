@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import type { MarkdownDocument } from 'comark'
+
 interface MetaResponse {
   kind: 'text' | 'file'
+  format?: 'plain' | 'markdown'
   passwordProtected: boolean
   readsRemaining: number | null
   expiresAt: string
@@ -10,6 +13,7 @@ interface MetaResponse {
 
 interface RevealTextResponse {
   kind: 'text'
+  format: 'plain' | 'markdown'
   passwordProtected: boolean
   ciphertext: string
   iv: string
@@ -63,6 +67,13 @@ const revealError = ref('')
 const decryptedText = ref('')
 const decryptedFile = ref<{ url: string, name: string } | null>(null)
 
+// The markdown is parsed here and nowhere else: the plaintext exists only in this browser, so the
+// server that renders every other document in the app cannot see this one.
+const rendered = ref<MarkdownDocument | null>(null)
+// The rendered document is what the creator composed, but the source is what the reader copies, so
+// the way to it is always one click away.
+const showSource = ref(false)
+
 async function reveal() {
   revealError.value = ''
   revealing.value = true
@@ -82,6 +93,7 @@ async function reveal() {
     if (data.kind === 'text') {
       const plaintext = await decryptBytes(aesKey, base64ToBytes(data.ciphertext), base64ToBytes(data.iv))
       decryptedText.value = new TextDecoder().decode(plaintext)
+      if (data.format === 'markdown') rendered.value = await parsePasteMarkdown(decryptedText.value)
     } else {
       const fileBytes = await decryptBytes(aesKey, base64ToBytes(data.fileBlob), base64ToBytes(data.fileIv))
       const nameBytes = await decryptBytes(aesKey, base64ToBytes(data.fileNameEnc), base64ToBytes(data.fileNameIv))
@@ -107,7 +119,7 @@ async function copyText() {
 
 <template>
   <div class="flex flex-1 items-center justify-center p-4">
-    <UCard class="w-full max-w-2xl">
+    <UCard class="w-full max-w-5xl">
       <template #header>
         <div class="flex items-center justify-between gap-3">
           <h1 class="text-xl font-semibold">
@@ -140,13 +152,33 @@ async function copyText() {
         class="space-y-4"
       >
         <template v-if="decryptedText">
+          <div
+            v-if="rendered && !showSource"
+            class="max-h-96 overflow-auto rounded-lg bg-elevated p-4"
+          >
+            <RichText :value="rendered" />
+          </div>
           <!-- `break-words` as well as the wrap: a secret is often one long unbroken token. -->
-          <pre class="max-h-96 overflow-auto rounded-lg bg-elevated p-4 text-sm break-words whitespace-pre-wrap">{{ decryptedText }}</pre>
-          <UButton
-            :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
-            :label="copied ? t('create.result.copied') : t('read.copyText')"
-            @click="copyText"
-          />
+          <pre
+            v-else
+            class="max-h-96 overflow-auto rounded-lg bg-elevated p-4 text-sm break-words whitespace-pre-wrap"
+          >{{ decryptedText }}</pre>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <UButton
+              :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
+              :label="copied ? t('create.result.copied') : (rendered ? t('read.copySource') : t('read.copyText'))"
+              @click="copyText"
+            />
+            <!-- Named after what it switches to, since what is on screen is already visible. -->
+            <UButton
+              v-if="rendered"
+              variant="ghost"
+              :icon="showSource ? 'i-lucide-file-text' : 'i-lucide-file-code'"
+              :label="showSource ? t('read.viewRendered') : t('read.viewSource')"
+              @click="showSource = !showSource"
+            />
+          </div>
         </template>
         <template v-else-if="decryptedFile">
           <UButton

@@ -43,6 +43,7 @@ export default defineEventHandler(async (event) => {
   if (paste.kind === 'text') {
     return {
       kind: 'text' as const,
+      format: paste.format,
       passwordProtected: paste.passwordProtected,
       ciphertext: paste.ciphertext!.toString('base64'),
       iv: paste.iv!.toString('base64')

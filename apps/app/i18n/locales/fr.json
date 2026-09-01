@@ -27,7 +27,9 @@
     "link": "Lien",
     "horizontalRule": "Séparateur",
     "insertTable": "Insérer un tableau",
-    "clearFormatting": "Effacer la mise en forme"
+    "clearFormatting": "Effacer la mise en forme",
+    "imageWarningTitle": "Les images ne seront pas affichées",
+    "imageWarningDescription": "Cette instance n'héberge aucune image et sa politique de sécurité refuse les images distantes. Le markdown est conservé dans le contenu : il fonctionnera là où vous le collerez ensuite, il n'affiche simplement rien ici."
   },
   "setup": {
     "title": "Bienvenue sur shhh",
@@ -82,6 +84,8 @@
     "kindFile": "Fichier",
     "fileRequiresLogin": "Connectez-vous pour envoyer des fichiers",
     "textPlaceholder": "Collez votre texte ici…",
+    "markdownFormat": "Mettre en forme avec Markdown",
+    "markdownHint": "Pour une note ou un document destiné à être lu. Un secret destiné à être copié tel quel doit rester en texte brut.",
     "passwordProtect": "Protéger par un mot de passe",
     "passwordPlaceholder": "Mot de passe",
     "expiresInDays": "Expire dans (jours)",
@@ -130,6 +134,9 @@
     "burnWarningPassword": "Un mot de passe incorrect ne coûte rien : la lecture n'est décomptée qu'avec le bon mot de passe.",
     "reveal": "Révéler",
     "copyText": "Copier",
+    "copySource": "Copier la source Markdown",
+    "viewSource": "Voir la source",
+    "viewRendered": "Voir le texte mis en forme",
     "downloadFile": "Télécharger {name}",
     "errors": {
       "notFound": "Ce paste n'existe pas, a expiré, ou a déjà été lu le nombre maximum de fois.",

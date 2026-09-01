@@ -3,13 +3,13 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { MarkdownManager } from '@tiptap/markdown'
 import StarterKit from '@tiptap/starter-kit'
 import { TableKit } from '@tiptap/extension-table'
-import { parseLegalMarkdown } from '../shared/utils/legal-markdown'
+import { parseDocumentMarkdown } from '../shared/utils/markdown'
 
 // The same schema TextEditor gives UEditor, driven without a DOM.
 const manager = new MarkdownManager({ extensions: [StarterKit, TableKit] })
 const roundTrip = (markdown: string) => manager.serialize(manager.parse(markdown.trim()))
 
-const rendered = async (markdown: string) => JSON.stringify((await parseLegalMarkdown(markdown)).nodes)
+const rendered = async (markdown: string) => JSON.stringify((await parseDocumentMarkdown(markdown)).nodes)
 
 const templates = readdirSync('server/assets/legal')
 

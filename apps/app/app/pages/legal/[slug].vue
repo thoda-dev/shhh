@@ -48,7 +48,7 @@ const updatedAt = computed(() =>
       class="mb-6"
     />
 
-    <LegalDocument :value="data!.document" />
+    <RichText :value="data!.document" />
 
     <p class="mt-10 text-xs text-muted">
       {{ t('legal.updatedAt', { date: updatedAt }) }}

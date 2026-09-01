@@ -23,12 +23,16 @@ const bytea = customType<{ data: Buffer }>({
 
 export const pasteKindEnum = pgEnum('paste_kind', ['text', 'file'])
 
+// How the reader displays the decrypted text. The server never sees the content, so it cannot infer this — the creator declares it.
+export const pasteFormatEnum = pgEnum('paste_format', ['plain', 'markdown'])
+
 export const pastes = pgTable(
   'pastes',
   {
     id: uuid('id').defaultRandom().primaryKey(),
     ownerId: text('owner_id').references(() => users.id, { onDelete: 'cascade' }),
     kind: pasteKindEnum('kind').notNull(),
+    format: pasteFormatEnum('format').notNull().default('plain'),
 
     // kind = 'text'
     ciphertext: bytea('ciphertext'),
@@ -61,7 +65,9 @@ export const pastes = pgTable(
       'pastes_kind_payload_check',
       sql`(${table.kind} = 'text' AND ${table.ciphertext} IS NOT NULL AND ${table.fileBlob} IS NULL)
         OR (${table.kind} = 'file' AND ${table.fileBlob} IS NOT NULL AND ${table.ciphertext} IS NULL)`
-    )
+    ),
+    // A file has no format: it is downloaded, never rendered.
+    check('pastes_format_kind_check', sql`${table.format} = 'plain' OR ${table.kind} = 'text'`)
   ]
 )
 

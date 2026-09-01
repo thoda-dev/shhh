@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Fails here rather than on the public page.
-  await parseLegalMarkdown(content)
+  await parseDocumentMarkdown(content)
 
   const [document] = await db
     .insert(schema.legalDocuments)

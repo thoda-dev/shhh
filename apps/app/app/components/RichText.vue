@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // `MarkdownDocument` is registered globally by the @comark/nuxt module.
 import type { MarkdownDocument as MarkdownDocumentType } from 'comark'
-import LegalTable from './LegalTable.vue'
+import RichTextTable from './RichTextTable.vue'
 
 defineProps<{ value: MarkdownDocumentType }>()
 </script>
@@ -10,7 +10,7 @@ defineProps<{ value: MarkdownDocumentType }>()
   <div class="rich-text">
     <MarkdownDocument
       :value="value"
-      :components="{ table: LegalTable }"
+      :components="{ table: RichTextTable }"
     />
   </div>
 </template>

@@ -25,6 +25,8 @@ const textPasteSchema = z.object({
   kind: z.literal('text'),
   ciphertext: z.string().base64(),
   iv: z.string().base64(),
+  // How the reader displays the plaintext. The server cannot tell — it never sees it.
+  format: z.enum(['plain', 'markdown']).default('plain'),
   ...baseFields
 })
 
@@ -165,6 +167,7 @@ export default defineEventHandler(async (event) => {
     }
     values.ciphertext = ciphertext
     values.iv = Buffer.from(body.iv, 'base64')
+    values.format = body.format
   } else {
     const fileBlob = Buffer.from(body.fileBlob, 'base64')
     if (settings.max_upload_size_bytes !== null && fileBlob.length > settings.max_upload_size_bytes) {

@@ -36,6 +36,13 @@
       "when": 1788181812388,
       "tag": "0004_naive_night_thrasher",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788287759282,
+      "tag": "0005_naive_tigra",
+      "breakpoints": true
     }
   ]
 }

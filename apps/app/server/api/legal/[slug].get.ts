@@ -23,6 +23,6 @@ export default defineEventHandler(async (event) => {
     locale: document.locale,
     updatedAt: document.updatedAt,
     // Parsed server-side: the parser config is what keeps script out, and it stays out of reach.
-    document: await parseLegalMarkdown(document.content)
+    document: await parseDocumentMarkdown(document.content)
   }
 })
