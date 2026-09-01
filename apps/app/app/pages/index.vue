@@ -302,9 +302,12 @@ function reset() {
           :placeholder="t('create.textPlaceholder')"
           class="w-full font-mono"
         />
+        <!-- The default layout hides the file name behind a full-frame image preview, and puts the card under the dropzone rather than in it. -->
         <UFileUpload
           v-else
           v-model="file"
+          layout="list"
+          position="inside"
           class="min-h-40 w-full"
         />
 
