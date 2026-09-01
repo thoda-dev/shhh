@@ -3,6 +3,27 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.2.0
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.10...v1.2.0)
+
+### 🚀 Enhancements
+
+- **legal:** Edit the legal documents in a WYSIWYG markdown editor ([#38](https://github.com/thoda-dev/shhh/pull/38))
+- **paste:** Write a paste in markdown, off by default ([#44](https://github.com/thoda-dev/shhh/pull/44))
+
+### 🩹 Fixes
+
+- **ui:** Show the name of the uploaded file ([#40](https://github.com/thoda-dev/shhh/pull/40))
+
+### 💅 Refactors
+
+- **editor:** Rename LegalEditor to TextEditor ([#42](https://github.com/thoda-dev/shhh/pull/42))
+
+### ❤️ Contributors
+
+- Thomas ([@thoda-dev](https://github.com/thoda-dev))
+
 ## v1.1.10
 
 [compare changes](https://github.com/thoda-dev/shhh/compare/v1.1.9...v1.1.10)
