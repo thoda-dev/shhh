@@ -5,7 +5,7 @@ import StarterKit from '@tiptap/starter-kit'
 import { TableKit } from '@tiptap/extension-table'
 import { parseLegalMarkdown } from '../shared/utils/legal-markdown'
 
-// The same schema LegalEditor gives UEditor, driven without a DOM.
+// The same schema TextEditor gives UEditor, driven without a DOM.
 const manager = new MarkdownManager({ extensions: [StarterKit, TableKit] })
 const roundTrip = (markdown: string) => manager.serialize(manager.parse(markdown.trim()))
 

@@ -9,7 +9,7 @@ const { t } = useI18n()
 const editorRef = useTemplateRef('editorRef')
 
 /**
- * Keeps the browser out of the document. A spellchecker, Grammarly or Chrome's translate offer — likely here, where the interface is in one language and the document often in another — mutates the DOM behind ProseMirror's back, which throws and takes the content with it.
+ * Keeps the browser out of the content. A spellchecker, Grammarly or Chrome's translate offer — likely wherever the interface is in one language and the text in another — mutates the DOM behind ProseMirror's back, which throws and takes the content with it.
  */
 const editorProps = {
   attributes: {
@@ -26,7 +26,7 @@ const editorProps = {
   }
 }
 
-// Tables are the only thing StarterKit lacks that these documents need. Nothing else is added: an editor must not offer what Markdown cannot carry back.
+// Tables are the only thing StarterKit lacks that is worth having here. Nothing else is added: an editor must not offer what Markdown cannot carry back.
 const extensions = [TableKit.configure({ table: { resizable: false } })]
 
 const handlers = {
@@ -38,9 +38,9 @@ const handlers = {
   }
 }
 
-const tip = (key: string) => ({ text: t(`admin.legal.editor.${key}`), delayDuration: 0 })
+const tip = (key: string) => ({ text: t(`editor.${key}`), delayDuration: 0 })
 
-// Every entry here survives a Markdown round trip — see tests/legal-editor-roundtrip.test.ts. Task lists do not (the checkbox is dropped on save), images cannot be hosted, and alignment has no Markdown to carry it, so none of the three is offered.
+// Every entry here survives a Markdown round trip — see tests/editor-roundtrip.test.ts. Task lists do not (the checkbox is dropped on save), images cannot be hosted, and alignment has no Markdown to carry it, so none of the three is offered.
 const items = computed<EditorToolbarItem[][]>(() => [
   [
     { kind: 'undo', icon: 'i-lucide-undo-2', tooltip: tip('undo') },
@@ -81,17 +81,17 @@ function run(command: (chain: ReturnType<Editor['chain']>) => { run: () => boole
 
 const tableItems = computed<EditorToolbarItem[][]>(() => [
   [
-    { icon: 'i-lucide-between-vertical-start', variant: 'ghost', color: 'neutral', tooltip: { text: t('admin.legal.editor.columnBefore'), delayDuration: 0 }, onClick: () => run(c => c.addColumnBefore()) },
-    { icon: 'i-lucide-between-vertical-end', variant: 'ghost', color: 'neutral', tooltip: { text: t('admin.legal.editor.columnAfter'), delayDuration: 0 }, onClick: () => run(c => c.addColumnAfter()) },
-    { icon: 'i-lucide-square-minus', variant: 'ghost', color: 'error', tooltip: { text: t('admin.legal.editor.deleteColumn'), delayDuration: 0 }, onClick: () => run(c => c.deleteColumn()) }
+    { icon: 'i-lucide-between-vertical-start', variant: 'ghost', color: 'neutral', tooltip: { text: t('editor.columnBefore'), delayDuration: 0 }, onClick: () => run(c => c.addColumnBefore()) },
+    { icon: 'i-lucide-between-vertical-end', variant: 'ghost', color: 'neutral', tooltip: { text: t('editor.columnAfter'), delayDuration: 0 }, onClick: () => run(c => c.addColumnAfter()) },
+    { icon: 'i-lucide-square-minus', variant: 'ghost', color: 'error', tooltip: { text: t('editor.deleteColumn'), delayDuration: 0 }, onClick: () => run(c => c.deleteColumn()) }
   ],
   [
-    { icon: 'i-lucide-between-horizontal-start', variant: 'ghost', color: 'neutral', tooltip: { text: t('admin.legal.editor.rowBefore'), delayDuration: 0 }, onClick: () => run(c => c.addRowBefore()) },
-    { icon: 'i-lucide-between-horizontal-end', variant: 'ghost', color: 'neutral', tooltip: { text: t('admin.legal.editor.rowAfter'), delayDuration: 0 }, onClick: () => run(c => c.addRowAfter()) },
-    { icon: 'i-lucide-square-minus', variant: 'ghost', color: 'error', tooltip: { text: t('admin.legal.editor.deleteRow'), delayDuration: 0 }, onClick: () => run(c => c.deleteRow()) }
+    { icon: 'i-lucide-between-horizontal-start', variant: 'ghost', color: 'neutral', tooltip: { text: t('editor.rowBefore'), delayDuration: 0 }, onClick: () => run(c => c.addRowBefore()) },
+    { icon: 'i-lucide-between-horizontal-end', variant: 'ghost', color: 'neutral', tooltip: { text: t('editor.rowAfter'), delayDuration: 0 }, onClick: () => run(c => c.addRowAfter()) },
+    { icon: 'i-lucide-square-minus', variant: 'ghost', color: 'error', tooltip: { text: t('editor.deleteRow'), delayDuration: 0 }, onClick: () => run(c => c.deleteRow()) }
   ],
   [
-    { icon: 'i-lucide-trash-2', variant: 'ghost', color: 'error', tooltip: { text: t('admin.legal.editor.deleteTable'), delayDuration: 0 }, onClick: () => run(c => c.deleteTable()) }
+    { icon: 'i-lucide-trash-2', variant: 'ghost', color: 'error', tooltip: { text: t('editor.deleteTable'), delayDuration: 0 }, onClick: () => run(c => c.deleteTable()) }
   ]
 ])
 </script>
@@ -107,7 +107,7 @@ const tableItems = computed<EditorToolbarItem[][]>(() => [
     :extensions="extensions"
     :handlers="handlers"
     :editor-props="editorProps"
-    :ui="{ base: 'legal-document p-4', content: 'relative w-full' }"
+    :ui="{ base: 'rich-text p-4', content: 'relative w-full' }"
     class="overflow-y-auto rounded-md border border-default"
   >
     <UEditorToolbar
