@@ -30,7 +30,12 @@ const kindItems = computed<TabsItem[]>(() => [
 const kind = ref<'text' | 'file'>('text')
 
 const textContent = ref('')
+// Off by default, and deliberately so: a paste is a secret to be copied verbatim far more often than it is a document to be read. See `create.markdownHint`.
+const markdownMode = ref(false)
 const file = ref<File | null>(null)
+
+// An image cannot be displayed — see `containsMarkdownImage`. The markdown is kept anyway, since the content is often on its way somewhere else, so this warns rather than blocks.
+const hasImage = computed(() => markdownMode.value && containsMarkdownImage(textContent.value))
 
 const passwordProtected = ref(false)
 const password = ref('')
@@ -125,6 +130,7 @@ async function submit() {
       payload.kind = 'text'
       payload.ciphertext = bytesToBase64(ciphertext)
       payload.iv = bytesToBase64(iv)
+      payload.format = markdownMode.value ? 'markdown' : 'plain'
     } else {
       const selectedFile = file.value!
       const { ciphertext: fileBlob, iv: fileIv } = await encryptBytes(aesKey, new Uint8Array(await selectedFile.arrayBuffer()))
@@ -173,6 +179,7 @@ const mailtoHref = computed(() => {
 function reset() {
   resultUrl.value = ''
   textContent.value = ''
+  markdownMode.value = false
   file.value = null
   passwordProtected.value = false
   password.value = ''
@@ -190,7 +197,7 @@ function reset() {
 
 <template>
   <div class="flex flex-1 items-center justify-center p-4">
-    <UCard class="w-full max-w-2xl">
+    <UCard class="w-full max-w-5xl">
       <template #header>
         <div>
           <h1 class="text-xl font-semibold">
@@ -293,18 +300,44 @@ function reset() {
           />
         </UTooltip>
 
-        <UTextarea
-          v-if="kind === 'text'"
-          v-model="textContent"
-          :rows="10"
-          autoresize
-          :maxrows="20"
-          :placeholder="t('create.textPlaceholder')"
-          class="w-full font-mono"
-        />
+        <template v-if="kind === 'text'">
+          <div class="space-y-1">
+            <USwitch
+              v-model="markdownMode"
+              :label="t('create.markdownFormat')"
+            />
+            <p class="text-xs text-muted">
+              {{ t('create.markdownHint') }}
+            </p>
+          </div>
+
+          <TextEditor
+            v-if="markdownMode"
+            v-model="textContent"
+            class="max-h-96"
+          />
+          <UTextarea
+            v-else
+            v-model="textContent"
+            :rows="10"
+            autoresize
+            :maxrows="20"
+            :placeholder="t('create.textPlaceholder')"
+            class="w-full font-mono"
+          />
+
+          <UAlert
+            v-if="hasImage"
+            color="warning"
+            variant="subtle"
+            icon="i-lucide-image-off"
+            :title="t('editor.imageWarningTitle')"
+            :description="t('editor.imageWarningDescription')"
+          />
+        </template>
         <!-- The default layout hides the file name behind a full-frame image preview, and puts the card under the dropzone rather than in it. -->
         <UFileUpload
-          v-else
+          v-if="kind === 'file'"
           v-model="file"
           layout="list"
           position="inside"

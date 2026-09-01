@@ -7,6 +7,7 @@ export default defineEventHandler(async (event) => {
   const [paste] = await db
     .select({
       kind: schema.pastes.kind,
+      format: schema.pastes.format,
       passwordProtected: schema.pastes.passwordProtected,
       maxReads: schema.pastes.maxReads,
       readCount: schema.pastes.readCount,
@@ -27,6 +28,7 @@ export default defineEventHandler(async (event) => {
     passwordProtected: paste.passwordProtected,
     readsRemaining: paste.maxReads === null ? null : paste.maxReads - paste.readCount,
     expiresAt: paste.expiresAt,
-    ...(paste.kind === 'file' ? { fileMime: paste.fileMime, fileSize: paste.fileSize } : {})
+    // Before the reveal, so the page knows whether it is about to render a document or a secret.
+    ...(paste.kind === 'text' ? { format: paste.format } : { fileMime: paste.fileMime, fileSize: paste.fileSize })
   }
 })

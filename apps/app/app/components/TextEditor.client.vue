@@ -107,7 +107,7 @@ const tableItems = computed<EditorToolbarItem[][]>(() => [
     :extensions="extensions"
     :handlers="handlers"
     :editor-props="editorProps"
-    :ui="{ base: 'rich-text p-4', content: 'relative w-full' }"
+    :ui="{ base: 'rich-text p-4 min-h-40', content: 'relative w-full' }"
     class="overflow-y-auto rounded-md border border-default"
   >
     <UEditorToolbar

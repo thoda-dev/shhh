@@ -27,7 +27,9 @@
     "link": "Link",
     "horizontalRule": "Separator",
     "insertTable": "Insert a table",
-    "clearFormatting": "Clear formatting"
+    "clearFormatting": "Clear formatting",
+    "imageWarningTitle": "Images will not be displayed",
+    "imageWarningDescription": "This instance hosts no images, and its security policy refuses remote ones. The markdown is kept in the content, so it still works wherever you paste it next — it simply shows nothing here."
   },
   "setup": {
     "title": "Welcome to shhh",
@@ -82,6 +84,8 @@
     "kindFile": "File",
     "fileRequiresLogin": "Log in to upload files",
     "textPlaceholder": "Paste your text here…",
+    "markdownFormat": "Format with Markdown",
+    "markdownHint": "For a note or a document meant to be read. A secret meant to be copied exactly as typed should stay plain text.",
     "passwordProtect": "Protect with a password",
     "passwordPlaceholder": "Password",
     "expiresInDays": "Expires in (days)",
@@ -130,6 +134,9 @@
     "burnWarningPassword": "A wrong password costs nothing: the read is only spent once the password is right.",
     "reveal": "Reveal",
     "copyText": "Copy",
+    "copySource": "Copy the Markdown source",
+    "viewSource": "View the source",
+    "viewRendered": "View the formatted text",
     "downloadFile": "Download {name}",
     "errors": {
       "notFound": "This paste doesn't exist, has expired, or has already been read the maximum number of times.",
