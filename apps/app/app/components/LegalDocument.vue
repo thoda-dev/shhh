@@ -7,7 +7,7 @@ defineProps<{ value: MarkdownDocumentType }>()
 </script>
 
 <template>
-  <div class="legal-document">
+  <div class="rich-text">
     <MarkdownDocument
       :value="value"
       :components="{ table: LegalTable }"

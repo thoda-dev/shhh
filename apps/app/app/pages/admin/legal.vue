@@ -243,7 +243,7 @@ function formatDate(value: string) {
         class="h-full w-full font-mono"
         :ui="{ base: 'text-xs h-full resize-none' }"
       />
-      <LegalEditor
+      <TextEditor
         v-else
         :key="draftKey"
         v-model="content"

@@ -19,7 +19,7 @@ export default defineNuxtConfig({
     }
   },
 
-  css: ['~/assets/css/main.css', '~/assets/css/legal-document.css'],
+  css: ['~/assets/css/main.css', '~/assets/css/rich-text.css'],
 
   colorMode: {
     storageKey: 'shhh_color_mode'
