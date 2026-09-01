@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
-import type { MarkdownDocument as MarkdownDocumentType } from 'comark'
 import type { LegalDurationUnit } from '~~/shared/utils/legal-template'
 
 type LegalSlug = 'privacy' | 'terms' | 'notice'
@@ -36,7 +35,8 @@ const { data: index, refresh } = await useFetch<LegalIndex>('/api/admin/legal')
 
 const slug = ref<LegalSlug>('privacy')
 const editedLocale = ref<LegalLocale>('en')
-const previewDocument = shallowRef<MarkdownDocumentType | null>(null)
+// The editor writes Markdown but never shows it; this is the way back to the text itself.
+const rawMode = ref(false)
 
 // Unsaved text, keyed by document and language. Filling the template can write several languages at once, and switching tabs must not throw away what is not saved yet.
 const drafts = ref<Record<string, string>>({})
@@ -75,21 +75,6 @@ const templateLocales = computed(() =>
   LOCALES.filter(code => index.value?.templates.some(entry => entry.slug === slug.value && entry.locale === code))
 )
 const dirty = computed(() => unsavedLocales.value.length > 0)
-
-// Debounced rather than parsed on every keystroke, and ticketed so a slow parse cannot land after a newer one. The parser is the public page's, so the preview cannot show what the served page would drop.
-let previewTimer: ReturnType<typeof setTimeout> | undefined
-let previewTicket = 0
-
-watch(content, (value) => {
-  clearTimeout(previewTimer)
-  previewTimer = setTimeout(async () => {
-    const ticket = ++previewTicket
-    const parsed = await parseLegalMarkdown(value)
-    if (ticket === previewTicket) previewDocument.value = parsed
-  }, 150)
-}, { immediate: true })
-
-onBeforeUnmount(() => clearTimeout(previewTimer))
 
 const saving = ref(false)
 const saved = ref(false)
@@ -187,7 +172,7 @@ function formatDate(value: string) {
 </script>
 
 <template>
-  <div class="mx-auto max-w-5xl p-4">
+  <div class="mx-auto flex max-w-5xl flex-1 flex-col p-4">
     <div class="mb-2 flex items-center justify-between gap-3">
       <h1 class="text-xl font-semibold">
         {{ t('admin.legal.title') }}
@@ -219,6 +204,13 @@ function formatDate(value: string) {
 
     <div class="mb-3 flex flex-wrap items-center gap-2">
       <UButton
+        variant="ghost"
+        size="sm"
+        :icon="rawMode ? 'i-lucide-pen-line' : 'i-lucide-file-code'"
+        :label="rawMode ? t('admin.legal.richText') : t('admin.legal.raw')"
+        @click="rawMode = !rawMode"
+      />
+      <UButton
         variant="subtle"
         size="sm"
         icon="i-lucide-file-plus-2"
@@ -241,31 +233,22 @@ function formatDate(value: string) {
       </span>
     </div>
 
-    <!-- Both panes carry the same height, sized so the page fits the viewport: the header controls are fixed, and a page that scrolls slides its content under them. Stacked below `lg`, each takes half the viewport instead. -->
-    <div class="grid gap-4 lg:grid-cols-2">
-      <div>
-        <p class="mb-1.5 text-xs font-medium text-muted">
-          {{ t('admin.legal.source') }}
-        </p>
-        <UTextarea
-          :key="draftKey"
-          v-model="content"
-          :placeholder="t('admin.legal.placeholder')"
-          class="w-full font-mono"
-          :ui="{ base: 'text-xs h-[50vh] min-h-64 resize-none lg:h-[calc(100vh-28rem)] lg:min-h-80' }"
-        />
-      </div>
-      <div>
-        <p class="mb-1.5 text-xs font-medium text-muted">
-          {{ t('admin.legal.preview') }}
-        </p>
-        <div class="h-[50vh] min-h-64 overflow-y-auto rounded-md border border-default p-4 lg:h-[calc(100vh-28rem)] lg:min-h-80">
-          <LegalDocument
-            v-if="previewDocument"
-            :value="previewDocument"
-          />
-        </div>
-      </div>
+    <!-- Takes the slack the rest of the page leaves, so the actions below it never fall off screen. `basis-0` is what stops it from claiming its content height first. -->
+    <div class="min-h-64 flex-1 basis-0">
+      <UTextarea
+        v-if="rawMode"
+        :key="`raw-${draftKey}`"
+        v-model="content"
+        :placeholder="t('admin.legal.placeholder')"
+        class="h-full w-full font-mono"
+        :ui="{ base: 'text-xs h-full resize-none' }"
+      />
+      <LegalEditor
+        v-else
+        :key="draftKey"
+        v-model="content"
+        class="h-full"
+      />
     </div>
 
     <p
