@@ -233,7 +233,7 @@ function formatDate(value: string) {
       </span>
     </div>
 
-    <!-- Takes the slack the rest of the page leaves, so the actions below it never fall off screen. `min-h-0` is what lets it shrink instead of pushing them down. -->
+    <!-- Takes the slack the rest of the page leaves, so the actions below it never fall off screen. `basis-0` is what stops it from claiming its content height first. -->
     <div class="min-h-64 flex-1 basis-0">
       <UTextarea
         v-if="rawMode"

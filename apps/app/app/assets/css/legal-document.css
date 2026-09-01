@@ -97,17 +97,21 @@
   line-height: inherit;
 }
 
-/* Separate borders rather than collapsed ones: a collapsed table cannot be given rounded corners, so the cells draw the grid instead. */
-.legal-document.legal-document table {
+/* Retention and cookie tables are the reason these documents need tables at all, and they scroll rather than squeezing their columns on a phone. The frame lives on the wrapper because that is the box that scrolls; Tiptap draws one around every table and LegalTable.vue matches it on the published page. */
+.legal-document.legal-document .tableWrapper {
   margin-top: 0;
   margin-bottom: 1.25rem;
-  width: 100%;
-  font-size: 0.875rem;
+  overflow-x: auto;
   border: 1px solid var(--ui-border);
   border-radius: calc(var(--ui-radius) * 2);
+}
+
+/* Separate borders rather than collapsed ones: collapsed borders leak past the wrapper's rounded corners, so the cells draw the grid instead. */
+.legal-document.legal-document table {
+  width: 100%;
+  font-size: 0.875rem;
   border-collapse: separate;
   border-spacing: 0;
-  overflow: hidden;
 }
 
 .legal-document.legal-document th,
