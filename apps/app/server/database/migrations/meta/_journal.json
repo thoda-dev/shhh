@@ -43,6 +43,13 @@
       "when": 1788287759282,
       "tag": "0005_naive_tigra",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789118659769,
+      "tag": "0006_tough_paibok",
+      "breakpoints": true
     }
   ]
 }
