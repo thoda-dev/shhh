@@ -3,6 +3,18 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.2.2
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.2.1...v1.2.2)
+
+### 🏡 Chore
+
+- **deps:** Update nodemailer to 10.0.13, fixes GHSA-v53p-9fqp-m79j, GHSA-8vvx-rff5-p5rq, GHSA-6vj9-mwq6-2f5v and GHSA-g57g-f23g-4646 ([cdee1aa](https://github.com/thoda-dev/shhh/commit/cdee1aa))
+
+### ❤️ Contributors
+
+- Thomas ([@thoda-dev](https://github.com/thoda-dev))
+
 ## v1.2.1
 
 [compare changes](https://github.com/thoda-dev/shhh/compare/v1.2.0...v1.2.1)
