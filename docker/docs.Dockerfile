@@ -10,8 +10,7 @@ FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/app/package.json apps/app/
 COPY apps/docs/package.json apps/docs/
-# Capped so the registry sockets do not stall the better-sqlite3 binary download.
-RUN pnpm install --frozen-lockfile --network-concurrency=16 --filter docs...
+RUN pnpm install --frozen-lockfile --filter docs...
 
 
 FROM deps AS build
