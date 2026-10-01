@@ -3,6 +3,23 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.2.3
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.2.2...v1.2.3)
+
+### 🩹 Fixes
+
+- **docker:** Cap pnpm network concurrency so the better-sqlite3 binary download no longer times out ([715a024](https://github.com/thoda-dev/shhh/commit/715a024))
+- **docker:** Drop the pnpm network concurrency cap, the timeouts came from the local network ([d16f528](https://github.com/thoda-dev/shhh/commit/d16f528))
+
+### 🏡 Chore
+
+- **deps:** Update dependencies ([44b998a](https://github.com/thoda-dev/shhh/commit/44b998a))
+
+### ❤️ Contributors
+
+- Thomas
+
 ## v1.2.2
 
 [compare changes](https://github.com/thoda-dev/shhh/compare/v1.2.1...v1.2.2)
