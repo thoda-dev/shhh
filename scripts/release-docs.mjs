@@ -185,6 +185,8 @@ run('docker', [
   '--builder', BUILDER,
   '--platform', PLATFORMS,
   '-f', 'docker/docs.Dockerfile',
+  // Otherwise a cached `apk upgrade` misses the Alpine fixes published since its first run.
+  '--no-cache-filter', 'runtime',
   ...tags.flatMap(t => ['-t', t]),
   // Not the app's version: this image is not the one that shipped with it, and saying so would undo
   // the whole point of leaving the version tags alone.

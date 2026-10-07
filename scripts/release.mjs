@@ -284,6 +284,8 @@ if (!flags.has('--skip-docker')) {
       '--builder', BUILDER,
       '--platform', PLATFORMS,
       '-f', image.dockerfile,
+      // Otherwise a cached `apk upgrade` misses the Alpine fixes published since its first run.
+      '--no-cache-filter', 'runtime',
       ...image.tags.flatMap(t => ['-t', t]),
       '--label', `org.opencontainers.image.version=${version}`,
       '--label', `org.opencontainers.image.revision=${sha}`,
