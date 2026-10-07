@@ -100,6 +100,7 @@ is treated as a vulnerability in shhh and gets a release; the first is fixed on 
 cycle.
 
 Dependabot is set to alert only. There are deliberately no automated dependency pull requests.
+The published images are scanned with Grype every Monday, which also catches the Alpine packages Dependabot cannot see.
 
 ## Reporting a vulnerability
 
