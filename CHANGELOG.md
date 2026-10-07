@@ -3,6 +3,27 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.2.4
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.2.3...v1.2.4)
+
+### 🩹 Fixes
+
+- **docker:** Install the build tools so better-sqlite3 compiles when its prebuilt binary fails to download ([c04aeab](https://github.com/thoda-dev/shhh/commit/c04aeab))
+- **docker:** Compile better-sqlite3 against the image's own Node headers, so the fallback needs no network ([819d250](https://github.com/thoda-dev/shhh/commit/819d250))
+
+### 🏡 Chore
+
+- **deps:** Update dependencies and stop caching apk upgrade at release, fixes CVE-2026-93749 and CVE-2026-85091 ([#50](https://github.com/thoda-dev/shhh/pull/50))
+
+### 🤖 CI
+
+- Scan the published images for fixable CVEs every week ([#47](https://github.com/thoda-dev/shhh/pull/47))
+
+### ❤️ Contributors
+
+- Thomas ([@thoda-dev](https://github.com/thoda-dev))
+
 ## v1.2.3
 
 [compare changes](https://github.com/thoda-dev/shhh/compare/v1.2.2...v1.2.3)
