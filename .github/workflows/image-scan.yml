@@ -1,6 +1,6 @@
 name: Image scan
 
-# Docker Scout retired its CVE notifications; a failed scheduled run emails instead.
+# Docker Scout retired its CVE notifications; GitHub's failed-run notification takes over.
 on:
   schedule:
     - cron: '0 6 * * 1'
