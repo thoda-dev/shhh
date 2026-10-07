@@ -1,0 +1,27 @@
+name: Image scan
+
+# Docker Scout retired its CVE notifications; a failed scheduled run emails instead.
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Scan ${{ matrix.image }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [thodadev/shhh:latest, thodadev/shhh-docs:latest]
+    steps:
+      # Fixable only: an unfixed CVE would fail every week with nothing to do.
+      - name: Scan with Grype
+        env:
+          GRYPE: anchore/grype@sha256:e4a44ef45d285b829ce6efe2642980329661bd2d18eab5fc539138d4adaebbbe # v0.120.1
+          IMAGE: ${{ matrix.image }}
+        run: docker run --rm "$GRYPE" "registry:$IMAGE" --only-fixed --fail-on high
