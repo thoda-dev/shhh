@@ -9,6 +9,8 @@ WORKDIR /app
 FROM base AS deps
 # What node-gyp needs to compile better-sqlite3 when its prebuilt binary fails to download.
 RUN apk add --no-cache python3 make g++
+# Node's headers ship with the image, so the fallback needs no download either.
+ENV npm_config_nodedir=/usr/local
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/app/package.json apps/app/
 COPY apps/docs/package.json apps/docs/
