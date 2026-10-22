@@ -3,6 +3,18 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.2.5
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.2.4...v1.2.5)
+
+### 🏡 Chore
+
+- Move to Node 26 and update dependencies, fixes CVE-2026-107891 ([#52](https://github.com/thoda-dev/shhh/pull/52))
+
+### ❤️ Contributors
+
+- Thomas ([@thoda-dev](https://github.com/thoda-dev))
+
 ## v1.2.4
 
 [compare changes](https://github.com/thoda-dev/shhh/compare/v1.2.3...v1.2.4)
