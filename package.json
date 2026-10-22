@@ -34,8 +34,7 @@
     "db:studio": "pnpm --filter app db:studio"
   },
   "dependencies": {
-    "consola": "^3.4.2",
-    "nuxt": "^4.6.2"
+    "consola": "^3.4.2"
   },
   "devDependencies": {
     "@nuxt/cli": "alpha",
