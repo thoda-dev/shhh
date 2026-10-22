@@ -141,7 +141,7 @@ Any numeric limit can be set to *unlimited*.
 
 ## Development
 
-Requires Node 24 and pnpm 11 (`mise install` picks both up), plus a PostgreSQL database.
+Requires Node 26 and pnpm 12 (`mise install` picks both up), plus a PostgreSQL database.
 
 ```bash
 pnpm install
