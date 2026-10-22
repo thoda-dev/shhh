@@ -2,7 +2,7 @@
 
 ## Setup
 
-Node 24 and pnpm 11 (`mise install` picks both up), plus a PostgreSQL database.
+Node 26 and pnpm 12 (`mise install` picks both up), plus a PostgreSQL database.
 
 ```bash
 pnpm install

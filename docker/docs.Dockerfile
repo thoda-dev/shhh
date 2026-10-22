@@ -1,8 +1,7 @@
 # Build from the repo root: docker build -f docker/docs.Dockerfile -t shhh-docs .
-FROM node:24-alpine AS base
+FROM node:26-alpine AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
-RUN corepack enable
 WORKDIR /app
 
 
@@ -14,6 +13,8 @@ ENV npm_config_nodedir=/usr/local
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/app/package.json apps/app/
 COPY apps/docs/package.json apps/docs/
+# The pnpm pinned in packageManager, since Node 25+ no longer bundles corepack.
+RUN npm install -g "$(node -p "require('./package.json').packageManager")"
 RUN pnpm install --frozen-lockfile --filter docs...
 
 
@@ -24,17 +25,14 @@ RUN pnpm --filter docs exec nuxt build
 
 
 # Not `FROM base`: inheriting the package managers is what drags their CVEs in.
-FROM node:24-alpine AS runtime
+FROM node:26-alpine AS runtime
 WORKDIR /app
 
 # The base froze its Alpine packages on its build date; openssl has moved since.
 RUN apk upgrade --no-cache
 
 # Nothing here runs a package manager, and scanners read the final filesystem.
-RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
-           /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
-           /usr/local/bin/pnpm /usr/local/bin/pnpx \
-           /usr/local/bin/yarn /usr/local/bin/yarnpkg /opt/yarn-v*
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 ENV NODE_ENV=production
 ENV NUXT_PORT=3000
