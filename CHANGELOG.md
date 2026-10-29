@@ -3,6 +3,22 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.2.6
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.2.5...v1.2.6)
+
+### 🩹 Fixes
+
+- **docs:** Serve llms.txt and declare the docs package as ESM ([#54](https://github.com/thoda-dev/shhh/pull/54))
+
+### 🏡 Chore
+
+- **deps:** Update dependencies and pnpm to 12.16.1 ([#56](https://github.com/thoda-dev/shhh/pull/56))
+
+### ❤️ Contributors
+
+- Thomas ([@thoda-dev](https://github.com/thoda-dev))
+
 ## v1.2.5
 
 [compare changes](https://github.com/thoda-dev/shhh/compare/v1.2.4...v1.2.5)
