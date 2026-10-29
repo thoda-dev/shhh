@@ -1,6 +1,11 @@
 export default defineNuxtConfig({
   extends: ['docus'],
 
+  // Docus derives the llms.txt domain from it; without it the build warns and llms.txt has no absolute links.
+  site: {
+    url: 'https://shhh-docs.thoda.dev',
+  },
+
   // @nuxt/content bakes an absolute build-time path for its SQLite file, which does not exist in a
   // runtime image that only carries .output. A relative path resolves against the working directory
   // instead, so the same build runs anywhere — see docker/docs.Dockerfile for the writable mount.
