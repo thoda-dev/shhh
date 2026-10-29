@@ -1,7 +1,7 @@
 export default defineNuxtConfig({
   extends: ['docus'],
 
-  // Docus derives the llms.txt domain from it; without it the build warns and llms.txt has no absolute links.
+  // Docus derives the llms.txt domain from it; without one nuxt-llms registers neither /llms.txt nor /llms-full.txt.
   site: {
     url: 'https://shhh-docs.thoda.dev',
   },
