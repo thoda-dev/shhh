@@ -3,6 +3,22 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.3.0
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.2.6...v1.3.0)
+
+### 🚀 Enhancements
+
+- **ui:** New landing page and dashboard layout ([#60](https://github.com/thoda-dev/shhh/pull/60))
+
+### 🏡 Chore
+
+- **deps:** Update dependencies, fixes CVE-2026-4738 ([#58](https://github.com/thoda-dev/shhh/pull/58))
+
+### ❤️ Contributors
+
+- Thomas ([@thoda-dev](https://github.com/thoda-dev))
+
 ## v1.2.6
 
 [compare changes](https://github.com/thoda-dev/shhh/compare/v1.2.5...v1.2.6)
