@@ -23,8 +23,14 @@ const toast = useToast()
 
 const { data: pastes, refresh, status } = await useFetch<PasteListItem[]>('/api/pastes', { default: () => [] })
 
+// A reactive clock rather than `Date.now()`: a paste that expires while the page is open has to turn expired without a reload.
+const now = ref(Date.now())
+let clock: ReturnType<typeof setInterval> | undefined
+onMounted(() => (clock = setInterval(() => (now.value = Date.now()), 30_000)))
+onBeforeUnmount(() => clearInterval(clock))
+
 function statusOf(paste: PasteListItem): PasteStatus {
-  if (new Date(paste.expiresAt).getTime() <= Date.now()) return 'expired'
+  if (new Date(paste.expiresAt).getTime() <= now.value) return 'expired'
   if (paste.maxReads !== null && paste.readCount >= paste.maxReads) return 'exhausted'
   return 'active'
 }
@@ -40,7 +46,7 @@ const stats = computed(() => {
   return [
     { key: 'active', icon: 'i-lucide-key-round', label: t('dashboard.stats.active'), value: active.length },
     { key: 'reads', icon: 'i-lucide-eye', label: t('dashboard.stats.reads'), value: all.reduce((sum, paste) => sum + paste.readCount, 0) },
-    { key: 'expiring', icon: 'i-lucide-hourglass', label: t('dashboard.stats.expiringSoon'), value: active.filter(paste => new Date(paste.expiresAt).getTime() - Date.now() < DAY_MS).length },
+    { key: 'expiring', icon: 'i-lucide-hourglass', label: t('dashboard.stats.expiringSoon'), value: active.filter(paste => new Date(paste.expiresAt).getTime() - now.value < DAY_MS).length },
     { key: 'ended', icon: 'i-lucide-archive', label: t('dashboard.stats.ended'), value: all.length - active.length }
   ]
 })
