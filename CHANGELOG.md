@@ -3,6 +3,18 @@
 Notable changes per release. Versions follow [semver](https://semver.org); the Docker tag ladder is
 described in [scripts/release.mjs](scripts/release.mjs).
 
+## v1.3.1
+
+[compare changes](https://github.com/thoda-dev/shhh/compare/v1.3.0...v1.3.1)
+
+### 🩹 Fixes
+
+- **deps:** Add @iconify-json/lucide to the app ([#62](https://github.com/thoda-dev/shhh/pull/62))
+
+### ❤️ Contributors
+
+- Thomas ([@thoda-dev](https://github.com/thoda-dev))
+
 ## v1.3.0
 
 [compare changes](https://github.com/thoda-dev/shhh/compare/v1.2.6...v1.3.0)
