@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { z } from 'zod'
-import type { FormSubmitEvent } from '@nuxt/ui'
+import type { FormSubmitEvent, TableColumn } from '@nuxt/ui'
 
 interface Invitation {
   id: string
@@ -12,8 +12,6 @@ interface Invitation {
   invitedByEmail: string | null
 }
 
-const ADMIN_ROLES = new Set(['admin', 'super_admin'])
-
 const STATE_COLORS = {
   pending: 'info',
   accepted: 'success',
@@ -21,57 +19,70 @@ const STATE_COLORS = {
   expired: 'warning'
 } as const
 
-const { t, locale } = useI18n()
-const localePath = useLocalePath()
+definePageMeta({ layout: 'dashboard', middleware: 'auth', role: 'admin' })
 
-await ensureAuthSessionLoaded()
-const user = useAuthUser()
-if (!user.value || !ADMIN_ROLES.has(user.value.role)) {
-  await navigateTo(localePath('/'))
-}
+const { t, locale } = useI18n()
+const toast = useToast()
 
 const publicSettings = await ensurePublicSettingsLoaded()
-const { data: invitations, refresh, status } = await useFetch<Invitation[]>('/api/admin/invitations')
+const { data: invitations, refresh, status } = await useFetch<Invitation[]>('/api/admin/invitations', { default: () => [] })
 
 const schema = z.object({ email: z.string().email() })
 const state = reactive({ email: '' })
 
 const inviting = ref(false)
-const errorMessage = ref('')
-const deliveryFailed = ref(false)
 
 async function invite(event: FormSubmitEvent<typeof state>) {
   inviting.value = true
-  errorMessage.value = ''
-  deliveryFailed.value = false
   try {
     const created = await $fetch<{ sent: boolean }>('/api/admin/invitations', {
       method: 'POST',
       body: { email: event.data.email }
     })
     // The row is created even when delivery fails: say so plainly rather than claim success for an email nobody will receive.
-    deliveryFailed.value = !created.sent
+    toast.add(created.sent
+      ? { color: 'success', icon: 'i-lucide-send', title: t('admin.invitations.sent', { email: event.data.email }) }
+      : { color: 'warning', icon: 'i-lucide-mail-x', title: t('admin.invitations.deliveryFailed'), description: t('admin.invitations.deliveryFailedHint'), duration: 0 })
     state.email = ''
     await refresh()
   } catch (error) {
     const { statusMessage, message } = fetchErrorMessages(error)
-    errorMessage.value = statusMessage || message || t('admin.invitations.errors.generic')
+    toast.add({ color: 'error', title: statusMessage || message || t('admin.invitations.errors.generic') })
   } finally {
     inviting.value = false
   }
 }
 
-const revokingId = ref<string | null>(null)
-async function revoke(id: string) {
-  if (!confirm(t('admin.invitations.confirmRevoke'))) return
-  revokingId.value = id
+const pendingRevoke = ref<Invitation | null>(null)
+const confirmOpen = computed({
+  get: () => pendingRevoke.value !== null,
+  set: (value: boolean) => {
+    if (!value) pendingRevoke.value = null
+  }
+})
+const revoking = ref(false)
+
+async function revoke() {
+  if (!pendingRevoke.value) return
+  revoking.value = true
   try {
-    await $fetch(`/api/admin/invitations/${id}`, { method: 'DELETE' })
+    await $fetch(`/api/admin/invitations/${pendingRevoke.value.id}`, { method: 'DELETE' })
     await refresh()
+  } catch (error) {
+    const { statusMessage, message } = fetchErrorMessages(error)
+    toast.add({ color: 'error', title: statusMessage || message || t('admin.invitations.errors.generic') })
   } finally {
-    revokingId.value = null
+    revoking.value = false
+    pendingRevoke.value = null
   }
 }
+
+const columns = computed<TableColumn<Invitation>[]>(() => [
+  { accessorKey: 'email', header: t('admin.invitations.columns.email') },
+  { accessorKey: 'state', header: t('admin.invitations.columns.state') },
+  { id: 'details', header: t('admin.invitations.columns.details'), meta: { class: { th: 'hidden md:table-cell', td: 'hidden md:table-cell' } } },
+  { id: 'actions', meta: { class: { td: 'text-right' } } }
+])
 
 function formatDate(value: string) {
   return new Date(value).toLocaleString(locale.value)
@@ -79,127 +90,113 @@ function formatDate(value: string) {
 </script>
 
 <template>
-  <div class="mx-auto max-w-5xl p-4">
-    <div class="mb-2 flex items-center justify-between gap-3">
-      <h1 class="text-xl font-semibold">
-        {{ t('admin.invitations.title') }}
-      </h1>
-      <BackButton />
-    </div>
-    <AdminNav />
+  <UDashboardPanel id="admin-invitations">
+    <template #header>
+      <UDashboardNavbar :title="t('admin.invitations.title')">
+        <template #leading>
+          <UDashboardSidebarCollapse />
+        </template>
+      </UDashboardNavbar>
+    </template>
 
-    <p class="mb-4 text-sm text-muted">
-      {{ t('admin.invitations.description') }}
-    </p>
+    <template #body>
+      <p class="text-sm text-muted">
+        {{ t('admin.invitations.description') }}
+      </p>
 
-    <UAlert
-      v-if="publicSettings?.mailEnabled === false"
-      color="warning"
-      variant="subtle"
-      icon="i-lucide-mail-x"
-      :title="t('admin.invitations.mailDisabled')"
-      :description="t('admin.invitations.mailDisabledHint')"
-      class="mb-6"
-    />
-
-    <UForm
-      v-else
-      :schema="schema"
-      :state="state"
-      class="mb-6 max-w-sm space-y-3"
-      @submit="invite"
-    >
-      <UFormField
-        :label="t('admin.invitations.emailLabel')"
-        name="email"
-      >
-        <UInput
-          v-model="state.email"
-          type="email"
-          class="w-full"
-        />
-      </UFormField>
-      <UButton
-        type="submit"
-        icon="i-lucide-send"
-        :loading="inviting"
-        :label="t('admin.invitations.send')"
+      <UAlert
+        v-if="publicSettings?.mailEnabled === false"
+        color="warning"
+        variant="subtle"
+        icon="i-lucide-mail-x"
+        :title="t('admin.invitations.mailDisabled')"
+        :description="t('admin.invitations.mailDisabledHint')"
       />
-    </UForm>
 
-    <UAlert
-      v-if="errorMessage"
-      color="error"
-      variant="subtle"
-      :title="errorMessage"
-      class="mb-4"
-    />
-    <UAlert
-      v-if="deliveryFailed"
-      color="warning"
-      variant="subtle"
-      :title="t('admin.invitations.deliveryFailed')"
-      :description="t('admin.invitations.deliveryFailedHint')"
-      class="mb-4"
-    />
-
-    <div
-      v-if="status === 'pending'"
-      class="flex justify-center py-12"
-    >
-      <UIcon
-        name="i-lucide-loader-circle"
-        class="size-6 animate-spin"
-      />
-    </div>
-
-    <div
-      v-else-if="!invitations?.length"
-      class="py-12 text-center text-muted"
-    >
-      {{ t('admin.invitations.empty') }}
-    </div>
-
-    <div
-      v-else
-      class="space-y-2"
-    >
-      <UCard
-        v-for="entry in invitations"
-        :key="entry.id"
+      <UPageCard
+        v-else
+        variant="subtle"
       >
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <div class="flex flex-wrap items-center gap-2">
-              <p class="truncate text-sm">
-                {{ entry.email }}
-              </p>
-              <UBadge
-                :color="STATE_COLORS[entry.state]"
-                variant="subtle"
-                size="sm"
-              >
-                {{ t(`admin.invitations.states.${entry.state}`) }}
-              </UBadge>
-            </div>
-            <p class="text-xs break-words text-muted">
-              <span v-if="entry.invitedByEmail">{{ t('admin.invitations.invitedBy', { email: entry.invitedByEmail }) }} · </span>
-              <span v-if="entry.state === 'pending'">{{ t('admin.invitations.expiresAt', { date: formatDate(entry.expiresAt) }) }}</span>
-              <span v-else-if="entry.acceptedAt">{{ t('admin.invitations.acceptedAt', { date: formatDate(entry.acceptedAt) }) }}</span>
-              <span v-else>{{ t('admin.invitations.createdAt', { date: formatDate(entry.createdAt) }) }}</span>
-            </p>
-          </div>
+        <UForm
+          :schema="schema"
+          :state="state"
+          class="flex flex-col gap-3 sm:flex-row sm:items-start"
+          @submit="invite"
+        >
+          <UFormField
+            name="email"
+            class="flex-1"
+          >
+            <UInput
+              v-model="state.email"
+              type="email"
+              icon="i-lucide-mail"
+              :placeholder="t('admin.invitations.emailLabel')"
+              :aria-label="t('admin.invitations.emailLabel')"
+              class="w-full"
+            />
+          </UFormField>
           <UButton
-            v-if="entry.state === 'pending'"
+            type="submit"
+            icon="i-lucide-send"
+            class="justify-center"
+            :loading="inviting"
+            :label="t('admin.invitations.send')"
+          />
+        </UForm>
+      </UPageCard>
+
+      <UTable
+        :data="invitations"
+        :columns="columns"
+        :loading="status === 'pending'"
+        :empty="t('admin.invitations.empty')"
+        class="shrink-0 rounded-lg border border-default"
+        :ui="{ thead: 'bg-elevated/50', th: 'py-2', td: 'py-3' }"
+      >
+        <template #email-cell="{ row }">
+          <span class="break-all text-highlighted">{{ row.original.email }}</span>
+        </template>
+
+        <template #state-cell="{ row }">
+          <UBadge
+            :color="STATE_COLORS[row.original.state]"
+            variant="subtle"
+            size="sm"
+          >
+            {{ t(`admin.invitations.states.${row.original.state}`) }}
+          </UBadge>
+        </template>
+
+        <template #details-cell="{ row }">
+          <span class="text-muted">
+            <span v-if="row.original.invitedByEmail">{{ t('admin.invitations.invitedBy', { email: row.original.invitedByEmail }) }} · </span>
+            <span v-if="row.original.state === 'pending'">{{ t('admin.invitations.expiresAt', { date: formatDate(row.original.expiresAt) }) }}</span>
+            <span v-else-if="row.original.acceptedAt">{{ t('admin.invitations.acceptedAt', { date: formatDate(row.original.acceptedAt) }) }}</span>
+            <span v-else>{{ t('admin.invitations.createdAt', { date: formatDate(row.original.createdAt) }) }}</span>
+          </span>
+        </template>
+
+        <template #actions-cell="{ row }">
+          <UButton
+            v-if="row.original.state === 'pending'"
             color="error"
             variant="ghost"
             icon="i-lucide-x"
-            class="shrink-0"
-            :loading="revokingId === entry.id"
-            @click="revoke(entry.id)"
+            :aria-label="t('admin.invitations.revoke')"
+            @click="pendingRevoke = row.original"
           />
-        </div>
-      </UCard>
-    </div>
-  </div>
+        </template>
+      </UTable>
+
+      <ConfirmDialog
+        v-model:open="confirmOpen"
+        :title="t('admin.invitations.revoke')"
+        :description="t('admin.invitations.confirmRevoke')"
+        :confirm-label="t('admin.invitations.revoke')"
+        :loading="revoking"
+        @confirm="revoke"
+      />
+    </template>
+  </UDashboardPanel>
 </template>

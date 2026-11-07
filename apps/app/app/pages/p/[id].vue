@@ -118,34 +118,46 @@ async function copyText() {
 </script>
 
 <template>
-  <div class="flex flex-1 items-center justify-center p-4">
-    <UCard class="w-full max-w-5xl">
+  <UContainer class="flex flex-1 flex-col items-center justify-center py-10 sm:py-16">
+    <UCard
+      class="w-full max-w-3xl shadow-lg"
+      :ui="{ body: 'p-4 sm:p-6' }"
+    >
       <template #header>
-        <div class="flex items-center justify-between gap-3">
-          <h1 class="text-xl font-semibold">
-            shhh
-          </h1>
-          <!-- The one page a reader may reach without ever having used the instance, so it also offers the way in. -->
-          <BackButton size="sm" />
+        <div class="flex items-center gap-3">
+          <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 ring ring-primary/25 ring-inset">
+            <UIcon
+              :name="decryptedText || decryptedFile ? 'i-lucide-lock-open' : 'i-lucide-lock'"
+              class="size-5 text-primary"
+            />
+          </div>
+          <div class="min-w-0">
+            <h1 class="font-semibold text-highlighted">
+              {{ t('read.title') }}
+            </h1>
+            <p class="text-sm text-muted">
+              {{ t('read.subtitle') }}
+            </p>
+          </div>
         </div>
       </template>
 
-      <div v-if="missingKey">
-        <UAlert
-          color="error"
-          variant="subtle"
-          :title="t('read.errors.missingKeyTitle')"
-          :description="t('read.errors.missingKeyDescription')"
-        />
-      </div>
+      <UAlert
+        v-if="missingKey"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-link-2-off"
+        :title="t('read.errors.missingKeyTitle')"
+        :description="t('read.errors.missingKeyDescription')"
+      />
 
-      <div v-else-if="metaError">
-        <UAlert
-          color="error"
-          variant="subtle"
-          :title="metaError"
-        />
-      </div>
+      <UAlert
+        v-else-if="metaError"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-file-x"
+        :title="metaError"
+      />
 
       <div
         v-else-if="decryptedText || decryptedFile"
@@ -154,87 +166,122 @@ async function copyText() {
         <template v-if="decryptedText">
           <div
             v-if="rendered && !showSource"
-            class="max-h-96 overflow-auto rounded-lg bg-elevated p-4"
+            class="max-h-[60vh] overflow-auto rounded-lg border border-default bg-elevated/50 p-4"
           >
             <RichText :value="rendered" />
           </div>
           <!-- `break-words` as well as the wrap: a secret is often one long unbroken token. -->
           <pre
             v-else
-            class="max-h-96 overflow-auto rounded-lg bg-elevated p-4 text-sm break-words whitespace-pre-wrap"
+            class="max-h-[60vh] overflow-auto rounded-lg border border-default bg-elevated/50 p-4 text-sm break-words whitespace-pre-wrap text-highlighted"
           >{{ decryptedText }}</pre>
 
-          <div class="flex flex-wrap items-center gap-2">
+          <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <UButton
               :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
               :label="copied ? t('create.result.copied') : (rendered ? t('read.copySource') : t('read.copyText'))"
+              class="justify-center"
               @click="copyText"
             />
             <!-- Named after what it switches to, since what is on screen is already visible. -->
             <UButton
               v-if="rendered"
-              variant="ghost"
+              color="neutral"
+              variant="subtle"
               :icon="showSource ? 'i-lucide-file-text' : 'i-lucide-file-code'"
               :label="showSource ? t('read.viewRendered') : t('read.viewSource')"
+              class="justify-center"
               @click="showSource = !showSource"
             />
           </div>
         </template>
-        <template v-else-if="decryptedFile">
-          <UButton
-            :label="t('read.downloadFile', { name: decryptedFile.name })"
-            icon="i-lucide-download"
-            :to="decryptedFile.url"
-            :download="decryptedFile.name"
-            external
-            class="max-w-full"
-            :ui="{ label: 'truncate' }"
-          />
-        </template>
+        <UButton
+          v-else-if="decryptedFile"
+          size="lg"
+          :label="t('read.downloadFile', { name: decryptedFile.name })"
+          icon="i-lucide-download"
+          :to="decryptedFile.url"
+          :download="decryptedFile.name"
+          external
+          class="max-w-full"
+          :ui="{ label: 'truncate' }"
+        />
       </div>
 
       <div
         v-else-if="meta"
-        class="space-y-4"
+        class="space-y-5"
       >
-        <div class="space-y-1 text-sm text-muted">
-          <p>{{ t('read.expiresAt', { date: new Date(meta.expiresAt).toLocaleString() }) }}</p>
-          <p v-if="meta.readsRemaining !== null">
-            {{ t('read.readsRemaining', { count: meta.readsRemaining }) }}
-          </p>
-        </div>
-
-        <UFormField
-          v-if="meta.passwordProtected"
-          :label="t('read.passwordLabel')"
-        >
-          <UInput
-            v-model="password"
-            type="password"
-            class="w-full"
-            autocomplete="off"
+        <div class="flex flex-wrap gap-2">
+          <UBadge
+            color="neutral"
+            variant="subtle"
+            :icon="meta.kind === 'file' ? 'i-lucide-paperclip' : 'i-lucide-file-text'"
+            :label="meta.kind === 'file' ? t('create.kindFile') : t('create.kindText')"
           />
-        </UFormField>
+          <UBadge
+            color="neutral"
+            variant="subtle"
+            icon="i-lucide-calendar-clock"
+            :label="t('read.expiresAt', { date: new Date(meta.expiresAt).toLocaleString() })"
+          />
+          <UBadge
+            v-if="meta.readsRemaining !== null"
+            color="neutral"
+            variant="subtle"
+            icon="i-lucide-eye"
+            :label="t('read.readsRemaining', { count: meta.readsRemaining })"
+          />
+          <UBadge
+            v-if="meta.passwordProtected"
+            color="neutral"
+            variant="subtle"
+            icon="i-lucide-key-round"
+            :label="t('dashboard.passwordProtected')"
+          />
+        </div>
 
         <UAlert
           color="warning"
           variant="subtle"
+          icon="i-lucide-flame"
           :title="t('read.burnWarningTitle')"
           :description="burnWarning"
         />
-        <UAlert
-          v-if="revealError"
-          color="error"
-          variant="subtle"
-          :title="revealError"
-        />
 
-        <UButton
-          block
-          :loading="revealing"
-          :label="t('read.reveal')"
-          @click="reveal"
-        />
+        <form
+          class="space-y-4"
+          @submit.prevent="reveal"
+        >
+          <UFormField
+            v-if="meta.passwordProtected"
+            :label="t('read.passwordLabel')"
+          >
+            <UInput
+              v-model="password"
+              type="password"
+              icon="i-lucide-key-round"
+              class="w-full"
+              autocomplete="off"
+            />
+          </UFormField>
+
+          <UAlert
+            v-if="revealError"
+            color="error"
+            variant="subtle"
+            :title="revealError"
+          />
+
+          <UButton
+            type="submit"
+            block
+            size="lg"
+            icon="i-lucide-eye"
+            :loading="revealing"
+            :label="t('read.reveal')"
+          />
+        </form>
       </div>
 
       <div
@@ -243,9 +290,9 @@ async function copyText() {
       >
         <UIcon
           name="i-lucide-loader-circle"
-          class="size-6 animate-spin"
+          class="size-6 animate-spin text-muted"
         />
       </div>
     </UCard>
-  </div>
+  </UContainer>
 </template>

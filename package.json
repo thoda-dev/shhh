@@ -37,7 +37,7 @@
     "consola": "^3.4.2"
   },
   "devDependencies": {
-    "@nuxt/cli": "alpha",
+    "@nuxt/cli": "^4.0.3",
     "changelogen": "^0.6.2"
   }
 }

@@ -20,8 +20,8 @@ const items = computed<DropdownMenuItem[]>(() => locales.value.map(entry => ({
   <!-- A menu rather than a select: the trigger collapses to its icon on a phone, where a select has to keep room for its longest language name. -->
   <UDropdownMenu :items="items">
     <UButton
+      color="neutral"
       variant="ghost"
-      size="sm"
       icon="i-lucide-languages"
       :aria-label="t('nav.language')"
     >

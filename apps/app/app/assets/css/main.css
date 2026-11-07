@@ -9,3 +9,8 @@
     font-size: 1rem !important;
   }
 }
+
+/* Anchors on the landing page land below the sticky header instead of under it. */
+html {
+  scroll-padding-top: var(--ui-header-height);
+}

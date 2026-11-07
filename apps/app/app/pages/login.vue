@@ -1,19 +1,15 @@
 <script setup lang="ts">
 import { z } from 'zod'
-import type { FormSubmitEvent } from '@nuxt/ui'
+import type { AuthFormField, FormSubmitEvent } from '@nuxt/ui'
 
 interface SignInResponse {
   twoFactorRedirect?: boolean
 }
 
+definePageMeta({ layout: 'auth', middleware: 'guest' })
+
 const { t } = useI18n()
 const localePath = useLocalePath()
-
-await ensureAuthSessionLoaded()
-const user = useAuthUser()
-if (user.value) {
-  await navigateTo(localePath('/'))
-}
 
 const publicSettings = await ensurePublicSettingsLoaded()
 
@@ -22,15 +18,28 @@ const schema = z.object({
   password: z.string().min(1)
 })
 
-const state = reactive({ email: '', password: '' })
+const fields = computed<AuthFormField[]>(() => [
+  { name: 'email', type: 'email', label: t('login.email'), required: true, autocomplete: 'email' },
+  { name: 'password', type: 'password', label: t('login.password'), required: true, autocomplete: 'current-password' }
+])
+
 const submitting = ref(false)
 const errorMessage = ref('')
 
 const needsTwoFactor = ref(false)
 const useBackupCode = ref(false)
-const code = ref('')
 
-async function submit(event: FormSubmitEvent<typeof state>) {
+const codeSchema = z.object({ code: z.string().min(1) })
+const codeFields = computed<AuthFormField[]>(() => [{
+  name: 'code',
+  type: 'text',
+  label: useBackupCode.value ? t('login.twoFactor.backupCode') : t('login.twoFactor.code'),
+  placeholder: useBackupCode.value ? undefined : t('account.twoFactor.codePlaceholder'),
+  autocomplete: useBackupCode.value ? 'off' : 'one-time-code',
+  autofocus: true
+}])
+
+async function submit(event: FormSubmitEvent<z.output<typeof schema>>) {
   submitting.value = true
   errorMessage.value = ''
   try {
@@ -43,7 +52,7 @@ async function submit(event: FormSubmitEvent<typeof state>) {
       return
     }
     await refreshAuthSession()
-    await navigateTo(localePath('/'))
+    await navigateTo(localePath('/dashboard'))
   } catch (error) {
     const { statusMessage, message } = fetchErrorMessages(error)
     errorMessage.value = message || statusMessage || t('login.errors.generic')
@@ -52,130 +61,100 @@ async function submit(event: FormSubmitEvent<typeof state>) {
   }
 }
 
-async function submitCode() {
+async function submitCode(event: FormSubmitEvent<z.output<typeof codeSchema>>) {
   submitting.value = true
   errorMessage.value = ''
   try {
     const path = useBackupCode.value ? '/api/auth/two-factor/verify-backup-code' : '/api/auth/two-factor/verify-totp'
-    await $fetch(path, { method: 'POST', body: { code: code.value } })
+    await $fetch(path, { method: 'POST', body: { code: event.data.code } })
     await refreshAuthSession()
-    await navigateTo(localePath('/'))
+    await navigateTo(localePath('/dashboard'))
   } catch {
     errorMessage.value = t('login.twoFactor.errors.invalidCode')
   } finally {
     submitting.value = false
   }
 }
+
+function toggleBackupCode() {
+  useBackupCode.value = !useBackupCode.value
+  errorMessage.value = ''
+}
 </script>
 
 <template>
-  <div class="flex flex-1 items-center justify-center p-4">
-    <UCard class="w-full max-w-sm">
-      <template #header>
-        <div class="flex items-center justify-between gap-3">
-          <h1 class="text-xl font-semibold">
-            {{ needsTwoFactor ? t('login.twoFactor.title') : t('login.title') }}
-          </h1>
-          <BackButton size="sm" />
-        </div>
+  <UPageCard
+    variant="subtle"
+    class="w-full max-w-sm shadow-lg"
+  >
+    <UAuthForm
+      v-if="!needsTwoFactor"
+      :schema="schema"
+      :fields="fields"
+      icon="i-lucide-log-in"
+      :title="t('login.title')"
+      :description="t('login.subtitle')"
+      :loading="submitting"
+      :submit="{ label: t('login.submit') }"
+      @submit="submit"
+    >
+      <template
+        v-if="errorMessage"
+        #validation
+      >
+        <UAlert
+          color="error"
+          variant="subtle"
+          :title="errorMessage"
+        />
       </template>
 
-      <UForm
-        v-if="!needsTwoFactor"
-        :schema="schema"
-        :state="state"
-        class="space-y-4"
-        @submit="submit"
+      <!-- Only when the instance is open: an invited user reaches /register through their link, so advertising it here would be a dead end on a closed instance. -->
+      <template
+        v-if="publicSettings?.registrationEnabled"
+        #footer
       >
-        <UFormField
-          :label="t('login.email')"
-          name="email"
-          required
-        >
-          <UInput
-            v-model="state.email"
-            type="email"
-            class="w-full"
-            autocomplete="email"
-          />
-        </UFormField>
-        <UFormField
-          :label="t('login.password')"
-          name="password"
-          required
-        >
-          <UInput
-            v-model="state.password"
-            type="password"
-            class="w-full"
-            autocomplete="current-password"
-          />
-        </UFormField>
-
-        <UAlert
-          v-if="errorMessage"
-          color="error"
-          variant="subtle"
-          :title="errorMessage"
-        />
-
-        <UButton
-          block
-          type="submit"
-          :loading="submitting"
-          :label="t('login.submit')"
-        />
-
-        <!-- Only when the instance is open: an invited user reaches /register through their link,
-             so advertising it here would just be a dead end on a closed instance. -->
-        <UButton
-          v-if="publicSettings?.registrationEnabled"
-          block
-          variant="ghost"
-          size="sm"
-          :label="t('login.noAccount')"
+        {{ t('login.noAccountQuestion') }}
+        <ULink
           :to="localePath('/register')"
-        />
-      </UForm>
+          class="font-medium text-primary"
+        >
+          {{ t('register.title') }}
+        </ULink>
+      </template>
+    </UAuthForm>
 
-      <div
-        v-else
-        class="space-y-4"
+    <!-- Keyed on the mode so the typed code does not carry over between an authenticator code and a backup code. -->
+    <UAuthForm
+      v-else
+      :key="useBackupCode ? 'backup' : 'totp'"
+      :schema="codeSchema"
+      :fields="codeFields"
+      icon="i-lucide-shield-check"
+      :title="t('login.twoFactor.title')"
+      :description="useBackupCode ? t('login.twoFactor.backupCodeHint') : t('login.twoFactor.totpHint')"
+      :loading="submitting"
+      :submit="{ label: t('login.twoFactor.submit') }"
+      @submit="submitCode"
+    >
+      <template
+        v-if="errorMessage"
+        #validation
       >
-        <p class="text-sm text-muted">
-          {{ useBackupCode ? t('login.twoFactor.backupCodeHint') : t('login.twoFactor.totpHint') }}
-        </p>
-        <UFormField :label="useBackupCode ? t('login.twoFactor.backupCode') : t('login.twoFactor.code')">
-          <UInput
-            v-model="code"
-            :placeholder="useBackupCode ? undefined : t('account.twoFactor.codePlaceholder')"
-            class="w-full"
-            autofocus
-          />
-        </UFormField>
-
         <UAlert
-          v-if="errorMessage"
           color="error"
           variant="subtle"
           :title="errorMessage"
         />
+      </template>
 
+      <template #footer>
         <UButton
-          block
-          :loading="submitting"
-          :disabled="!code"
-          :label="t('login.twoFactor.submit')"
-          @click="submitCode"
-        />
-        <UButton
-          block
-          variant="ghost"
-          size="sm"
+          variant="link"
           :label="useBackupCode ? t('login.twoFactor.useTotp') : t('login.twoFactor.useBackupCode')"
-          @click="useBackupCode = !useBackupCode; code = ''; errorMessage = ''"
+          @click="toggleBackupCode"
         />
-      </div>
-    </UCard>
-  </div>
+      </template>
+    </UAuthForm>
+  </UPageCard>
 </template>

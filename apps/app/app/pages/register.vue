@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import { z } from 'zod'
-import type { FormSubmitEvent } from '@nuxt/ui'
+import type { AuthFormField, FormSubmitEvent } from '@nuxt/ui'
+
+definePageMeta({ layout: 'auth', middleware: 'guest' })
 
 const { t } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
-
-await ensureAuthSessionLoaded()
-const user = useAuthUser()
-if (user.value) {
-  await navigateTo(localePath('/'))
-}
 
 const publicSettings = await ensurePublicSettingsLoaded()
 
@@ -35,18 +31,17 @@ const schema = z.object({
   password: z.string().min(8).max(128)
 })
 
-const state = reactive({ name: '', email: invitation.value?.email ?? '', password: '' })
 // The address is fixed by the invitation, so the field is filled and locked; the server ignores any email sent alongside a token anyway.
-watch(invitation, (value) => {
-  if (value) {
-    state.email = value.email
-  }
-})
+const fields = computed<AuthFormField[]>(() => [
+  { name: 'name', type: 'text', label: t('register.name'), required: true, autocomplete: 'name' },
+  { name: 'email', type: 'email', label: t('register.email'), required: true, autocomplete: 'email', defaultValue: invitation.value?.email, disabled: !!invitation.value },
+  { name: 'password', type: 'password', label: t('register.password'), required: true, autocomplete: 'new-password', hint: t('register.passwordHint') }
+])
 
 const submitting = ref(false)
 const errorMessage = ref('')
 
-async function submit(event: FormSubmitEvent<typeof state>) {
+async function submit(event: FormSubmitEvent<z.output<typeof schema>>) {
   submitting.value = true
   errorMessage.value = ''
   try {
@@ -62,7 +57,7 @@ async function submit(event: FormSubmitEvent<typeof state>) {
       })
     }
     await refreshAuthSession()
-    await navigateTo(localePath('/'))
+    await navigateTo(localePath('/dashboard'))
   } catch (error) {
     const { statusMessage, message } = fetchErrorMessages(error)
     errorMessage.value = message || statusMessage || t('register.errors.generic')
@@ -73,17 +68,47 @@ async function submit(event: FormSubmitEvent<typeof state>) {
 </script>
 
 <template>
-  <div class="flex flex-1 items-center justify-center p-4">
-    <UCard class="w-full max-w-sm">
-      <template #header>
-        <div class="flex items-center justify-between gap-3">
-          <h1 class="text-xl font-semibold">
-            {{ t('register.title') }}
-          </h1>
-          <BackButton size="sm" />
-        </div>
+  <UPageCard
+    variant="subtle"
+    class="w-full max-w-sm shadow-lg"
+  >
+    <UAuthForm
+      v-if="canRegister && !(token && invitationError)"
+      :schema="schema"
+      :fields="fields"
+      icon="i-lucide-user-plus"
+      :title="t('register.title')"
+      :description="invitation ? t('register.invitedHint', { email: invitation.email }) : t('register.subtitle')"
+      :loading="submitting"
+      :submit="{ label: t('register.submit') }"
+      @submit="submit"
+    >
+      <template
+        v-if="errorMessage"
+        #validation
+      >
+        <UAlert
+          color="error"
+          variant="subtle"
+          :title="errorMessage"
+        />
       </template>
 
+      <template #footer>
+        {{ t('register.haveAccountQuestion') }}
+        <ULink
+          :to="localePath('/login')"
+          class="font-medium text-primary"
+        >
+          {{ t('login.title') }}
+        </ULink>
+      </template>
+    </UAuthForm>
+
+    <div
+      v-else
+      class="space-y-4"
+    >
       <UAlert
         v-if="token && invitationError"
         color="error"
@@ -92,93 +117,21 @@ async function submit(event: FormSubmitEvent<typeof state>) {
         :title="t('register.invalidInvitation')"
         :description="t('register.invalidInvitationHint')"
       />
-
       <UAlert
-        v-else-if="!canRegister"
+        v-else
         color="warning"
         variant="subtle"
         icon="i-lucide-lock"
         :title="t('register.closed')"
         :description="t('register.closedHint')"
       />
-
-      <UForm
-        v-else
-        :schema="schema"
-        :state="state"
-        class="space-y-4"
-        @submit="submit"
-      >
-        <UAlert
-          v-if="invitation"
-          color="info"
-          variant="subtle"
-          icon="i-lucide-mail-check"
-          :title="t('register.invitedTitle')"
-          :description="t('register.invitedHint', { email: invitation.email })"
-        />
-
-        <UFormField
-          :label="t('register.name')"
-          name="name"
-          required
-        >
-          <UInput
-            v-model="state.name"
-            class="w-full"
-            autocomplete="name"
-          />
-        </UFormField>
-        <UFormField
-          :label="t('register.email')"
-          name="email"
-          required
-        >
-          <UInput
-            v-model="state.email"
-            type="email"
-            :disabled="!!invitation"
-            class="w-full"
-            autocomplete="email"
-          />
-        </UFormField>
-        <UFormField
-          :label="t('register.password')"
-          name="password"
-          required
-          :hint="t('register.passwordHint')"
-        >
-          <UInput
-            v-model="state.password"
-            type="password"
-            class="w-full"
-            autocomplete="new-password"
-          />
-        </UFormField>
-
-        <UAlert
-          v-if="errorMessage"
-          color="error"
-          variant="subtle"
-          :title="errorMessage"
-        />
-
-        <UButton
-          block
-          type="submit"
-          :loading="submitting"
-          :label="t('register.submit')"
-        />
-      </UForm>
-
-      <template #footer>
-        <UButton
-          variant="ghost"
-          size="sm"
-          :label="t('register.haveAccount')"
-          :to="localePath('/login')"
-        />
-      </template>
-    </UCard>
-  </div>
+      <UButton
+        block
+        color="neutral"
+        variant="subtle"
+        :label="t('login.title')"
+        :to="localePath('/login')"
+      />
+    </div>
+  </UPageCard>
 </template>

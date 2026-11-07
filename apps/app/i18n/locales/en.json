@@ -143,7 +143,9 @@
       "missingKeyTitle": "Missing decryption key",
       "missingKeyDescription": "The link is incomplete — the part after # is required to decrypt this paste.",
       "decryptFailed": "Couldn't decrypt this paste. The password may be wrong, or the link is invalid."
-    }
+    },
+    "title": "Someone shared a secret with you",
+    "subtitle": "It is decrypted in this browser, with the key carried by the link."
   },
   "login": {
     "title": "Log in",
@@ -167,21 +169,47 @@
         "invalidCode": "Invalid code."
       }
     },
-    "noAccount": "Don't have an account? Sign up"
+    "subtitle": "Sign in to manage your pastes.",
+    "noAccountQuestion": "No account yet?"
   },
   "dashboard": {
     "title": "Your pastes",
-    "backToCreate": "New paste",
     "empty": "You haven't created any pastes yet.",
     "passwordProtected": "Password",
-    "statusActive": "Active",
-    "statusExpired": "Expired",
-    "statusExhausted": "Exhausted",
-    "created": "Created {date}",
-    "expires": "Expires {date}",
-    "reads": "{count}/{max} reads",
-    "readsUnlimited": "{count} reads",
-    "confirmDelete": "Delete this paste permanently?"
+    "confirmDelete": "The link stops working right away. This cannot be undone.",
+    "new": "New paste",
+    "stats": {
+      "active": "Active",
+      "reads": "Reads",
+      "expiringSoon": "Expiring within 24 h",
+      "ended": "Ended"
+    },
+    "filters": {
+      "all": "All",
+      "active": "Active",
+      "ended": "Ended"
+    },
+    "columns": {
+      "paste": "Paste",
+      "status": "Status",
+      "reads": "Reads",
+      "created": "Created",
+      "expires": "Expires"
+    },
+    "status": {
+      "active": "Active",
+      "expired": "Expired",
+      "exhausted": "Exhausted"
+    },
+    "confirmDeleteTitle": "Delete this paste?",
+    "delete": "Delete",
+    "deleted": "Paste deleted",
+    "errors": {
+      "delete": "The paste could not be deleted."
+    },
+    "emptyFilter": "No paste matches this filter.",
+    "refresh": "Refresh",
+    "created": "Created {date}"
   },
   "admin": {
     "settings": {
@@ -213,7 +241,13 @@
       "saved": "Settings saved",
       "errors": {
         "generic": "Something went wrong while saving settings."
-      }
+      },
+      "retentionHint": "How long a paste lives and how many times it opens, per tier.",
+      "sizesHint": "Caps on a single paste and on the instance as a whole.",
+      "rateLimitsHint": "How many pastes can be created per period.",
+      "emailHint": "Sharing a paste by email from the creation form.",
+      "invitationsHint": "How long an invitation link stays valid.",
+      "accessHint": "Who may sign up and create pastes."
     },
     "storage": {
       "title": "Storage",
@@ -264,11 +298,14 @@
       "labelPlaceholder": "Optional",
       "add": "Add",
       "empty": "No IPs allowlisted.",
-      "addedAt": "Added {date}",
       "confirmDelete": "Remove this IP from the allowlist?",
       "errors": {
         "generic": "Something went wrong while adding this IP."
-      }
+      },
+      "columns": {
+        "added": "Added"
+      },
+      "remove": "Remove"
     },
     "bannedIps": {
       "title": "IP blacklist",
@@ -281,23 +318,25 @@
       "permanent": "Permanent",
       "add": "Ban",
       "empty": "No IPs banned.",
-      "bannedAt": "Banned {date}",
       "expiresAt": "Expires {date}",
       "statusExpired": "Expired",
       "confirmUnban": "Remove this ban?",
       "errors": {
         "generic": "Something went wrong while banning this IP."
-      }
+      },
+      "columns": {
+        "status": "Status",
+        "banned": "Banned on"
+      },
+      "unban": "Unban"
     },
     "users": {
       "title": "Accounts",
       "adminScopeNotice": "As an admin, you can remove plain user accounts. Only a super admin can change roles or act on other admins/super admins.",
-      "joined": "Joined {date}",
       "confirmDelete": "Permanently delete the account for {email}?",
       "errors": {
         "generic": "Something went wrong."
       },
-      "pastesSummary": "{count} pastes, {reclaimable} expired or fully read",
       "menu": {
         "label": "Actions for {email}",
         "purgeReclaimable": "Delete expired and fully read pastes ({count})",
@@ -316,7 +355,15 @@
       "result": {
         "pastesDeleted": "Deleted {count} pastes belonging to {email}.",
         "accountDeleted": "Deleted the account {email}."
-      }
+      },
+      "columns": {
+        "user": "Account",
+        "role": "Role",
+        "pastes": "Pastes",
+        "joined": "Joined"
+      },
+      "reclaimableShort": "{count} ended",
+      "search": "Search by name or email"
     },
     "invitations": {
       "title": "Invitations",
@@ -341,7 +388,14 @@
         "accepted": "Accepted",
         "revoked": "Revoked",
         "expired": "Expired"
-      }
+      },
+      "columns": {
+        "email": "Email",
+        "state": "Status",
+        "details": "Details"
+      },
+      "revoke": "Revoke invitation",
+      "sent": "Invitation sent to {email}"
     },
     "legal": {
       "title": "Legal pages",
@@ -427,7 +481,8 @@
       "title": "Profile",
       "name": "Name",
       "email": "Email",
-      "save": "Save"
+      "save": "Save",
+      "description": "How the administrators of this instance see you."
     },
     "password": {
       "title": "Password",
@@ -435,7 +490,8 @@
       "new": "New password",
       "confirm": "Confirm new password",
       "mismatch": "Passwords do not match",
-      "save": "Change password"
+      "save": "Change password",
+      "description": "At least 8 characters."
     },
     "twoFactor": {
       "title": "Two-factor authentication",
@@ -462,7 +518,9 @@
       "lockedByInstance": "This instance requires two-factor authentication, so it cannot be turned off.",
       "passwordToRegenerate": "Password to regenerate backup codes",
       "regenerate": "New backup codes",
-      "regeneratedWarning": "These replace your previous backup codes, which no longer work. Save them now — they are shown only once."
+      "regeneratedWarning": "These replace your previous backup codes, which no longer work. Save them now — they are shown only once.",
+      "description": "A code from an authenticator app, on top of your password.",
+      "enabledToast": "Two-factor authentication enabled"
     },
     "errors": {
       "generic": "Something went wrong."
@@ -483,7 +541,13 @@
       "hint": "confirmation is sent to your current address",
       "submit": "Request email change",
       "requested": "Confirmation sent",
-      "requestedHint": "Check your current inbox and follow the link. Your address stays unchanged until you do."
+      "requestedHint": "Check your current inbox and follow the link. Your address stays unchanged until you do.",
+      "title": "Email address",
+      "unavailable": "This instance cannot send mail, so the address cannot be changed here."
+    },
+    "tabs": {
+      "general": "General",
+      "security": "Security"
     }
   },
   "register": {
@@ -493,20 +557,30 @@
     "password": "Password",
     "passwordHint": "at least 8 characters",
     "submit": "Create account",
-    "haveAccount": "Already have an account? Log in",
     "closed": "Registration is closed",
     "closedHint": "This instance does not accept public sign-ups. You need an invitation from an administrator.",
     "invalidInvitation": "This invitation link is not valid",
     "invalidInvitationHint": "It may have expired, been revoked, or already been used. Ask an administrator for a new one.",
-    "invitedTitle": "You have been invited",
     "invitedHint": "This account will be created for {email}.",
     "errors": {
       "generic": "Could not create the account."
-    }
+    },
+    "subtitle": "Keep track of your pastes and send files.",
+    "haveAccountQuestion": "Already have an account?"
   },
   "nav": {
     "documentation": "Documentation",
-    "language": "Language"
+    "language": "Language",
+    "dashboard": "Dashboard",
+    "home": "Home page",
+    "administration": "Administration",
+    "goTo": "Go to",
+    "appearance": "Appearance",
+    "colorMode": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    }
   },
   "seo": {
     "title": "shhh — share a secret that expires",
@@ -522,5 +596,73 @@
     "otherLanguage": "This instance publishes this document in another language only.",
     "notFound": "This instance publishes no such document.",
     "seoDescription": "How this instance handles your data."
+  },
+  "footer": {
+    "tagline": "Zero-knowledge secret sharing."
+  },
+  "landing": {
+    "nav": {
+      "howItWorks": "How it works",
+      "features": "Features"
+    },
+    "hero": {
+      "headline": "Zero-knowledge · Open source",
+      "title": "Share secrets that self-destruct",
+      "description": "Encrypted in your browser before it is sent. The key travels in the link, never to the server, and the paste disappears once it has been read or has expired."
+    },
+    "how": {
+      "title": "The server only ever holds ciphertext",
+      "description": "Encryption and decryption happen in the browser. What reaches the server is useless without the link."
+    },
+    "steps": {
+      "encrypt": {
+        "title": "Encrypted before it leaves",
+        "description": "Your browser generates a fresh key and encrypts the content with AES-256-GCM. Only the ciphertext is uploaded."
+      },
+      "link": {
+        "title": "The key stays in the link",
+        "description": "It sits after the # of the URL, a part browsers never send. Whoever holds the link can read the paste, and nobody else, the server included."
+      },
+      "burn": {
+        "title": "Gone when it is done",
+        "description": "A paste stops opening after its last allowed read or its expiry date, whichever comes first, and is deleted within the hour."
+      }
+    },
+    "featuresSection": {
+      "title": "Everything a handover needs",
+      "description": "Plain text by default, with what it takes to pass credentials on safely."
+    },
+    "features": {
+      "password": {
+        "title": "A password on top",
+        "description": "Add a password to send through another channel. It is stretched with Argon2id in the browser and never reaches the server."
+      },
+      "reads": {
+        "title": "Read limits",
+        "description": "One read or a hundred. Each reveal is counted atomically, and someone without the key cannot spend one."
+      },
+      "files": {
+        "title": "Encrypted files",
+        "description": "Signed-in users can send a file instead of text. Its name is encrypted along with its content."
+      },
+      "markdown": {
+        "title": "Markdown when it helps",
+        "description": "Write a handover note with headings, lists and tables. It is rendered in the recipient's browser, and only there."
+      },
+      "email": {
+        "title": "Share by email",
+        "description": "Send the link to several people at once, each in blind copy, or open it in your own mail client."
+      },
+      "dashboard": {
+        "title": "Keep track",
+        "description": "With an account, see how many reads each link has left, and delete any of them before it is opened."
+      }
+    },
+    "selfHost": {
+      "title": "Run your own instance",
+      "description": "shhh is open source under the MIT licence. A Docker image and a PostgreSQL database are all it takes to keep your secrets on your own servers.",
+      "docs": "Read the documentation",
+      "github": "View on GitHub"
+    }
   }
 }

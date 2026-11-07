@@ -22,14 +22,10 @@ interface LegalIndex {
 const SLUGS: LegalSlug[] = ['privacy', 'terms', 'notice']
 const LOCALES: LegalLocale[] = ['en', 'fr']
 
-const { t, locale } = useI18n()
-const localePath = useLocalePath()
+definePageMeta({ layout: 'dashboard', middleware: 'auth', role: 'super_admin' })
 
-await ensureAuthSessionLoaded()
-const user = useAuthUser()
-if (user.value?.role !== 'super_admin') {
-  await navigateTo(localePath('/'))
-}
+const { t, locale } = useI18n()
+const toast = useToast()
 
 const { data: index, refresh } = await useFetch<LegalIndex>('/api/admin/legal')
 
@@ -62,7 +58,7 @@ const slugItems = computed<TabsItem[]>(() =>
   SLUGS.map(value => ({ label: t(`legal.documents.${value}`), value }))
 )
 // Deliberately independent of `drafts`: these items feed UTabs, and rebuilding them on every
-// keystroke made the tab component churn. The unsaved languages are shown beside the tabs instead.
+// keystroke made the tab component churn. The unsaved languages are listed under the editor instead.
 const localeItems = computed<TabsItem[]>(() =>
   LOCALES.map(value => ({ label: localeLabels.value[value], value }))
 )
@@ -80,7 +76,6 @@ const templateLocales = computed(() =>
 const dirty = computed(() => unsavedLocales.value.length > 0)
 
 const saving = ref(false)
-const saved = ref(false)
 const errorMessage = ref('')
 
 function persist(locale: LegalLocale, value: string) {
@@ -102,7 +97,6 @@ async function save() {
   if (!pending.length) return
 
   saving.value = true
-  saved.value = false
   errorMessage.value = ''
   const persisted: LegalLocale[] = []
 
@@ -111,8 +105,7 @@ async function save() {
       await persist(entry.code, entry.content)
       persisted.push(entry.code)
     }
-    saved.value = true
-    setTimeout(() => (saved.value = false), 2000)
+    toast.add({ color: 'success', icon: 'i-lucide-check', title: t('admin.legal.saved') })
   } catch (error) {
     const { statusMessage, message } = fetchErrorMessages(error)
     errorMessage.value = statusMessage || message || t('admin.legal.errors.generic')
@@ -126,8 +119,28 @@ const templateOpen = ref(false)
 const templates = ref<Record<string, string>>({})
 const loadingTemplate = ref(false)
 
+// Both actions that throw text away ask first, through the same dialog.
+const pendingAction = ref<'template' | 'unpublish' | null>(null)
+const confirmOpen = computed({
+  get: () => pendingAction.value !== null,
+  set: (value: boolean) => {
+    if (!value) pendingAction.value = null
+  }
+})
+
+function requestTemplate() {
+  if (content.value.trim()) pendingAction.value = 'template'
+  else openTemplate()
+}
+
+async function runPending() {
+  const action = pendingAction.value
+  pendingAction.value = null
+  if (action === 'template') await openTemplate()
+  else if (action === 'unpublish') await unpublish()
+}
+
 async function openTemplate() {
-  if (content.value.trim() && !confirm(t('admin.legal.confirmTemplate'))) return
   loadingTemplate.value = true
   errorMessage.value = ''
   try {
@@ -147,8 +160,6 @@ async function openTemplate() {
 
 // Scoped to the tab on screen, unlike saving: removing the French text must not remove the English one.
 async function unpublish() {
-  if (!confirm(t('admin.legal.confirmDelete'))) return
-
   saving.value = true
   errorMessage.value = ''
   try {
@@ -175,145 +186,143 @@ function formatDate(value: string) {
 </script>
 
 <template>
-  <div class="mx-auto flex max-w-5xl flex-1 flex-col p-4">
-    <div class="mb-2 flex items-center justify-between gap-3">
-      <h1 class="text-xl font-semibold">
-        {{ t('admin.legal.title') }}
-      </h1>
-      <BackButton />
-    </div>
-    <AdminNav />
+  <UDashboardPanel id="admin-legal">
+    <template #header>
+      <UDashboardNavbar :title="t('admin.legal.title')">
+        <template #leading>
+          <UDashboardSidebarCollapse />
+        </template>
+        <template #right>
+          <UButton
+            icon="i-lucide-save"
+            :loading="saving"
+            :disabled="!dirty"
+            :label="unsavedLocales.length > 1 ? t('admin.legal.saveAll', { count: unsavedLocales.length }) : t('admin.legal.save')"
+            @click="save"
+          />
+        </template>
+      </UDashboardNavbar>
 
-    <p class="mb-6 text-sm text-muted">
-      {{ t('admin.legal.description') }}
-    </p>
+      <UDashboardToolbar :ui="{ root: 'flex-wrap gap-y-2 py-2 h-auto min-h-(--ui-header-height)', left: 'flex-wrap', right: 'flex-wrap' }">
+        <template #left>
+          <UTabs
+            v-model="slug"
+            :items="slugItems"
+            :content="false"
+            size="xs"
+          />
+          <UTabs
+            v-model="editedLocale"
+            :items="localeItems"
+            :content="false"
+            size="xs"
+          />
+        </template>
+        <template #right>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            :icon="rawMode ? 'i-lucide-pen-line' : 'i-lucide-file-code'"
+            :label="rawMode ? t('admin.legal.richText') : t('admin.legal.raw')"
+            @click="rawMode = !rawMode"
+          />
+          <UButton
+            color="neutral"
+            variant="subtle"
+            size="sm"
+            icon="i-lucide-file-plus-2"
+            :disabled="!templateLocales.length"
+            :loading="loadingTemplate"
+            :label="t('admin.legal.insertTemplate')"
+            @click="requestTemplate"
+          />
+        </template>
+      </UDashboardToolbar>
+    </template>
 
-    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-      <UTabs
-        v-model="slug"
-        :items="slugItems"
-        :content="false"
-        size="sm"
-        class="w-full sm:w-auto"
-      />
-      <UTabs
-        v-model="editedLocale"
-        :items="localeItems"
-        :content="false"
-        size="sm"
-        class="w-full sm:w-auto"
-      />
-    </div>
+    <template #body>
+      <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
+        <span class="min-w-0 flex-1">{{ t('admin.legal.description') }}</span>
+        <UBadge
+          :color="stored?.updatedAt ? 'success' : 'neutral'"
+          variant="subtle"
+          size="sm"
+          :label="stored?.updatedAt ? t('admin.legal.publishedAt', { date: formatDate(stored.updatedAt) }) : t('admin.legal.unpublished')"
+        />
+      </div>
 
-    <div class="mb-3 flex flex-wrap items-center gap-2">
-      <UButton
-        variant="ghost"
-        size="sm"
-        :icon="rawMode ? 'i-lucide-pen-line' : 'i-lucide-file-code'"
-        :label="rawMode ? t('admin.legal.richText') : t('admin.legal.raw')"
-        @click="rawMode = !rawMode"
-      />
-      <UButton
+      <!-- Takes the slack the rest of the panel leaves, so the actions below it never fall off screen. `basis-0` is what stops it from claiming its content height first. -->
+      <div class="min-h-80 flex-1 basis-0">
+        <UTextarea
+          v-if="rawMode"
+          :key="`raw-${draftKey}`"
+          v-model="content"
+          :placeholder="t('admin.legal.placeholder')"
+          class="h-full w-full font-mono"
+          :ui="{ base: 'text-xs h-full resize-none' }"
+        />
+        <TextEditor
+          v-else
+          :key="draftKey"
+          v-model="content"
+          class="h-full"
+        />
+      </div>
+
+      <UAlert
+        v-if="hasImage"
+        color="warning"
         variant="subtle"
-        size="sm"
-        icon="i-lucide-file-plus-2"
-        :disabled="!templateLocales.length"
-        :loading="loadingTemplate"
-        :label="t('admin.legal.insertTemplate')"
-        @click="openTemplate"
+        icon="i-lucide-image-off"
+        :title="t('editor.imageWarningTitle')"
+        :description="t('editor.imageWarningDescription')"
       />
-      <span
-        v-if="stored?.updatedAt"
-        class="text-xs text-muted"
-      >
-        {{ t('admin.legal.publishedAt', { date: formatDate(stored.updatedAt) }) }}
-      </span>
-      <span
-        v-else
-        class="text-xs text-muted"
-      >
-        {{ t('admin.legal.unpublished') }}
-      </span>
-    </div>
 
-    <!-- Takes the slack the rest of the page leaves, so the actions below it never fall off screen. `basis-0` is what stops it from claiming its content height first. -->
-    <div class="min-h-64 flex-1 basis-0">
-      <UTextarea
-        v-if="rawMode"
-        :key="`raw-${draftKey}`"
-        v-model="content"
-        :placeholder="t('admin.legal.placeholder')"
-        class="h-full w-full font-mono"
-        :ui="{ base: 'text-xs h-full resize-none' }"
-      />
-      <TextEditor
-        v-else
-        :key="draftKey"
-        v-model="content"
-        class="h-full"
-      />
-    </div>
-
-    <UAlert
-      v-if="hasImage"
-      color="warning"
-      variant="subtle"
-      icon="i-lucide-image-off"
-      :title="t('editor.imageWarningTitle')"
-      :description="t('editor.imageWarningDescription')"
-      class="mt-3"
-    />
-
-    <p
-      v-if="unsavedLocales.length"
-      class="mt-2 text-xs text-warning"
-    >
-      {{ t('admin.legal.unsavedIn', { languages: unsavedLocales.map(code => localeLabels[code]).join(', ') }) }}
-    </p>
-
-    <UAlert
-      v-if="errorMessage"
-      color="error"
-      variant="subtle"
-      :title="errorMessage"
-      class="mt-4"
-    />
-
-    <div class="mt-4 flex flex-wrap items-center gap-2">
-      <UButton
-        icon="i-lucide-save"
-        :loading="saving"
-        :disabled="!dirty"
-        :label="unsavedLocales.length > 1 ? t('admin.legal.saveAll', { count: unsavedLocales.length }) : t('admin.legal.save')"
-        @click="save"
-      />
-      <UButton
-        v-if="stored"
+      <UAlert
+        v-if="errorMessage"
         color="error"
-        variant="ghost"
-        icon="i-lucide-trash-2"
-        :label="t('admin.legal.unpublish')"
-        @click="unpublish"
+        variant="subtle"
+        :title="errorMessage"
       />
-      <span
-        v-if="saved"
-        class="text-sm text-success"
-      >
-        {{ t('admin.legal.saved') }}
-      </span>
-    </div>
 
-    <p class="mt-6 text-xs text-muted">
-      {{ t('admin.legal.hint') }}
-    </p>
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <p
+          v-if="unsavedLocales.length"
+          class="text-xs text-warning"
+        >
+          {{ t('admin.legal.unsavedIn', { languages: unsavedLocales.map(code => localeLabels[code]).join(', ') }) }}
+        </p>
+        <p class="flex-1 text-xs text-muted">
+          {{ t('admin.legal.hint') }}
+        </p>
+        <UButton
+          v-if="stored"
+          color="error"
+          variant="ghost"
+          size="sm"
+          icon="i-lucide-trash-2"
+          :label="t('admin.legal.unpublish')"
+          @click="pendingAction = 'unpublish'"
+        />
+      </div>
 
-    <LegalTemplateDialog
-      v-model:open="templateOpen"
-      :templates="templates"
-      :locale-labels="localeLabels"
-      :current-locale="editedLocale"
-      :suggested-durations="index?.durations ?? {}"
-      @apply="applyTemplate"
-    />
-  </div>
+      <LegalTemplateDialog
+        v-model:open="templateOpen"
+        :templates="templates"
+        :locale-labels="localeLabels"
+        :current-locale="editedLocale"
+        :suggested-durations="index?.durations ?? {}"
+        @apply="applyTemplate"
+      />
+
+      <ConfirmDialog
+        v-model:open="confirmOpen"
+        :title="pendingAction === 'unpublish' ? t('admin.legal.unpublish') : t('admin.legal.insertTemplate')"
+        :description="pendingAction === 'unpublish' ? t('admin.legal.confirmDelete') : t('admin.legal.confirmTemplate')"
+        :confirm-label="pendingAction === 'unpublish' ? t('admin.legal.unpublish') : t('admin.legal.insertTemplate')"
+        @confirm="runPending"
+      />
+    </template>
+  </UDashboardPanel>
 </template>

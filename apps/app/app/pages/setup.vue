@@ -2,6 +2,8 @@
 import { z } from 'zod'
 import type { StepperItem } from '@nuxt/ui'
 
+definePageMeta({ layout: 'auth' })
+
 const { t } = useI18n()
 const localePath = useLocalePath()
 
@@ -96,7 +98,7 @@ async function finish() {
     })
     completed.value = true
     await refreshAuthSession()
-    setTimeout(() => navigateTo(localePath('/')), 1200)
+    setTimeout(() => navigateTo(localePath('/dashboard')), 1200)
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : t('setup.errors.generic')
   } finally {
@@ -106,196 +108,194 @@ async function finish() {
 </script>
 
 <template>
-  <div class="flex flex-1 items-center justify-center p-4">
-    <UCard class="w-full max-w-2xl">
-      <template #header>
-        <h1 class="text-xl font-semibold">
-          {{ t('setup.title') }}
-        </h1>
-        <p class="text-sm text-muted">
-          {{ t('setup.subtitle') }}
-        </p>
-      </template>
+  <UCard class="w-full max-w-2xl shadow-lg">
+    <template #header>
+      <h1 class="text-xl font-semibold text-highlighted">
+        {{ t('setup.title') }}
+      </h1>
+      <p class="text-sm text-muted">
+        {{ t('setup.subtitle') }}
+      </p>
+    </template>
 
-      <div
-        v-if="completed"
-        class="flex flex-col items-center gap-3 py-8 text-center"
+    <div
+      v-if="completed"
+      class="flex flex-col items-center gap-3 py-8 text-center"
+    >
+      <UIcon
+        name="i-lucide-circle-check"
+        class="size-10 text-success"
+      />
+      <p>{{ t('setup.success') }}</p>
+    </div>
+
+    <template v-else>
+      <UStepper
+        v-model="activeStep"
+        :items="stepperItems"
+        disabled
+        class="mb-6"
+      />
+
+      <UForm
+        v-if="activeStep === 0"
+        ref="accountForm"
+        :schema="accountSchema"
+        :state="accountState"
+        class="space-y-4"
+        @submit="goNext"
       >
-        <UIcon
-          name="i-lucide-circle-check"
-          class="size-10 text-success"
-        />
-        <p>{{ t('setup.success') }}</p>
-      </div>
-
-      <template v-else>
-        <UStepper
-          v-model="activeStep"
-          :items="stepperItems"
-          disabled
-          class="mb-6"
-        />
-
-        <UForm
-          v-if="activeStep === 0"
-          ref="accountForm"
-          :schema="accountSchema"
-          :state="accountState"
-          class="space-y-4"
-          @submit="goNext"
+        <UFormField
+          :label="t('setup.account.name')"
+          name="name"
+          required
         >
-          <UFormField
-            :label="t('setup.account.name')"
-            name="name"
-            required
-          >
-            <UInput
-              v-model="accountState.name"
-              class="w-full"
-              autocomplete="name"
-            />
-          </UFormField>
-          <UFormField
-            :label="t('setup.account.email')"
-            name="email"
-            required
-          >
-            <UInput
-              v-model="accountState.email"
-              type="email"
-              class="w-full"
-              autocomplete="email"
-            />
-          </UFormField>
-          <UFormField
-            :label="t('setup.account.password')"
-            name="password"
-            required
-          >
-            <UInput
-              v-model="accountState.password"
-              type="password"
-              class="w-full"
-              autocomplete="new-password"
-            />
-          </UFormField>
-          <UFormField
-            :label="t('setup.account.passwordConfirm')"
-            name="passwordConfirm"
-            required
-          >
-            <UInput
-              v-model="accountState.passwordConfirm"
-              type="password"
-              class="w-full"
-              autocomplete="new-password"
-            />
-          </UFormField>
-        </UForm>
+          <UInput
+            v-model="accountState.name"
+            class="w-full"
+            autocomplete="name"
+          />
+        </UFormField>
+        <UFormField
+          :label="t('setup.account.email')"
+          name="email"
+          required
+        >
+          <UInput
+            v-model="accountState.email"
+            type="email"
+            class="w-full"
+            autocomplete="email"
+          />
+        </UFormField>
+        <UFormField
+          :label="t('setup.account.password')"
+          name="password"
+          required
+        >
+          <UInput
+            v-model="accountState.password"
+            type="password"
+            class="w-full"
+            autocomplete="new-password"
+          />
+        </UFormField>
+        <UFormField
+          :label="t('setup.account.passwordConfirm')"
+          name="passwordConfirm"
+          required
+        >
+          <UInput
+            v-model="accountState.passwordConfirm"
+            type="password"
+            class="w-full"
+            autocomplete="new-password"
+          />
+        </UFormField>
+      </UForm>
 
-        <UForm
+      <UForm
+        v-else
+        ref="settingsForm"
+        :schema="settingsSchema"
+        :state="settingsState"
+        class="space-y-6"
+        @submit="finish"
+      >
+        <fieldset class="space-y-4">
+          <legend class="mb-2 text-sm font-medium">
+            {{ t('setup.settings.retentionSection') }}
+          </legend>
+          <UnlimitedNumberField
+            v-model="settingsState.max_retention_days_anonymous"
+            :label="t('setup.settings.maxRetentionDaysAnonymous')"
+          />
+          <UnlimitedNumberField
+            v-model="settingsState.max_retention_days_authenticated"
+            :label="t('setup.settings.maxRetentionDaysAuthenticated')"
+          />
+        </fieldset>
+
+        <fieldset class="space-y-4">
+          <legend class="mb-2 text-sm font-medium">
+            {{ t('setup.settings.sizesSection') }}
+          </legend>
+          <UnlimitedNumberField
+            v-model="settingsState.max_text_size_bytes"
+            :label="t('setup.settings.maxTextSizeBytes')"
+          />
+          <UnlimitedNumberField
+            v-model="settingsState.max_upload_size_bytes"
+            :label="t('setup.settings.maxUploadSizeBytes')"
+          />
+          <UnlimitedNumberField
+            v-model="settingsState.max_total_storage_bytes"
+            :label="t('setup.settings.maxTotalStorageBytes')"
+          />
+        </fieldset>
+
+        <fieldset class="space-y-4">
+          <legend class="mb-2 text-sm font-medium">
+            {{ t('setup.settings.rateLimitsSection') }}
+          </legend>
+          <UnlimitedNumberField
+            v-model="settingsState.rate_limit_anonymous_creates_per_period"
+            :label="t('setup.settings.rateLimitAnonymousCreatesPerPeriod')"
+          />
+          <UnlimitedNumberField
+            v-model="settingsState.rate_limit_authenticated_creates_per_period"
+            :label="t('setup.settings.rateLimitAuthenticatedCreatesPerPeriod')"
+          />
+          <UnlimitedNumberField
+            v-model="settingsState.rate_limit_uploads_per_period"
+            :label="t('setup.settings.rateLimitUploadsPerPeriod')"
+          />
+          <UFormField
+            :label="t('setup.settings.rateLimitPeriodMinutes')"
+            name="rate_limit_period_minutes"
+            required
+          >
+            <UInput
+              v-model.number="settingsState.rate_limit_period_minutes"
+              type="number"
+              min="1"
+              class="w-full"
+            />
+          </UFormField>
+        </fieldset>
+      </UForm>
+
+      <UAlert
+        v-if="errorMessage"
+        color="error"
+        variant="subtle"
+        :title="errorMessage"
+        class="my-4"
+      />
+
+      <div class="mt-6 flex justify-between">
+        <UButton
+          v-if="activeStep > 0"
+          variant="ghost"
+          :label="t('setup.actions.back')"
+          icon="i-lucide-arrow-left"
+          @click="goBack"
+        />
+        <div v-else />
+
+        <UButton
+          v-if="!isLastStep"
+          trailing-icon="i-lucide-arrow-right"
+          :label="t('setup.actions.next')"
+          @click="goNext"
+        />
+        <UButton
           v-else
-          ref="settingsForm"
-          :schema="settingsSchema"
-          :state="settingsState"
-          class="space-y-6"
-          @submit="finish"
-        >
-          <fieldset class="space-y-4">
-            <legend class="mb-2 text-sm font-medium">
-              {{ t('setup.settings.retentionSection') }}
-            </legend>
-            <UnlimitedNumberField
-              v-model="settingsState.max_retention_days_anonymous"
-              :label="t('setup.settings.maxRetentionDaysAnonymous')"
-            />
-            <UnlimitedNumberField
-              v-model="settingsState.max_retention_days_authenticated"
-              :label="t('setup.settings.maxRetentionDaysAuthenticated')"
-            />
-          </fieldset>
-
-          <fieldset class="space-y-4">
-            <legend class="mb-2 text-sm font-medium">
-              {{ t('setup.settings.sizesSection') }}
-            </legend>
-            <UnlimitedNumberField
-              v-model="settingsState.max_text_size_bytes"
-              :label="t('setup.settings.maxTextSizeBytes')"
-            />
-            <UnlimitedNumberField
-              v-model="settingsState.max_upload_size_bytes"
-              :label="t('setup.settings.maxUploadSizeBytes')"
-            />
-            <UnlimitedNumberField
-              v-model="settingsState.max_total_storage_bytes"
-              :label="t('setup.settings.maxTotalStorageBytes')"
-            />
-          </fieldset>
-
-          <fieldset class="space-y-4">
-            <legend class="mb-2 text-sm font-medium">
-              {{ t('setup.settings.rateLimitsSection') }}
-            </legend>
-            <UnlimitedNumberField
-              v-model="settingsState.rate_limit_anonymous_creates_per_period"
-              :label="t('setup.settings.rateLimitAnonymousCreatesPerPeriod')"
-            />
-            <UnlimitedNumberField
-              v-model="settingsState.rate_limit_authenticated_creates_per_period"
-              :label="t('setup.settings.rateLimitAuthenticatedCreatesPerPeriod')"
-            />
-            <UnlimitedNumberField
-              v-model="settingsState.rate_limit_uploads_per_period"
-              :label="t('setup.settings.rateLimitUploadsPerPeriod')"
-            />
-            <UFormField
-              :label="t('setup.settings.rateLimitPeriodMinutes')"
-              name="rate_limit_period_minutes"
-              required
-            >
-              <UInput
-                v-model.number="settingsState.rate_limit_period_minutes"
-                type="number"
-                min="1"
-                class="w-full"
-              />
-            </UFormField>
-          </fieldset>
-        </UForm>
-
-        <UAlert
-          v-if="errorMessage"
-          color="error"
-          variant="subtle"
-          :title="errorMessage"
-          class="my-4"
+          :label="t('setup.actions.finish')"
+          :loading="submitting"
+          @click="finish"
         />
-
-        <div class="mt-6 flex justify-between">
-          <UButton
-            v-if="activeStep > 0"
-            variant="ghost"
-            :label="t('setup.actions.back')"
-            icon="i-lucide-arrow-left"
-            @click="goBack"
-          />
-          <div v-else />
-
-          <UButton
-            v-if="!isLastStep"
-            trailing-icon="i-lucide-arrow-right"
-            :label="t('setup.actions.next')"
-            @click="goNext"
-          />
-          <UButton
-            v-else
-            :label="t('setup.actions.finish')"
-            :loading="submitting"
-            @click="finish"
-          />
-        </div>
-      </template>
-    </UCard>
-  </div>
+      </div>
+    </template>
+  </UCard>
 </template>
