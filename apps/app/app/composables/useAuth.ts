@@ -23,3 +23,7 @@ export async function refreshAuthSession() {
 export async function ensureAuthSessionLoaded() {
   await callOnce('auth-session-init', refreshAuthSession)
 }
+
+export function isAdminRole(role: string | undefined) {
+  return role === 'admin' || role === 'super_admin'
+}

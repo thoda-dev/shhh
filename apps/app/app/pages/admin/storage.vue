@@ -38,14 +38,9 @@ interface Bar {
   color: 'primary' | 'warning' | 'error' | 'neutral'
 }
 
-const { t, locale } = useI18n()
-const localePath = useLocalePath()
+definePageMeta({ layout: 'dashboard', middleware: 'auth', role: 'super_admin' })
 
-await ensureAuthSessionLoaded()
-const user = useAuthUser()
-if (user.value?.role !== 'super_admin') {
-  await navigateTo(localePath('/'))
-}
+const { t, locale } = useI18n()
 
 const { data: report, refresh, status, error } = await useFetch<StorageReport>('/api/admin/storage')
 
@@ -177,271 +172,274 @@ function formatDate(value: string) {
 </script>
 
 <template>
-  <div class="mx-auto max-w-5xl p-4">
-    <div class="mb-2 flex items-center justify-between gap-3">
-      <h1 class="text-xl font-semibold">
-        {{ t('admin.storage.title') }}
-      </h1>
-      <BackButton />
-    </div>
-    <AdminNav />
-
-    <p class="mb-6 text-sm text-muted">
-      {{ t('admin.storage.description') }}
-    </p>
-
-    <div
-      v-if="status === 'pending' && !report"
-      class="flex justify-center py-12"
-    >
-      <UIcon
-        name="i-lucide-loader-circle"
-        class="size-6 animate-spin"
-      />
-    </div>
-
-    <div
-      v-else-if="report"
-      class="space-y-6"
-    >
-      <UCard>
-        <div class="mb-4 flex items-center justify-between gap-3">
-          <h2 class="text-sm font-medium">
-            {{ t('admin.storage.quotasSection') }}
-          </h2>
+  <UDashboardPanel id="admin-storage">
+    <template #header>
+      <UDashboardNavbar :title="t('admin.storage.title')">
+        <template #leading>
+          <UDashboardSidebarCollapse />
+        </template>
+        <template #right>
           <UButton
+            color="neutral"
             variant="ghost"
-            size="xs"
             icon="i-lucide-refresh-cw"
             :label="t('admin.storage.refresh')"
             :loading="refreshing"
+            :ui="{ label: 'hidden sm:inline' }"
             @click="reload"
           />
-        </div>
-        <div class="space-y-5">
-          <div
-            v-for="bar in quotaBars"
-            :key="bar.key"
-            class="space-y-1.5"
-          >
-            <div class="flex items-baseline justify-between gap-3 text-sm">
-              <span class="min-w-0">{{ bar.label }}</span>
-              <span class="shrink-0 tabular-nums text-muted">{{ bar.value }}<span v-if="bar.limit"> / {{ bar.limit }}</span></span>
-            </div>
-            <UProgress
-              v-if="bar.percent !== null"
-              :model-value="bar.percent"
-              :max="100"
-              :color="bar.color"
-              size="sm"
-            />
-            <UBadge
-              v-else
-              variant="subtle"
-              color="neutral"
-              size="sm"
-            >
-              {{ t('admin.storage.noQuota') }}
-            </UBadge>
-            <p
-              v-if="bar.percent !== null"
-              class="text-xs text-muted"
-            >
-              {{ t('admin.storage.percentUsed', { percent: bar.percent.toFixed(1) }) }}
-            </p>
-          </div>
-        </div>
-      </UCard>
+        </template>
+      </UDashboardNavbar>
+    </template>
 
-      <UCard>
-        <h2 class="mb-1 text-sm font-medium">
-          {{ t('admin.storage.compositionSection') }}
-        </h2>
-        <p class="mb-4 text-xs text-muted">
-          {{ t('admin.storage.compositionHint', { total: formatBytes(report.bytes.total) }) }}
-        </p>
-        <div class="space-y-4">
-          <div
-            v-for="bar in compositionBars"
-            :key="bar.key"
-            class="space-y-1.5"
-          >
-            <div class="flex items-baseline justify-between gap-3 text-sm">
-              <span class="min-w-0">{{ bar.label }} <span class="text-xs text-muted">· {{ bar.hint }}</span></span>
-              <span class="shrink-0 tabular-nums text-muted">{{ bar.value }}</span>
-            </div>
-            <UProgress
-              :model-value="bar.percent ?? 0"
-              :max="100"
-              :color="bar.color"
-              size="sm"
-            />
-          </div>
-        </div>
-      </UCard>
+    <template #body>
+      <p class="text-sm text-muted">
+        {{ t('admin.storage.description') }}
+      </p>
 
-      <UCard v-if="reclaimableBar">
-        <div class="mb-1 flex items-center justify-between gap-3">
-          <h2 class="text-sm font-medium">
-            {{ t('admin.storage.reclaimableSection') }}
+      <div
+        v-if="status === 'pending' && !report"
+        class="flex justify-center py-12"
+      >
+        <UIcon
+          name="i-lucide-loader-circle"
+          class="size-6 animate-spin"
+        />
+      </div>
+
+      <div
+        v-else-if="report"
+        class="grid gap-4 sm:gap-6 lg:grid-cols-2"
+      >
+        <UCard>
+          <h2 class="mb-4 text-sm font-medium text-highlighted">
+            {{ t('admin.storage.quotasSection') }}
           </h2>
-          <UButton
+          <div class="space-y-5">
+            <div
+              v-for="bar in quotaBars"
+              :key="bar.key"
+              class="space-y-1.5"
+            >
+              <div class="flex items-baseline justify-between gap-3 text-sm">
+                <span class="min-w-0">{{ bar.label }}</span>
+                <span class="shrink-0 tabular-nums text-muted">{{ bar.value }}<span v-if="bar.limit"> / {{ bar.limit }}</span></span>
+              </div>
+              <UProgress
+                v-if="bar.percent !== null"
+                :model-value="bar.percent"
+                :max="100"
+                :color="bar.color"
+                size="sm"
+              />
+              <UBadge
+                v-else
+                variant="subtle"
+                color="neutral"
+                size="sm"
+              >
+                {{ t('admin.storage.noQuota') }}
+              </UBadge>
+              <p
+                v-if="bar.percent !== null"
+                class="text-xs text-muted"
+              >
+                {{ t('admin.storage.percentUsed', { percent: bar.percent.toFixed(1) }) }}
+              </p>
+            </div>
+          </div>
+        </UCard>
+
+        <UCard>
+          <h2 class="mb-1 text-sm font-medium text-highlighted">
+            {{ t('admin.storage.compositionSection') }}
+          </h2>
+          <p class="mb-4 text-xs text-muted">
+            {{ t('admin.storage.compositionHint', { total: formatBytes(report.bytes.total) }) }}
+          </p>
+          <div class="space-y-4">
+            <div
+              v-for="bar in compositionBars"
+              :key="bar.key"
+              class="space-y-1.5"
+            >
+              <div class="flex items-baseline justify-between gap-3 text-sm">
+                <span class="min-w-0">{{ bar.label }} <span class="text-xs text-muted">· {{ bar.hint }}</span></span>
+                <span class="shrink-0 tabular-nums text-muted">{{ bar.value }}</span>
+              </div>
+              <UProgress
+                :model-value="bar.percent ?? 0"
+                :max="100"
+                :color="bar.color"
+                size="sm"
+              />
+            </div>
+          </div>
+        </UCard>
+
+        <UCard v-if="reclaimableBar">
+          <div class="mb-1 flex items-center justify-between gap-3">
+            <h2 class="text-sm font-medium text-highlighted">
+              {{ t('admin.storage.reclaimableSection') }}
+            </h2>
+            <UButton
+              color="error"
+              variant="subtle"
+              size="xs"
+              icon="i-lucide-trash-2"
+              :label="t('admin.storage.purge')"
+              :disabled="report.pastes.reclaimable === 0"
+              @click="purgeOpen = true"
+            />
+          </div>
+          <p class="mb-4 text-xs text-muted">
+            {{ t('admin.storage.reclaimableHint') }}
+          </p>
+          <UAlert
+            v-if="purgeError"
             color="error"
             variant="subtle"
-            size="xs"
-            icon="i-lucide-trash-2"
-            :label="t('admin.storage.purge')"
-            :disabled="report.pastes.reclaimable === 0"
-            @click="purgeOpen = true"
+            :title="purgeError"
+            class="mb-4"
           />
-        </div>
-        <p class="mb-4 text-xs text-muted">
-          {{ t('admin.storage.reclaimableHint') }}
-        </p>
-        <UAlert
-          v-if="purgeError"
-          color="error"
-          variant="subtle"
-          :title="purgeError"
-          class="mb-4"
-        />
-        <UAlert
-          v-else-if="purgedCount !== null"
-          color="success"
-          variant="subtle"
-          :title="t('admin.storage.purged', { count: purgedCount })"
-          class="mb-4"
-        />
-        <div class="space-y-1.5">
-          <div class="flex items-baseline justify-between gap-3 text-sm">
-            <span class="min-w-0">{{ reclaimableBar.label }} <span class="text-xs text-muted">· {{ reclaimableBar.hint }}</span></span>
-            <span class="shrink-0 tabular-nums text-muted">{{ reclaimableBar.value }}</span>
-          </div>
-          <UProgress
-            :model-value="reclaimableBar.percent ?? 0"
-            :max="100"
-            :color="reclaimableBar.color"
-            size="sm"
+          <UAlert
+            v-else-if="purgedCount !== null"
+            color="success"
+            variant="subtle"
+            :title="t('admin.storage.purged', { count: purgedCount })"
+            class="mb-4"
           />
-        </div>
-      </UCard>
-
-      <UCard>
-        <h2 class="mb-1 text-sm font-medium">
-          {{ t('admin.storage.ceilingsSection') }}
-        </h2>
-        <p class="mb-4 text-xs text-muted">
-          {{ t('admin.storage.ceilingsHint') }}
-        </p>
-        <div class="space-y-5">
-          <div
-            v-for="bar in ceilingBars"
-            :key="bar.key"
-            class="space-y-1.5"
-          >
+          <div class="space-y-1.5">
             <div class="flex items-baseline justify-between gap-3 text-sm">
-              <span class="min-w-0">{{ bar.label }}</span>
-              <span class="shrink-0 tabular-nums text-muted">{{ bar.value }}<span v-if="bar.limit"> / {{ bar.limit }}</span></span>
+              <span class="min-w-0">{{ reclaimableBar.label }} <span class="text-xs text-muted">· {{ reclaimableBar.hint }}</span></span>
+              <span class="shrink-0 tabular-nums text-muted">{{ reclaimableBar.value }}</span>
             </div>
             <UProgress
-              v-if="bar.percent !== null"
-              :model-value="bar.percent"
+              :model-value="reclaimableBar.percent ?? 0"
               :max="100"
-              :color="bar.color"
+              :color="reclaimableBar.color"
               size="sm"
             />
-            <UBadge
-              v-else
-              variant="subtle"
-              color="neutral"
-              size="sm"
+          </div>
+        </UCard>
+
+        <UCard>
+          <h2 class="mb-1 text-sm font-medium text-highlighted">
+            {{ t('admin.storage.ceilingsSection') }}
+          </h2>
+          <p class="mb-4 text-xs text-muted">
+            {{ t('admin.storage.ceilingsHint') }}
+          </p>
+          <div class="space-y-5">
+            <div
+              v-for="bar in ceilingBars"
+              :key="bar.key"
+              class="space-y-1.5"
             >
-              {{ t('admin.storage.noQuota') }}
-            </UBadge>
-          </div>
-        </div>
-      </UCard>
-
-      <UCard>
-        <h2 class="mb-4 text-sm font-medium">
-          {{ t('admin.storage.topOwnersSection') }}
-        </h2>
-        <p
-          v-if="!ownerBars.length"
-          class="text-sm text-muted"
-        >
-          {{ t('admin.storage.topOwnersEmpty') }}
-        </p>
-        <div
-          v-else
-          class="space-y-4"
-        >
-          <div
-            v-for="bar in ownerBars"
-            :key="bar.key"
-            class="space-y-1.5"
-          >
-            <div class="flex items-baseline justify-between gap-3 text-sm">
-              <span class="truncate">{{ bar.label }} <span class="text-xs text-muted">· {{ bar.hint }}</span></span>
-              <span class="shrink-0 tabular-nums text-muted">{{ bar.value }}</span>
+              <div class="flex items-baseline justify-between gap-3 text-sm">
+                <span class="min-w-0">{{ bar.label }}</span>
+                <span class="shrink-0 tabular-nums text-muted">{{ bar.value }}<span v-if="bar.limit"> / {{ bar.limit }}</span></span>
+              </div>
+              <UProgress
+                v-if="bar.percent !== null"
+                :model-value="bar.percent"
+                :max="100"
+                :color="bar.color"
+                size="sm"
+              />
+              <UBadge
+                v-else
+                variant="subtle"
+                color="neutral"
+                size="sm"
+              >
+                {{ t('admin.storage.noQuota') }}
+              </UBadge>
             </div>
-            <UProgress
-              :model-value="bar.percent ?? 0"
-              :max="100"
-              :color="bar.color"
-              size="sm"
-            />
           </div>
-        </div>
-      </UCard>
+        </UCard>
 
-      <UCard>
-        <h2 class="mb-1 text-sm font-medium">
-          {{ t('admin.storage.databaseSection') }}
-        </h2>
-        <p class="mb-4 text-xs text-muted">
-          {{ t('admin.storage.databaseHint') }}
+        <UCard>
+          <h2 class="mb-4 text-sm font-medium text-highlighted">
+            {{ t('admin.storage.topOwnersSection') }}
+          </h2>
+          <p
+            v-if="!ownerBars.length"
+            class="text-sm text-muted"
+          >
+            {{ t('admin.storage.topOwnersEmpty') }}
+          </p>
+          <div
+            v-else
+            class="space-y-4"
+          >
+            <div
+              v-for="bar in ownerBars"
+              :key="bar.key"
+              class="space-y-1.5"
+            >
+              <div class="flex items-baseline justify-between gap-3 text-sm">
+                <span class="truncate">{{ bar.label }} <span class="text-xs text-muted">· {{ bar.hint }}</span></span>
+                <span class="shrink-0 tabular-nums text-muted">{{ bar.value }}</span>
+              </div>
+              <UProgress
+                :model-value="bar.percent ?? 0"
+                :max="100"
+                :color="bar.color"
+                size="sm"
+              />
+            </div>
+          </div>
+        </UCard>
+
+        <UCard>
+          <h2 class="mb-1 text-sm font-medium text-highlighted">
+            {{ t('admin.storage.databaseSection') }}
+          </h2>
+          <p class="mb-4 text-xs text-muted">
+            {{ t('admin.storage.databaseHint') }}
+          </p>
+          <div
+            v-if="report.database"
+            class="space-y-2 text-sm"
+          >
+            <div class="flex items-baseline justify-between gap-3">
+              <span class="min-w-0">{{ t('admin.storage.databaseTotal') }}</span>
+              <span class="shrink-0 tabular-nums text-muted">{{ formatBytes(report.database.totalBytes) }}</span>
+            </div>
+            <div class="flex items-baseline justify-between gap-3">
+              <span class="min-w-0">{{ t('admin.storage.databasePastesTable') }}</span>
+              <span class="shrink-0 tabular-nums text-muted">{{ formatBytes(report.database.pastesTableBytes) }}</span>
+            </div>
+          </div>
+          <p
+            v-else
+            class="text-sm text-muted"
+          >
+            {{ t('admin.storage.databaseUnavailable') }}
+          </p>
+        </UCard>
+
+        <p class="text-center text-xs text-muted lg:col-span-2">
+          {{ t('admin.storage.generatedAt', { date: formatDate(report.generatedAt) }) }}
         </p>
-        <div
-          v-if="report.database"
-          class="space-y-2 text-sm"
-        >
-          <div class="flex items-baseline justify-between gap-3">
-            <span class="min-w-0">{{ t('admin.storage.databaseTotal') }}</span>
-            <span class="shrink-0 tabular-nums text-muted">{{ formatBytes(report.database.totalBytes) }}</span>
-          </div>
-          <div class="flex items-baseline justify-between gap-3">
-            <span class="min-w-0">{{ t('admin.storage.databasePastesTable') }}</span>
-            <span class="shrink-0 tabular-nums text-muted">{{ formatBytes(report.database.pastesTableBytes) }}</span>
-          </div>
-        </div>
-        <p
-          v-else
-          class="text-sm text-muted"
-        >
-          {{ t('admin.storage.databaseUnavailable') }}
-        </p>
-      </UCard>
+      </div>
 
-      <p class="text-center text-xs text-muted">
-        {{ t('admin.storage.generatedAt', { date: formatDate(report.generatedAt) }) }}
-      </p>
-    </div>
+      <UAlert
+        v-else
+        color="error"
+        variant="subtle"
+        :title="errorMessage || t('admin.storage.errors.generic')"
+      />
 
-    <UAlert
-      v-else
-      color="error"
-      variant="subtle"
-      :title="errorMessage || t('admin.storage.errors.generic')"
-    />
-
-    <ConfirmDialog
-      v-model:open="purgeOpen"
-      :title="t('admin.storage.purgeConfirmTitle')"
-      :description="t('admin.storage.purgeConfirmDescription', { count: report?.pastes.reclaimable ?? 0, size: formatBytes(report?.bytes.reclaimable ?? 0) })"
-      :confirm-label="t('admin.storage.purge')"
-      :loading="purging"
-      @confirm="purge"
-    />
-  </div>
+      <ConfirmDialog
+        v-model:open="purgeOpen"
+        :title="t('admin.storage.purgeConfirmTitle')"
+        :description="t('admin.storage.purgeConfirmDescription', { count: report?.pastes.reclaimable ?? 0, size: formatBytes(report?.bytes.reclaimable ?? 0) })"
+        :confirm-label="t('admin.storage.purge')"
+        :loading="purging"
+        @confirm="purge"
+      />
+    </template>
+  </UDashboardPanel>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { z } from 'zod'
-import type { FormSubmitEvent } from '@nuxt/ui'
+import type { FormSubmitEvent, TableColumn } from '@nuxt/ui'
 
 interface BannedIp {
   id: string
@@ -10,18 +10,12 @@ interface BannedIp {
   expiresAt: string | null
 }
 
-const ADMIN_ROLES = new Set(['admin', 'super_admin'])
+definePageMeta({ layout: 'dashboard', middleware: 'auth', role: 'admin' })
 
 const { t, locale } = useI18n()
-const localePath = useLocalePath()
+const toast = useToast()
 
-await ensureAuthSessionLoaded()
-const user = useAuthUser()
-if (!user.value || !ADMIN_ROLES.has(user.value.role)) {
-  await navigateTo(localePath('/'))
-}
-
-const { data: bannedIps, refresh, status } = await useFetch<BannedIp[]>('/api/admin/banned-ips')
+const { data: bannedIps, refresh, status } = await useFetch<BannedIp[]>('/api/admin/banned-ips', { default: () => [] })
 
 const schema = z.object({
   ip: z.union([z.ipv4(), z.ipv6()]),
@@ -31,11 +25,14 @@ const state = reactive({ ip: '', reason: '' })
 const expiresInDays = ref<number | null>(null)
 
 const adding = ref(false)
-const errorMessage = ref('')
+
+function showError(error: unknown) {
+  const { statusMessage, message } = fetchErrorMessages(error)
+  toast.add({ color: 'error', title: statusMessage || message || t('admin.bannedIps.errors.generic') })
+}
 
 async function add(event: FormSubmitEvent<typeof state>) {
   adding.value = true
-  errorMessage.value = ''
   try {
     const expiresAt = expiresInDays.value ? new Date(Date.now() + expiresInDays.value * 24 * 60 * 60 * 1000).toISOString() : null
     await $fetch('/api/admin/banned-ips', {
@@ -47,22 +44,32 @@ async function add(event: FormSubmitEvent<typeof state>) {
     expiresInDays.value = null
     await refresh()
   } catch (error) {
-    const { statusMessage, message } = fetchErrorMessages(error)
-    errorMessage.value = statusMessage || message || t('admin.bannedIps.errors.generic')
+    showError(error)
   } finally {
     adding.value = false
   }
 }
 
-const removingId = ref<string | null>(null)
-async function remove(id: string) {
-  if (!confirm(t('admin.bannedIps.confirmUnban'))) return
-  removingId.value = id
+const pendingRemove = ref<BannedIp | null>(null)
+const confirmOpen = computed({
+  get: () => pendingRemove.value !== null,
+  set: (value: boolean) => {
+    if (!value) pendingRemove.value = null
+  }
+})
+const removing = ref(false)
+
+async function remove() {
+  if (!pendingRemove.value) return
+  removing.value = true
   try {
-    await $fetch(`/api/admin/banned-ips/${id}`, { method: 'DELETE' })
+    await $fetch(`/api/admin/banned-ips/${pendingRemove.value.id}`, { method: 'DELETE' })
     await refresh()
+  } catch (error) {
+    showError(error)
   } finally {
-    removingId.value = null
+    removing.value = false
+    pendingRemove.value = null
   }
 }
 
@@ -72,143 +79,140 @@ function formatDate(value: string) {
 function isExpired(ip: BannedIp) {
   return ip.expiresAt !== null && new Date(ip.expiresAt).getTime() <= Date.now()
 }
+
+const columns = computed<TableColumn<BannedIp>[]>(() => [
+  { accessorKey: 'ip', header: t('admin.bannedIps.ipLabel') },
+  { id: 'status', header: t('admin.bannedIps.columns.status') },
+  { accessorKey: 'reason', header: t('admin.bannedIps.reasonLabel'), meta: { class: { th: 'hidden sm:table-cell', td: 'hidden sm:table-cell' } } },
+  { accessorKey: 'bannedAt', header: t('admin.bannedIps.columns.banned'), meta: { class: { th: 'hidden md:table-cell', td: 'hidden md:table-cell' } } },
+  { id: 'actions', meta: { class: { td: 'text-right' } } }
+])
 </script>
 
 <template>
-  <div class="mx-auto max-w-5xl p-4">
-    <div class="mb-2 flex items-center justify-between gap-3">
-      <h1 class="text-xl font-semibold">
-        {{ t('admin.bannedIps.title') }}
-      </h1>
-      <BackButton />
-    </div>
-    <AdminNav />
+  <UDashboardPanel id="admin-banned-ips">
+    <template #header>
+      <UDashboardNavbar :title="t('admin.bannedIps.title')">
+        <template #leading>
+          <UDashboardSidebarCollapse />
+        </template>
+      </UDashboardNavbar>
+    </template>
 
-    <p class="mb-4 text-sm text-muted">
-      {{ t('admin.bannedIps.description') }}
-    </p>
+    <template #body>
+      <p class="text-sm text-muted">
+        {{ t('admin.bannedIps.description') }}
+      </p>
 
-    <UForm
-      :schema="schema"
-      :state="state"
-      class="mb-6 max-w-sm space-y-3"
-      @submit="add"
-    >
-      <UFormField
-        :label="t('admin.bannedIps.ipLabel')"
-        name="ip"
-      >
-        <UInput
-          v-model="state.ip"
-          :placeholder="t('admin.bannedIps.ipPlaceholder')"
-          class="w-full"
-        />
-      </UFormField>
-      <UFormField
-        :label="t('admin.bannedIps.reasonLabel')"
-        name="reason"
-      >
-        <UInput
-          v-model="state.reason"
-          :placeholder="t('admin.bannedIps.reasonPlaceholder')"
-          class="w-full"
-        />
-      </UFormField>
-      <UFormField :label="t('admin.bannedIps.expiresInDays')">
-        <UInput
-          v-model.number="expiresInDays"
-          type="number"
-          min="1"
-          :placeholder="t('admin.bannedIps.permanent')"
-          class="w-full"
-        />
-      </UFormField>
-      <UButton
-        type="submit"
-        icon="i-lucide-ban"
-        :loading="adding"
-        :label="t('admin.bannedIps.add')"
-      />
-    </UForm>
-
-    <UAlert
-      v-if="errorMessage"
-      color="error"
-      variant="subtle"
-      :title="errorMessage"
-      class="mb-4"
-    />
-
-    <div
-      v-if="status === 'pending'"
-      class="flex justify-center py-12"
-    >
-      <UIcon
-        name="i-lucide-loader-circle"
-        class="size-6 animate-spin"
-      />
-    </div>
-
-    <div
-      v-else-if="!bannedIps?.length"
-      class="py-12 text-center text-muted"
-    >
-      {{ t('admin.bannedIps.empty') }}
-    </div>
-
-    <div
-      v-else
-      class="space-y-2"
-    >
-      <UCard
-        v-for="entry in bannedIps"
-        :key="entry.id"
-      >
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <div class="flex flex-wrap items-center gap-2">
-              <p class="font-mono text-sm break-all">
-                {{ entry.ip }}
-              </p>
-              <UBadge
-                v-if="isExpired(entry)"
-                variant="subtle"
-                color="neutral"
-                size="sm"
-              >
-                {{ t('admin.bannedIps.statusExpired') }}
-              </UBadge>
-              <UBadge
-                v-else-if="entry.expiresAt === null"
-                variant="subtle"
-                color="error"
-                size="sm"
-              >
-                {{ t('admin.bannedIps.permanent') }}
-              </UBadge>
-              <UBadge
-                v-else
-                variant="subtle"
-                color="warning"
-                size="sm"
-              >
-                {{ t('admin.bannedIps.expiresAt', { date: formatDate(entry.expiresAt) }) }}
-              </UBadge>
-            </div>
-            <p class="text-xs break-words text-muted">
-              {{ entry.reason }} · {{ t('admin.bannedIps.bannedAt', { date: formatDate(entry.bannedAt) }) }}
-            </p>
-          </div>
+      <UPageCard variant="subtle">
+        <UForm
+          :schema="schema"
+          :state="state"
+          class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1.5fr_10rem_auto] lg:items-end"
+          @submit="add"
+        >
+          <UFormField
+            :label="t('admin.bannedIps.ipLabel')"
+            name="ip"
+          >
+            <UInput
+              v-model="state.ip"
+              :placeholder="t('admin.bannedIps.ipPlaceholder')"
+              class="w-full font-mono"
+            />
+          </UFormField>
+          <UFormField
+            :label="t('admin.bannedIps.reasonLabel')"
+            name="reason"
+          >
+            <UInput
+              v-model="state.reason"
+              :placeholder="t('admin.bannedIps.reasonPlaceholder')"
+              class="w-full"
+            />
+          </UFormField>
+          <UFormField :label="t('admin.bannedIps.expiresInDays')">
+            <UInput
+              v-model.number="expiresInDays"
+              type="number"
+              min="1"
+              :placeholder="t('admin.bannedIps.permanent')"
+              class="w-full"
+            />
+          </UFormField>
           <UButton
+            type="submit"
             color="error"
-            variant="ghost"
-            icon="i-lucide-trash-2"
-            class="shrink-0"
-            :loading="removingId === entry.id"
-            @click="remove(entry.id)"
+            icon="i-lucide-ban"
+            class="justify-center"
+            :loading="adding"
+            :label="t('admin.bannedIps.add')"
           />
-        </div>
-      </UCard>
-    </div>
-  </div>
+        </UForm>
+      </UPageCard>
+
+      <UTable
+        :data="bannedIps"
+        :columns="columns"
+        :loading="status === 'pending'"
+        :empty="t('admin.bannedIps.empty')"
+        class="shrink-0 rounded-lg border border-default"
+        :ui="{ thead: 'bg-elevated/50', th: 'py-2', td: 'py-3' }"
+      >
+        <template #ip-cell="{ row }">
+          <span class="font-mono break-all text-highlighted">{{ row.original.ip }}</span>
+        </template>
+        <template #status-cell="{ row }">
+          <UBadge
+            v-if="isExpired(row.original)"
+            variant="subtle"
+            color="neutral"
+            size="sm"
+          >
+            {{ t('admin.bannedIps.statusExpired') }}
+          </UBadge>
+          <UBadge
+            v-else-if="row.original.expiresAt === null"
+            variant="subtle"
+            color="error"
+            size="sm"
+          >
+            {{ t('admin.bannedIps.permanent') }}
+          </UBadge>
+          <UBadge
+            v-else
+            variant="subtle"
+            color="warning"
+            size="sm"
+          >
+            {{ t('admin.bannedIps.expiresAt', { date: formatDate(row.original.expiresAt) }) }}
+          </UBadge>
+        </template>
+        <template #reason-cell="{ row }">
+          <span class="text-muted">{{ row.original.reason }}</span>
+        </template>
+        <template #bannedAt-cell="{ row }">
+          <span class="text-muted">{{ formatDate(row.original.bannedAt) }}</span>
+        </template>
+        <template #actions-cell="{ row }">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            icon="i-lucide-undo-2"
+            :aria-label="t('admin.bannedIps.unban')"
+            @click="pendingRemove = row.original"
+          />
+        </template>
+      </UTable>
+
+      <ConfirmDialog
+        v-model:open="confirmOpen"
+        :title="t('admin.bannedIps.unban')"
+        :description="t('admin.bannedIps.confirmUnban')"
+        :confirm-label="t('admin.bannedIps.unban')"
+        :loading="removing"
+        @confirm="remove"
+      />
+    </template>
+  </UDashboardPanel>
 </template>

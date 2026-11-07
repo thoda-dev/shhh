@@ -14,5 +14,5 @@ allowBuilds:
 minimumReleaseAge: 1440
 
 overrides:
-  '@nuxt/cli': alpha
+  '@nuxt/cli': ^4.0.3
   h3: 1.15.11

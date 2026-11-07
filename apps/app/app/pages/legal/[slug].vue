@@ -33,10 +33,11 @@ const updatedAt = computed(() =>
 </script>
 
 <template>
-  <div class="mx-auto max-w-2xl p-4 pb-16">
-    <BackButton
-      size="sm"
-      class="mb-6"
+  <UContainer class="max-w-3xl py-10 sm:py-16">
+    <UPageHeader
+      :title="t(`legal.documents.${slug}`)"
+      :description="t('legal.updatedAt', { date: updatedAt })"
+      class="mb-8"
     />
 
     <UAlert
@@ -49,9 +50,5 @@ const updatedAt = computed(() =>
     />
 
     <RichText :value="data!.document" />
-
-    <p class="mt-10 text-xs text-muted">
-      {{ t('legal.updatedAt', { date: updatedAt }) }}
-    </p>
-  </div>
+  </UContainer>
 </template>

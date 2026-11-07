@@ -1,3 +1,8 @@
+import { readFileSync } from 'node:fs'
+
+// The root manifest is the one `scripts/release.mjs` bumps, and the Docker build copies it: read at build time, the badge follows every release on its own.
+const { version } = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')) as { version: string }
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
 
@@ -23,6 +28,12 @@ export default defineNuxtConfig({
 
   colorMode: {
     storageKey: 'shhh_color_mode'
+  },
+
+  runtimeConfig: {
+    public: {
+      appVersion: version
+    }
   },
 
   // Defence in depth for a design where the browser holds the only decryption key: an XSS here does

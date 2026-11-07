@@ -143,7 +143,9 @@
       "missingKeyTitle": "Clé de déchiffrement manquante",
       "missingKeyDescription": "Le lien est incomplet — la partie après # est nécessaire pour déchiffrer ce paste.",
       "decryptFailed": "Impossible de déchiffrer ce paste. Le mot de passe est peut-être incorrect, ou le lien est invalide."
-    }
+    },
+    "title": "Quelqu'un vous a partagé un secret",
+    "subtitle": "Il est déchiffré dans ce navigateur, avec la clé contenue dans le lien."
   },
   "login": {
     "title": "Connexion",
@@ -167,21 +169,47 @@
         "invalidCode": "Code invalide."
       }
     },
-    "noAccount": "Pas encore de compte ? Créer un compte"
+    "subtitle": "Connectez-vous pour gérer vos pastes.",
+    "noAccountQuestion": "Pas encore de compte ?"
   },
   "dashboard": {
     "title": "Vos pastes",
-    "backToCreate": "Nouveau paste",
     "empty": "Vous n'avez créé aucun paste pour l'instant.",
     "passwordProtected": "Mot de passe",
-    "statusActive": "Actif",
-    "statusExpired": "Expiré",
-    "statusExhausted": "Épuisé",
-    "created": "Créé le {date}",
-    "expires": "Expire le {date}",
-    "reads": "{count}/{max} lectures",
-    "readsUnlimited": "{count} lectures",
-    "confirmDelete": "Supprimer définitivement ce paste ?"
+    "confirmDelete": "Le lien cesse de fonctionner immédiatement. Cette action est irréversible.",
+    "new": "Nouveau paste",
+    "stats": {
+      "active": "Actifs",
+      "reads": "Lectures",
+      "expiringSoon": "Expirent sous 24 h",
+      "ended": "Terminés"
+    },
+    "filters": {
+      "all": "Tous",
+      "active": "Actifs",
+      "ended": "Terminés"
+    },
+    "columns": {
+      "paste": "Paste",
+      "status": "Statut",
+      "reads": "Lectures",
+      "created": "Créé",
+      "expires": "Expire"
+    },
+    "status": {
+      "active": "Actif",
+      "expired": "Expiré",
+      "exhausted": "Épuisé"
+    },
+    "confirmDeleteTitle": "Supprimer ce paste ?",
+    "delete": "Supprimer",
+    "deleted": "Paste supprimé",
+    "errors": {
+      "delete": "Le paste n'a pas pu être supprimé."
+    },
+    "emptyFilter": "Aucun paste ne correspond à ce filtre.",
+    "refresh": "Actualiser",
+    "created": "Créé le {date}"
   },
   "admin": {
     "settings": {
@@ -213,7 +241,13 @@
       "saved": "Réglages enregistrés",
       "errors": {
         "generic": "Une erreur est survenue lors de l'enregistrement des réglages."
-      }
+      },
+      "retentionHint": "Durée de vie d'un paste et nombre de lectures, par type de compte.",
+      "sizesHint": "Plafonds pour un paste et pour l'instance entière.",
+      "rateLimitsHint": "Nombre de pastes qu'on peut créer par période.",
+      "emailHint": "Partage d'un paste par email depuis le formulaire de création.",
+      "invitationsHint": "Durée de validité d'un lien d'invitation.",
+      "accessHint": "Qui peut s'inscrire et créer des pastes."
     },
     "storage": {
       "title": "Stockage",
@@ -264,11 +298,14 @@
       "labelPlaceholder": "Optionnel",
       "add": "Ajouter",
       "empty": "Aucune IP dans la liste blanche.",
-      "addedAt": "Ajoutée le {date}",
       "confirmDelete": "Retirer cette IP de la liste blanche ?",
       "errors": {
         "generic": "Une erreur est survenue lors de l'ajout de cette IP."
-      }
+      },
+      "columns": {
+        "added": "Ajoutée le"
+      },
+      "remove": "Retirer"
     },
     "bannedIps": {
       "title": "Liste noire IP",
@@ -281,23 +318,25 @@
       "permanent": "Permanent",
       "add": "Bannir",
       "empty": "Aucune IP bannie.",
-      "bannedAt": "Bannie le {date}",
       "expiresAt": "Expire le {date}",
       "statusExpired": "Expiré",
       "confirmUnban": "Retirer ce bannissement ?",
       "errors": {
         "generic": "Une erreur est survenue lors du bannissement de cette IP."
-      }
+      },
+      "columns": {
+        "status": "Statut",
+        "banned": "Bannie le"
+      },
+      "unban": "Débannir"
     },
     "users": {
       "title": "Comptes",
       "adminScopeNotice": "En tant qu'admin, vous pouvez supprimer des comptes utilisateur simples. Seul un super admin peut modifier les rôles ou agir sur d'autres admins/super admins.",
-      "joined": "Inscrit le {date}",
       "confirmDelete": "Supprimer définitivement le compte de {email} ?",
       "errors": {
         "generic": "Une erreur est survenue."
       },
-      "pastesSummary": "{count} pastes, dont {reclaimable} expirés ou épuisés",
       "menu": {
         "label": "Actions pour {email}",
         "purgeReclaimable": "Supprimer les pastes expirés et épuisés ({count})",
@@ -316,7 +355,15 @@
       "result": {
         "pastesDeleted": "{count} pastes de {email} supprimés.",
         "accountDeleted": "Compte {email} supprimé."
-      }
+      },
+      "columns": {
+        "user": "Compte",
+        "role": "Rôle",
+        "pastes": "Pastes",
+        "joined": "Inscrit le"
+      },
+      "reclaimableShort": "{count} terminés",
+      "search": "Rechercher par nom ou email"
     },
     "invitations": {
       "title": "Invitations",
@@ -341,7 +388,14 @@
         "accepted": "Acceptée",
         "revoked": "Révoquée",
         "expired": "Expirée"
-      }
+      },
+      "columns": {
+        "email": "Email",
+        "state": "Statut",
+        "details": "Détails"
+      },
+      "revoke": "Révoquer l'invitation",
+      "sent": "Invitation envoyée à {email}"
     },
     "legal": {
       "title": "Pages légales",
@@ -427,7 +481,8 @@
       "title": "Profil",
       "name": "Nom",
       "email": "Email",
-      "save": "Enregistrer"
+      "save": "Enregistrer",
+      "description": "Ce que voient de vous les administrateurs de cette instance."
     },
     "password": {
       "title": "Mot de passe",
@@ -435,7 +490,8 @@
       "new": "Nouveau mot de passe",
       "confirm": "Confirmer le nouveau mot de passe",
       "mismatch": "Les mots de passe ne correspondent pas",
-      "save": "Changer le mot de passe"
+      "save": "Changer le mot de passe",
+      "description": "8 caractères minimum."
     },
     "twoFactor": {
       "title": "Authentification à deux facteurs",
@@ -462,7 +518,9 @@
       "lockedByInstance": "Cette instance impose l'authentification à deux facteurs, elle ne peut donc pas être désactivée.",
       "passwordToRegenerate": "Mot de passe pour régénérer les codes de secours",
       "regenerate": "Nouveaux codes de secours",
-      "regeneratedWarning": "Ils remplacent vos anciens codes de secours, qui ne fonctionnent plus. Enregistrez-les maintenant — ils ne sont affichés qu’une fois."
+      "regeneratedWarning": "Ils remplacent vos anciens codes de secours, qui ne fonctionnent plus. Enregistrez-les maintenant — ils ne sont affichés qu’une fois.",
+      "description": "Un code d'application d'authentification, en plus de votre mot de passe.",
+      "enabledToast": "Authentification à deux facteurs activée"
     },
     "errors": {
       "generic": "Une erreur est survenue."
@@ -483,7 +541,13 @@
       "hint": "la confirmation est envoyée à votre adresse actuelle",
       "submit": "Demander le changement d'adresse",
       "requested": "Confirmation envoyée",
-      "requestedHint": "Consultez votre boîte actuelle et suivez le lien. Votre adresse reste inchangée tant que vous ne l'avez pas fait."
+      "requestedHint": "Consultez votre boîte actuelle et suivez le lien. Votre adresse reste inchangée tant que vous ne l'avez pas fait.",
+      "title": "Adresse email",
+      "unavailable": "Cette instance ne peut pas envoyer d'email, l'adresse ne peut donc pas être changée ici."
+    },
+    "tabs": {
+      "general": "Général",
+      "security": "Sécurité"
     }
   },
   "register": {
@@ -493,20 +557,30 @@
     "password": "Mot de passe",
     "passwordHint": "8 caractères minimum",
     "submit": "Créer le compte",
-    "haveAccount": "Vous avez déjà un compte ? Se connecter",
     "closed": "Les inscriptions sont fermées",
     "closedHint": "Cette instance n'accepte pas les inscriptions publiques. Il vous faut une invitation d'un administrateur.",
     "invalidInvitation": "Ce lien d'invitation n'est pas valide",
     "invalidInvitationHint": "Il a peut-être expiré, été révoqué, ou déjà été utilisé. Demandez-en un nouveau à un administrateur.",
-    "invitedTitle": "Vous avez été invité",
     "invitedHint": "Ce compte sera créé pour {email}.",
     "errors": {
       "generic": "Impossible de créer le compte."
-    }
+    },
+    "subtitle": "Suivez vos pastes et envoyez des fichiers.",
+    "haveAccountQuestion": "Vous avez déjà un compte ?"
   },
   "nav": {
     "documentation": "Documentation",
-    "language": "Langue"
+    "language": "Langue",
+    "dashboard": "Tableau de bord",
+    "home": "Page d'accueil",
+    "administration": "Administration",
+    "goTo": "Aller à",
+    "appearance": "Apparence",
+    "colorMode": {
+      "system": "Système",
+      "light": "Clair",
+      "dark": "Sombre"
+    }
   },
   "seo": {
     "title": "shhh — partagez un secret qui expire",
@@ -522,5 +596,73 @@
     "otherLanguage": "Cette instance ne publie ce document que dans une autre langue.",
     "notFound": "Cette instance ne publie pas ce document.",
     "seoDescription": "Comment cette instance traite vos données."
+  },
+  "footer": {
+    "tagline": "Partage de secrets zero-knowledge."
+  },
+  "landing": {
+    "nav": {
+      "howItWorks": "Fonctionnement",
+      "features": "Fonctionnalités"
+    },
+    "hero": {
+      "headline": "Zero-knowledge · Open source",
+      "title": "Partagez des secrets qui s'autodétruisent",
+      "description": "Chiffré dans votre navigateur avant l'envoi. La clé voyage dans le lien, jamais jusqu'au serveur, et le paste disparaît une fois lu ou expiré."
+    },
+    "how": {
+      "title": "Le serveur ne détient que du texte chiffré",
+      "description": "Le chiffrement et le déchiffrement ont lieu dans le navigateur. Ce qui atteint le serveur est inutilisable sans le lien."
+    },
+    "steps": {
+      "encrypt": {
+        "title": "Chiffré avant de partir",
+        "description": "Votre navigateur génère une clé neuve et chiffre le contenu en AES-256-GCM. Seul le texte chiffré est envoyé."
+      },
+      "link": {
+        "title": "La clé reste dans le lien",
+        "description": "Elle se trouve après le # de l'URL, une partie que les navigateurs n'envoient jamais. Qui a le lien peut lire le paste, et personne d'autre, serveur compris."
+      },
+      "burn": {
+        "title": "Disparu une fois lu",
+        "description": "Un paste ne s'ouvre plus après sa dernière lecture autorisée ou sa date d'expiration, selon ce qui arrive en premier, et il est supprimé dans l'heure."
+      }
+    },
+    "featuresSection": {
+      "title": "Tout ce qu'il faut pour transmettre un secret",
+      "description": "Du texte brut par défaut, et ce qu'il faut pour transmettre des identifiants sans risque."
+    },
+    "features": {
+      "password": {
+        "title": "Un mot de passe en plus",
+        "description": "Ajoutez un mot de passe à transmettre par un autre canal. Il est dérivé avec Argon2id dans le navigateur et n'atteint jamais le serveur."
+      },
+      "reads": {
+        "title": "Limite de lectures",
+        "description": "Une lecture ou cent. Chaque révélation est comptée de façon atomique, et sans la clé, impossible d'en consommer une."
+      },
+      "files": {
+        "title": "Fichiers chiffrés",
+        "description": "Les utilisateurs connectés peuvent envoyer un fichier plutôt que du texte. Son nom est chiffré avec son contenu."
+      },
+      "markdown": {
+        "title": "Du Markdown si besoin",
+        "description": "Rédigez une note de passation avec titres, listes et tableaux. Elle est mise en forme dans le navigateur du destinataire, et nulle part ailleurs."
+      },
+      "email": {
+        "title": "Partage par email",
+        "description": "Envoyez le lien à plusieurs personnes d'un coup, en copie cachée, ou ouvrez-le dans votre propre messagerie."
+      },
+      "dashboard": {
+        "title": "Gardez la main",
+        "description": "Avec un compte, voyez combien de lectures il reste à chaque lien, et supprimez-en un avant qu'il soit ouvert."
+      }
+    },
+    "selfHost": {
+      "title": "Hébergez votre propre instance",
+      "description": "shhh est open source sous licence MIT. Une image Docker et une base PostgreSQL suffisent pour garder vos secrets sur vos propres serveurs.",
+      "docs": "Lire la documentation",
+      "github": "Voir sur GitHub"
+    }
   }
 }

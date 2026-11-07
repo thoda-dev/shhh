@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { TableColumn } from '@nuxt/ui'
+
 interface AdminUser {
   id: string
   name: string
@@ -15,23 +17,21 @@ type PendingAction
   = | { kind: 'pastes', scope: 'reclaimable' | 'all', target: AdminUser }
     | { kind: 'account', target: AdminUser }
 
-const ADMIN_ROLES = new Set(['admin', 'super_admin'])
 const ROLE_OPTIONS: AdminUser['role'][] = ['user', 'admin', 'super_admin']
 
-const { t, locale } = useI18n()
-const localePath = useLocalePath()
+definePageMeta({ layout: 'dashboard', middleware: 'auth', role: 'admin' })
 
-await ensureAuthSessionLoaded()
+const { t, locale } = useI18n()
+const toast = useToast()
 const user = useAuthUser()
-if (!user.value || !ADMIN_ROLES.has(user.value.role)) {
-  await navigateTo(localePath('/'))
-}
 const isSuperAdmin = computed(() => user.value?.role === 'super_admin')
 
-const { data: users, refresh, status } = await useFetch<AdminUser[]>('/api/admin/users')
+const { data: users, refresh, status } = await useFetch<AdminUser[]>('/api/admin/users', { default: () => [] })
 
-const errorMessage = ref('')
-const resultMessage = ref('')
+function showError(error: unknown) {
+  const { statusMessage, message } = fetchErrorMessages(error)
+  toast.add({ color: 'error', title: statusMessage || message || t('admin.users.errors.generic') })
+}
 
 function canDelete(target: AdminUser) {
   if (!user.value || target.id === user.value.id) return false
@@ -46,13 +46,11 @@ function canChangeRole(target: AdminUser) {
 const updatingId = ref<string | null>(null)
 async function changeRole(target: AdminUser, role: AdminUser['role']) {
   updatingId.value = target.id
-  errorMessage.value = ''
   try {
     await $fetch(`/api/admin/users/${target.id}`, { method: 'PATCH', body: { role } })
     await refresh()
   } catch (error) {
-    const { statusMessage, message } = fetchErrorMessages(error)
-    errorMessage.value = statusMessage || message || t('admin.users.errors.generic')
+    showError(error)
   } finally {
     updatingId.value = null
   }
@@ -91,24 +89,21 @@ async function runPending() {
   const action = pending.value
   if (!action) return
   acting.value = true
-  errorMessage.value = ''
-  resultMessage.value = ''
   try {
     if (action.kind === 'account') {
       await $fetch(`/api/admin/users/${action.target.id}`, { method: 'DELETE' })
-      resultMessage.value = t('admin.users.result.accountDeleted', { email: action.target.email })
+      toast.add({ color: 'success', icon: 'i-lucide-check', title: t('admin.users.result.accountDeleted', { email: action.target.email }) })
     } else {
       const { deletedCount } = await $fetch<{ deletedCount: number }>(`/api/admin/users/${action.target.id}/pastes`, {
         method: 'DELETE',
         query: { scope: action.scope }
       })
-      resultMessage.value = t('admin.users.result.pastesDeleted', { count: deletedCount, email: action.target.email })
+      toast.add({ color: 'success', icon: 'i-lucide-check', title: t('admin.users.result.pastesDeleted', { count: deletedCount, email: action.target.email }) })
     }
     pending.value = null
     await refresh()
   } catch (error) {
-    const { statusMessage, message } = fetchErrorMessages(error)
-    errorMessage.value = statusMessage || message || t('admin.users.errors.generic')
+    showError(error)
     pending.value = null
   } finally {
     acting.value = false
@@ -153,119 +148,144 @@ function formatDate(value: string) {
 }
 
 const roleColor = { user: 'neutral', admin: 'info', super_admin: 'warning' } as const
+
+const search = ref('')
+const filteredUsers = computed(() => {
+  const query = search.value.trim().toLowerCase()
+  if (!query) return users.value
+  return users.value.filter(entry => entry.name.toLowerCase().includes(query) || entry.email.toLowerCase().includes(query))
+})
+
+const columns = computed<TableColumn<AdminUser>[]>(() => [
+  { id: 'user', header: t('admin.users.columns.user') },
+  { id: 'role', header: t('admin.users.columns.role') },
+  { id: 'pastes', header: t('admin.users.columns.pastes'), meta: { class: { th: 'hidden sm:table-cell', td: 'hidden sm:table-cell' } } },
+  { accessorKey: 'createdAt', header: t('admin.users.columns.joined'), meta: { class: { th: 'hidden md:table-cell', td: 'hidden md:table-cell' } } },
+  { id: 'actions', meta: { class: { td: 'text-right' } } }
+])
 </script>
 
 <template>
-  <div class="mx-auto max-w-5xl p-4">
-    <div class="mb-2 flex items-center justify-between gap-3">
-      <h1 class="text-xl font-semibold">
-        {{ t('admin.users.title') }}
-      </h1>
-      <BackButton />
-    </div>
-    <AdminNav />
+  <UDashboardPanel id="admin-users">
+    <template #header>
+      <UDashboardNavbar :title="t('admin.users.title')">
+        <template #leading>
+          <UDashboardSidebarCollapse />
+        </template>
+        <template #trailing>
+          <UBadge
+            :label="users.length"
+            variant="subtle"
+            color="neutral"
+          />
+        </template>
+      </UDashboardNavbar>
+    </template>
 
-    <UAlert
-      v-if="errorMessage"
-      color="error"
-      variant="subtle"
-      :title="errorMessage"
-      class="mb-4"
-    />
-    <UAlert
-      v-if="resultMessage"
-      color="success"
-      variant="subtle"
-      :title="resultMessage"
-      class="mb-4"
-    />
-    <UAlert
-      v-if="!isSuperAdmin"
-      color="info"
-      variant="subtle"
-      :title="t('admin.users.adminScopeNotice')"
-      class="mb-4"
-    />
-
-    <div
-      v-if="status === 'pending'"
-      class="flex justify-center py-12"
-    >
-      <UIcon
-        name="i-lucide-loader-circle"
-        class="size-6 animate-spin"
+    <template #body>
+      <UAlert
+        v-if="!isSuperAdmin"
+        color="info"
+        variant="subtle"
+        icon="i-lucide-info"
+        :title="t('admin.users.adminScopeNotice')"
       />
-    </div>
 
-    <div
-      v-else
-      class="space-y-2"
-    >
-      <UCard
-        v-for="target in users"
-        :key="target.id"
+      <UInput
+        v-model="search"
+        icon="i-lucide-search"
+        :placeholder="t('admin.users.search')"
+        class="w-full sm:max-w-xs"
+      />
+
+      <UTable
+        :data="filteredUsers"
+        :columns="columns"
+        :loading="status === 'pending'"
+        class="shrink-0 rounded-lg border border-default"
+        :ui="{ thead: 'bg-elevated/50', th: 'py-2', td: 'py-3' }"
       >
-        <!-- The menu keeps its corner at every width; only the role select, as wide as a phone on its own, drops to a row of its own. -->
-        <div class="flex flex-wrap items-start gap-x-3 gap-y-3 sm:items-center">
-          <div class="min-w-0 flex-1">
-            <div class="flex flex-wrap items-center gap-2">
-              <p class="text-sm font-medium">
-                {{ target.name }}
-              </p>
-              <UBadge
-                :color="roleColor[target.role]"
-                variant="subtle"
-                size="sm"
-              >
-                {{ target.role }}
-              </UBadge>
-              <UBadge
-                v-if="target.twoFactorEnabled"
-                variant="subtle"
-                color="success"
-                size="sm"
-                icon="i-lucide-shield-check"
-              >
-                2FA
-              </UBadge>
-            </div>
-            <p class="text-xs break-words text-muted">
-              {{ target.email }} · {{ t('admin.users.joined', { date: formatDate(target.createdAt) }) }} ·
-              {{ t('admin.users.pastesSummary', { count: target.pastesCount, reclaimable: target.reclaimablePastesCount }) }}
-            </p>
-          </div>
+        <template #user-cell="{ row }">
+          <UUser
+            :name="row.original.name"
+            :description="row.original.email"
+            :avatar="{ text: (row.original.name || row.original.email).slice(0, 1).toUpperCase() }"
+            :ui="{ description: 'break-all' }"
+          >
+            <template
+              v-if="row.original.twoFactorEnabled"
+              #name
+            >
+              <span class="inline-flex items-center gap-1.5">
+                {{ row.original.name }}
+                <UTooltip text="2FA">
+                  <UIcon
+                    name="i-lucide-shield-check"
+                    class="size-3.5 text-success"
+                    aria-label="2FA"
+                  />
+                </UTooltip>
+              </span>
+            </template>
+          </UUser>
+        </template>
+
+        <template #role-cell="{ row }">
           <USelect
-            v-if="canChangeRole(target)"
-            :model-value="target.role"
+            v-if="canChangeRole(row.original)"
+            :model-value="row.original.role"
             :items="ROLE_OPTIONS"
             size="sm"
-            class="order-last w-full sm:order-none sm:w-36"
-            :loading="updatingId === target.id"
-            @update:model-value="(role) => changeRole(target, role as AdminUser['role'])"
+            class="w-32"
+            :loading="updatingId === row.original.id"
+            @update:model-value="(role) => changeRole(row.original, role as AdminUser['role'])"
           />
+          <UBadge
+            v-else
+            :color="roleColor[row.original.role]"
+            variant="subtle"
+            size="sm"
+          >
+            {{ row.original.role }}
+          </UBadge>
+        </template>
+
+        <template #pastes-cell="{ row }">
+          <span class="tabular-nums">{{ row.original.pastesCount }}</span>
+          <span
+            v-if="row.original.reclaimablePastesCount"
+            class="text-xs text-muted"
+          > · {{ t('admin.users.reclaimableShort', { count: row.original.reclaimablePastesCount }) }}</span>
+        </template>
+
+        <template #createdAt-cell="{ row }">
+          <span class="text-muted">{{ formatDate(row.original.createdAt) }}</span>
+        </template>
+
+        <template #actions-cell="{ row }">
           <UDropdownMenu
-            v-if="menuItems(target).length"
-            :items="menuItems(target)"
+            v-if="menuItems(row.original).length"
+            :items="menuItems(row.original)"
+            :content="{ align: 'end' }"
           >
             <UButton
               color="neutral"
               variant="ghost"
               icon="i-lucide-ellipsis-vertical"
-              class="shrink-0"
-              :aria-label="t('admin.users.menu.label', { email: target.email })"
+              :aria-label="t('admin.users.menu.label', { email: row.original.email })"
             />
           </UDropdownMenu>
-        </div>
-      </UCard>
-    </div>
+        </template>
+      </UTable>
 
-    <ConfirmDialog
-      v-model:open="confirmOpen"
-      :title="confirmTitle"
-      :description="confirmDescription"
-      :confirm-label="t('admin.users.confirm.action')"
-      :loading="acting"
-      @confirm="runPending"
-    />
-  </div>
+      <ConfirmDialog
+        v-model:open="confirmOpen"
+        :title="confirmTitle"
+        :description="confirmDescription"
+        :confirm-label="t('admin.users.confirm.action')"
+        :loading="acting"
+        @confirm="runPending"
+      />
+    </template>
+  </UDashboardPanel>
 </template>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   label: string
+  description?: string
   min?: number
 }>()
 
@@ -21,19 +22,25 @@ watch(numberValue, (value) => {
 </script>
 
 <template>
-  <UFormField :label="label">
-    <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+  <!-- Label beside the control from `sm` up, as in the dashboard's settings rows; stacked below it. -->
+  <UFormField
+    :label="label"
+    :description="description"
+    class="flex justify-between gap-x-6 gap-y-2 max-sm:flex-col sm:items-center"
+  >
+    <div class="flex items-center gap-3">
       <UInput
         v-model.number="numberValue"
         type="number"
         :min="min ?? 0"
         :disabled="unlimited"
-        class="min-w-40 flex-1"
+        class="w-full sm:w-40"
       />
-      <div class="flex shrink-0 items-center gap-1.5">
-        <USwitch v-model="unlimited" />
-        <span class="text-sm text-muted">{{ $t('setup.settings.unlimited') }}</span>
-      </div>
+      <USwitch
+        v-model="unlimited"
+        :label="$t('setup.settings.unlimited')"
+        class="shrink-0"
+      />
     </div>
   </UFormField>
 </template>

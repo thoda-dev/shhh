@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { z } from 'zod'
-import type { FormSubmitEvent } from '@nuxt/ui'
+import type { FormSubmitEvent, TableColumn } from '@nuxt/ui'
 
 interface AllowedIp {
   id: string
@@ -9,18 +9,12 @@ interface AllowedIp {
   createdAt: string
 }
 
-const ADMIN_ROLES = new Set(['admin', 'super_admin'])
+definePageMeta({ layout: 'dashboard', middleware: 'auth', role: 'admin' })
 
 const { t, locale } = useI18n()
-const localePath = useLocalePath()
+const toast = useToast()
 
-await ensureAuthSessionLoaded()
-const user = useAuthUser()
-if (!user.value || !ADMIN_ROLES.has(user.value.role)) {
-  await navigateTo(localePath('/'))
-}
-
-const { data: allowedIps, refresh, status } = await useFetch<AllowedIp[]>('/api/admin/allowed-ips')
+const { data: allowedIps, refresh, status } = await useFetch<AllowedIp[]>('/api/admin/allowed-ips', { default: () => [] })
 
 const schema = z.object({
   ip: z.union([z.ipv4(), z.ipv6()]),
@@ -29,11 +23,14 @@ const schema = z.object({
 const state = reactive({ ip: '', label: '' })
 
 const adding = ref(false)
-const errorMessage = ref('')
+
+function showError(error: unknown) {
+  const { statusMessage, message } = fetchErrorMessages(error)
+  toast.add({ color: 'error', title: statusMessage || message || t('admin.allowedIps.errors.generic') })
+}
 
 async function add(event: FormSubmitEvent<z.output<typeof schema>>) {
   adding.value = true
-  errorMessage.value = ''
   try {
     await $fetch('/api/admin/allowed-ips', {
       method: 'POST',
@@ -43,24 +40,41 @@ async function add(event: FormSubmitEvent<z.output<typeof schema>>) {
     state.label = ''
     await refresh()
   } catch (error) {
-    const { statusMessage, message } = fetchErrorMessages(error)
-    errorMessage.value = statusMessage || message || t('admin.allowedIps.errors.generic')
+    showError(error)
   } finally {
     adding.value = false
   }
 }
 
-const removingId = ref<string | null>(null)
-async function remove(id: string) {
-  if (!confirm(t('admin.allowedIps.confirmDelete'))) return
-  removingId.value = id
+const pendingRemove = ref<AllowedIp | null>(null)
+const confirmOpen = computed({
+  get: () => pendingRemove.value !== null,
+  set: (value: boolean) => {
+    if (!value) pendingRemove.value = null
+  }
+})
+const removing = ref(false)
+
+async function remove() {
+  if (!pendingRemove.value) return
+  removing.value = true
   try {
-    await $fetch(`/api/admin/allowed-ips/${id}`, { method: 'DELETE' })
+    await $fetch(`/api/admin/allowed-ips/${pendingRemove.value.id}`, { method: 'DELETE' })
     await refresh()
+  } catch (error) {
+    showError(error)
   } finally {
-    removingId.value = null
+    removing.value = false
+    pendingRemove.value = null
   }
 }
+
+const columns = computed<TableColumn<AllowedIp>[]>(() => [
+  { accessorKey: 'ip', header: t('admin.allowedIps.ipLabel') },
+  { accessorKey: 'label', header: t('admin.allowedIps.labelLabel') },
+  { accessorKey: 'createdAt', header: t('admin.allowedIps.columns.added'), meta: { class: { th: 'hidden md:table-cell', td: 'hidden md:table-cell' } } },
+  { id: 'actions', meta: { class: { td: 'text-right' } } }
+])
 
 function formatDate(value: string) {
   return new Date(value).toLocaleString(locale.value)
@@ -68,105 +82,93 @@ function formatDate(value: string) {
 </script>
 
 <template>
-  <div class="mx-auto max-w-5xl p-4">
-    <div class="mb-2 flex items-center justify-between gap-3">
-      <h1 class="text-xl font-semibold">
-        {{ t('admin.allowedIps.title') }}
-      </h1>
-      <BackButton />
-    </div>
-    <AdminNav />
+  <UDashboardPanel id="admin-allowed-ips">
+    <template #header>
+      <UDashboardNavbar :title="t('admin.allowedIps.title')">
+        <template #leading>
+          <UDashboardSidebarCollapse />
+        </template>
+      </UDashboardNavbar>
+    </template>
 
-    <p class="mb-4 text-sm text-muted">
-      {{ t('admin.allowedIps.description') }}
-    </p>
+    <template #body>
+      <p class="text-sm text-muted">
+        {{ t('admin.allowedIps.description') }}
+      </p>
 
-    <UForm
-      :schema="schema"
-      :state="state"
-      class="mb-6 max-w-sm space-y-3"
-      @submit="add"
-    >
-      <UFormField
-        :label="t('admin.allowedIps.ipLabel')"
-        name="ip"
+      <UPageCard variant="subtle">
+        <UForm
+          :schema="schema"
+          :state="state"
+          class="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+          @submit="add"
+        >
+          <UFormField
+            :label="t('admin.allowedIps.ipLabel')"
+            name="ip"
+          >
+            <UInput
+              v-model="state.ip"
+              :placeholder="t('admin.allowedIps.ipPlaceholder')"
+              class="w-full font-mono"
+            />
+          </UFormField>
+          <UFormField
+            :label="t('admin.allowedIps.labelLabel')"
+            name="label"
+          >
+            <UInput
+              v-model="state.label"
+              :placeholder="t('admin.allowedIps.labelPlaceholder')"
+              class="w-full"
+            />
+          </UFormField>
+          <UButton
+            type="submit"
+            icon="i-lucide-plus"
+            class="justify-center"
+            :loading="adding"
+            :label="t('admin.allowedIps.add')"
+          />
+        </UForm>
+      </UPageCard>
+
+      <UTable
+        :data="allowedIps"
+        :columns="columns"
+        :loading="status === 'pending'"
+        :empty="t('admin.allowedIps.empty')"
+        class="shrink-0 rounded-lg border border-default"
+        :ui="{ thead: 'bg-elevated/50', th: 'py-2', td: 'py-3' }"
       >
-        <UInput
-          v-model="state.ip"
-          :placeholder="t('admin.allowedIps.ipPlaceholder')"
-          class="w-full"
-        />
-      </UFormField>
-      <UFormField
-        :label="t('admin.allowedIps.labelLabel')"
-        name="label"
-      >
-        <UInput
-          v-model="state.label"
-          :placeholder="t('admin.allowedIps.labelPlaceholder')"
-          class="w-full"
-        />
-      </UFormField>
-      <UButton
-        type="submit"
-        icon="i-lucide-plus"
-        :loading="adding"
-        :label="t('admin.allowedIps.add')"
-      />
-    </UForm>
-
-    <UAlert
-      v-if="errorMessage"
-      color="error"
-      variant="subtle"
-      :title="errorMessage"
-      class="mb-4"
-    />
-
-    <div
-      v-if="status === 'pending'"
-      class="flex justify-center py-12"
-    >
-      <UIcon
-        name="i-lucide-loader-circle"
-        class="size-6 animate-spin"
-      />
-    </div>
-
-    <div
-      v-else-if="!allowedIps?.length"
-      class="py-12 text-center text-muted"
-    >
-      {{ t('admin.allowedIps.empty') }}
-    </div>
-
-    <div
-      v-else
-      class="space-y-2"
-    >
-      <UCard
-        v-for="entry in allowedIps"
-        :key="entry.id"
-      >
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <p class="font-mono text-sm break-all">
-              {{ entry.ip }}
-            </p>
-            <p class="text-xs break-words text-muted">
-              <span v-if="entry.label">{{ entry.label }} · </span>{{ t('admin.allowedIps.addedAt', { date: formatDate(entry.createdAt) }) }}
-            </p>
-          </div>
+        <template #ip-cell="{ row }">
+          <span class="font-mono break-all text-highlighted">{{ row.original.ip }}</span>
+        </template>
+        <template #label-cell="{ row }">
+          <span class="text-muted">{{ row.original.label || '—' }}</span>
+        </template>
+        <template #createdAt-cell="{ row }">
+          <span class="text-muted">{{ formatDate(row.original.createdAt) }}</span>
+        </template>
+        <template #actions-cell="{ row }">
           <UButton
             color="error"
             variant="ghost"
             icon="i-lucide-trash-2"
-            class="shrink-0"
-            :loading="removingId === entry.id"
-            @click="remove(entry.id)"
+            :aria-label="t('admin.allowedIps.remove')"
+            @click="pendingRemove = row.original"
           />
-        </div>
-      </UCard>
-    </div>
-  </div>
+        </template>
+      </UTable>
+
+      <ConfirmDialog
+        v-model:open="confirmOpen"
+        :title="t('admin.allowedIps.remove')"
+        :description="t('admin.allowedIps.confirmDelete')"
+        :confirm-label="t('admin.allowedIps.remove')"
+        :loading="removing"
+        @confirm="remove"
+      />
+    </template>
+  </UDashboardPanel>
 </template>
