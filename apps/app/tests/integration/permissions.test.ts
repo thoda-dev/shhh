@@ -121,6 +121,12 @@ const MATRIX: Record<string, Case[]> = {
       // Stricter than the documented row: storage is super admin only, as `AdminNav.vue` already says.
       expected: { anonymous: 403, user: 403, admin: 403, superAdmin: 200 },
       call: (instance, actor) => instance.clients[actor].get('/api/admin/storage')
+    },
+    {
+      label: 'GET /api/admin/updates',
+      // 200 whatever GitHub answers: a failed lookup is reported in the body, so the status depends on the role alone.
+      expected: { anonymous: 403, user: 403, admin: 200, superAdmin: 200 },
+      call: (instance, actor) => instance.clients[actor].get('/api/admin/updates')
     }
   ],
 
