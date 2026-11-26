@@ -4,6 +4,7 @@ const localePath = useLocalePath()
 
 <template>
   <div class="relative flex min-h-svh flex-col">
+    <UpdateBanner />
     <div
       class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-96 bg-linear-to-b from-primary/10 to-transparent"
       aria-hidden="true"

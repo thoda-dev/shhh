@@ -16,6 +16,8 @@ const links = computed<NavigationMenuItem[]>(() => [
 
 <template>
   <div class="flex min-h-svh flex-col">
+    <UpdateBanner />
+
     <UHeader
       :to="localePath('/')"
       title="shhh"

@@ -664,5 +664,15 @@
       "docs": "Read the documentation",
       "github": "View on GitHub"
     }
+  },
+  "updates": {
+    "check": "Check for updates",
+    "banner": "shhh {latest} is available — this instance runs {current}.",
+    "releaseNotes": "Release notes",
+    "available": "shhh {latest} is available",
+    "upToDate": "shhh is up to date",
+    "runningVersion": "This instance runs version {current}.",
+    "failed": "Could not check for updates",
+    "failedDescription": "GitHub did not answer. The instance may have no outbound access."
   }
 }

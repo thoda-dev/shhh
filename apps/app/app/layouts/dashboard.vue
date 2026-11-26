@@ -4,6 +4,7 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 const { t } = useI18n()
 const localePath = useLocalePath()
 const user = useAuthUser()
+const toast = useToast()
 
 const isAdmin = computed(() => isAdminRole(user.value?.role))
 const isSuperAdmin = computed(() => user.value?.role === 'super_admin')
@@ -24,13 +25,31 @@ const adminLinks = computed<NavigationMenuItem[]>(() => {
     { label: t('admin.invitations.title'), icon: 'i-lucide-mail-plus', to: localePath('/admin/invitations') },
     { label: t('admin.allowedIps.title'), icon: 'i-lucide-shield-check', to: localePath('/admin/allowed-ips') },
     { label: t('admin.bannedIps.title'), icon: 'i-lucide-ban', to: localePath('/admin/banned-ips') },
-    { label: t('admin.legal.title'), icon: 'i-lucide-scale', to: localePath('/admin/legal'), superAdminOnly: true }
+    { label: t('admin.legal.title'), icon: 'i-lucide-scale', to: localePath('/admin/legal'), superAdminOnly: true },
+    { label: t('updates.check'), icon: 'i-lucide-refresh-cw', onSelect: checkNow }
   ]
   return [
     { label: t('nav.administration'), type: 'label' },
     ...links.filter(link => !link.superAdminOnly || isSuperAdmin.value).map(({ superAdminOnly: _, ...link }) => link)
   ]
 })
+
+async function checkNow() {
+  const status = await checkForUpdates({ force: true }).catch(() => null)
+  if (!status?.latest) {
+    toast.add({ color: 'error', icon: 'i-lucide-cloud-off', title: t('updates.failed'), description: t('updates.failedDescription') })
+  } else if (status.updateAvailable) {
+    toast.add({
+      color: 'primary',
+      icon: 'i-lucide-sparkles',
+      title: t('updates.available', { latest: status.latest.version }),
+      description: t('updates.runningVersion', { current: status.current }),
+      actions: [{ label: t('updates.releaseNotes'), to: status.latest.url, target: '_blank', trailingIcon: 'i-lucide-arrow-up-right' }]
+    })
+  } else {
+    toast.add({ color: 'success', icon: 'i-lucide-check', title: t('updates.upToDate'), description: t('updates.runningVersion', { current: status.current }) })
+  }
+}
 
 const footerLinks = computed<NavigationMenuItem[]>(() => [
   { label: t('nav.home'), icon: 'i-lucide-house', to: localePath('/') },
@@ -41,70 +60,76 @@ const searchGroups = computed(() => [{
   id: 'links',
   label: t('nav.goTo'),
   items: [...mainLinks.value, ...adminLinks.value.filter(link => link.type !== 'label'), ...footerLinks.value]
-    .map(({ label, icon, to, target }) => ({ label, icon, to, target }))
+    .map(({ label, icon, to, target, onSelect }) => ({ label, icon, to, target, onSelect }))
 }])
 </script>
 
 <template>
-  <UDashboardGroup
-    unit="rem"
-    storage-key="shhh_dashboard"
-  >
-    <UDashboardSidebar
-      id="default"
-      collapsible
-      resizable
-      class="bg-elevated/25"
-      :ui="{ footer: 'lg:border-t lg:border-default' }"
+  <div class="fixed inset-0 flex flex-col">
+    <UpdateBanner />
+
+    <!-- Not `fixed` itself, or the banner would cover it. -->
+    <UDashboardGroup
+      unit="rem"
+      storage-key="shhh_dashboard"
+      class="relative inset-auto min-h-0 flex-1"
     >
-      <template #header="{ collapsed }">
-        <ULink
-          :to="localePath('/')"
-          aria-label="shhh"
-          class="flex items-center"
-          :class="collapsed ? 'mx-auto' : 'px-1.5'"
-        >
-          <AppLogo :icon-only="collapsed" />
-        </ULink>
-      </template>
+      <UDashboardSidebar
+        id="default"
+        collapsible
+        resizable
+        class="bg-elevated/25"
+        :ui="{ footer: 'lg:border-t lg:border-default' }"
+      >
+        <template #header="{ collapsed }">
+          <ULink
+            :to="localePath('/')"
+            aria-label="shhh"
+            class="flex items-center"
+            :class="collapsed ? 'mx-auto' : 'px-1.5'"
+          >
+            <AppLogo :icon-only="collapsed" />
+          </ULink>
+        </template>
 
-      <template #default="{ collapsed }">
-        <UDashboardSearchButton
-          :collapsed="collapsed"
-          class="bg-transparent ring-default"
-        />
+        <template #default="{ collapsed }">
+          <UDashboardSearchButton
+            :collapsed="collapsed"
+            class="bg-transparent ring-default"
+          />
 
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="mainLinks"
-          orientation="vertical"
-          tooltip
-        />
+          <UNavigationMenu
+            :collapsed="collapsed"
+            :items="mainLinks"
+            orientation="vertical"
+            tooltip
+          />
 
-        <UNavigationMenu
-          v-if="adminLinks.length"
-          :collapsed="collapsed"
-          :items="adminLinks"
-          orientation="vertical"
-          tooltip
-        />
+          <UNavigationMenu
+            v-if="adminLinks.length"
+            :collapsed="collapsed"
+            :items="adminLinks"
+            orientation="vertical"
+            tooltip
+          />
 
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="footerLinks"
-          orientation="vertical"
-          tooltip
-          class="mt-auto"
-        />
-      </template>
+          <UNavigationMenu
+            :collapsed="collapsed"
+            :items="footerLinks"
+            orientation="vertical"
+            tooltip
+            class="mt-auto"
+          />
+        </template>
 
-      <template #footer="{ collapsed }">
-        <UserMenu :collapsed="collapsed" />
-      </template>
-    </UDashboardSidebar>
+        <template #footer="{ collapsed }">
+          <UserMenu :collapsed="collapsed" />
+        </template>
+      </UDashboardSidebar>
 
-    <UDashboardSearch :groups="searchGroups" />
+      <UDashboardSearch :groups="searchGroups" />
 
-    <slot />
-  </UDashboardGroup>
+      <slot />
+    </UDashboardGroup>
+  </div>
 </template>

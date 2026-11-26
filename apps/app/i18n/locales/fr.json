@@ -664,5 +664,15 @@
       "docs": "Lire la documentation",
       "github": "Voir sur GitHub"
     }
+  },
+  "updates": {
+    "check": "Vérifier les mises à jour",
+    "banner": "shhh {latest} est disponible — cette instance tourne en {current}.",
+    "releaseNotes": "Notes de version",
+    "available": "shhh {latest} est disponible",
+    "upToDate": "shhh est à jour",
+    "runningVersion": "Cette instance tourne en version {current}.",
+    "failed": "Impossible de vérifier les mises à jour",
+    "failedDescription": "GitHub n'a pas répondu. L'instance n'a peut-être pas d'accès sortant."
   }
 }
